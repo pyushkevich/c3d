@@ -1,0 +1,7 @@
+PROJECT(VoxBoIO)
+
+INCLUDE_DIRECTORIES(${VoxBoIO_SOURCE_DIR})
+
+ADD_LIBRARY(ITKVoxBoIO 
+  itkVoxBoCUBImageIO.cxx
+  itkVoxBoCUBImageIOFactory.cxx)

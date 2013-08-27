@@ -1,0 +1,2 @@
+const char *ImageConverter_VERSION_STRING = 
+  "@C3D_VERSION_MAJOR@.@C3D_VERSION_MINOR@.@C3D_VERSION_PATCH@";

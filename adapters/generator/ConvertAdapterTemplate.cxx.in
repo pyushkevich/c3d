@@ -1,0 +1,21 @@
+#include "%fn%.h"
+
+template <class TPixel, unsigned int VDim>
+void
+%fn%<TPixel, VDim>
+::operator() (%param%)
+{
+  // Get image from stack
+  // ImagePointer img = c->m_ImageStack.back();
+
+  // Do some processing ...
+  // ImagePointer result = ...;
+  
+  // Put result on stack
+  // c->m_ImageStack.pop_back();
+  // c->m_ImageStack.push_back(result);
+}
+
+// Invocations
+template class %fn%<double, 2>;
+template class %fn%<double, 3>;
