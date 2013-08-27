@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8.8)
 #############################################
 # REQUIRE QT                                #
 #############################################
-FIND_PACKAGE(Qt4 4.8 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 INCLUDE(${QT_USE_FILE})
 ADD_DEFINITIONS(${QT_DEFINITIONS})
 
