@@ -22,13 +22,13 @@ TestImage<TPixel, VDim>
     RegionType rx = x->GetLargestPossibleRegion(), ry = y->GetLargestPossibleRegion();
     for(int i = 0; i < VDim; i++)
       {
-      max_abs_diff = std::max(max_abs_diff, std::fabs(rx.GetSize()[i] - ry.GetSize()[i]));
-      max_abs_diff = std::max(max_abs_diff, std::fabs(rx.GetIndex()[i] - ry.GetIndex()[i]));
-      max_abs_diff = std::max(max_abs_diff, std::fabs(x->GetOrigin()[i] - y->GetOrigin()[i]));
-      max_abs_diff = std::max(max_abs_diff, std::fabs(x->GetSpacing()[i] - y->GetSpacing()[i]));
+      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (rx.GetSize()[i] - ry.GetSize()[i])));
+      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (rx.GetIndex()[i] - ry.GetIndex()[i])));
+      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (x->GetOrigin()[i] - y->GetOrigin()[i])));
+      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (x->GetSpacing()[i] - y->GetSpacing()[i])));
       for(int j = 0; j < VDim; j++)
         {
-        max_abs_diff = std::max(max_abs_diff, std::abs(x->GetDirection()[i][j] - y->GetDirection()[i][j]));
+        max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (x->GetDirection()[i][j] - y->GetDirection()[i][j])));
         }
       }
 
