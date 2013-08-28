@@ -1007,7 +1007,7 @@ ImageConverter<TPixel, VDim>
     return 3;
     }
 
-  else if (cmd == "-percent-intensity-mode" || cmd == "-pim")
+  if (cmd == "-percent-intensity-mode" || cmd == "-pim")
     {
     // What does % mean when specifying intensities
     string pim = str_to_lower(argv[1]);
