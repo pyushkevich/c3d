@@ -16,7 +16,7 @@ PadImage<TPixel, VDim>
   unsigned long lowerBound[VDim];
   unsigned long upperBound[VDim];
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3 && i < VDim; i++) {
     lowerBound[i] = padExtentLower[i];
     upperBound[i] = padExtentUpper[i];
   }
