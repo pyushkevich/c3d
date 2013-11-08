@@ -39,6 +39,7 @@ ENDIF(WIN32)
 
 SET(SOURCES
   adapters/AddImages.cxx
+  adapters/AlignByLandmarks.cxx
   adapters/AntiAliasImage.cxx
   adapters/ApplyMetric.cxx
   adapters/BiasFieldCorrection.cxx
@@ -66,7 +67,7 @@ SET(SOURCES
   adapters/LevelSetSegmentation.cxx
   adapters/MathematicalMorphology.cxx
   adapters/MixtureModel.cxx
-#  adapters/MRFVote.cxx
+  adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
   adapters/NormalizedCrossCorrelation.cxx
   adapters/OverlayLabelImage.cxx

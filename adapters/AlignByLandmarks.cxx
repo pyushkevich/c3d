@@ -68,6 +68,10 @@ AlignByLandmarks<TPixel, VDim>
   if(dof != 6 && dof != 7 && dof != 12)
     throw ConvertException("Landmark alignment degrees of freedom parameter is wrong");
 
+  *c->verbose << "Computing landmark alignment between images" << std::endl;
+  *c->verbose << "  Degrees of freedom: " << dof << std::endl;
+  *c->verbose << "  Output file: " << fn_output << std::endl;
+
   // Extract the centroids of the landmarks
   CentroidMap cm_fixed = ExtractCentroids(im_fixed);
   CentroidMap cm_moving = ExtractCentroids(im_moving);
@@ -81,30 +85,40 @@ AlignByLandmarks<TPixel, VDim>
     }
 
   // Construct matrices A and B containing the points
-  vnl_matrix<double> A(common.size(), VDim), B(common.size(), VDim);
+  vnl_matrix<double> A0(common.size(), VDim), B0(common.size(), VDim), A, B;
   vnl_vector<double> cA(VDim), cB(VDim); 
   cA.fill(0); cB.fill(0);
   int i = 0;
+  double totaldist = 0;
+  *c->verbose << "  Distances before alignment: " << std::endl;
   for(typename std::set<unsigned long>::iterator it = common.begin(); it!=common.end(); ++it)
     {
     unsigned long label = *it;
     for(int j = 0; j < VDim; j++)
       {
-      A(i,j) = cm_fixed[label][j];
-      B(i,j) = cm_moving[label][j];
+      A0(i,j) = cm_fixed[label][j];
+      B0(i,j) = cm_moving[label][j];
       }
-    cA += A.get_row(i);
-    cB += B.get_row(i);
+
+    double dist = (A0.get_row(i) - B0.get_row(i)).magnitude();
+    totaldist += dist;
+    *c->verbose << "    Label " << label << ":   " 
+      << A0.get_row(i) << "       " << B0.get_row(i) << std::endl;
+    *c->verbose << "    Label " << label << ":   " << dist << std::endl;
+    cA += A0.get_row(i);
+    cB += B0.get_row(i);
     i++;
     }
+  *c->verbose << "    Total:    " << totaldist << std::endl;
 
   // We are solving for T(A) - B. Compute the translation and remove center from the data
+  A = A0; B = B0;
   cA /= A.rows(); cB /= A.rows();
   vnl_vector<double> translation = cB - cA;
-  for(i = 0; i < A.rows(); i++)
+  for(i = 0; i < A0.rows(); i++)
     {
-    A.set_row(i, A.get_row(i) - cA);
-    B.set_row(i, B.get_row(i) - cB);
+    A.set_row(i, A0.get_row(i) - cA);
+    B.set_row(i, B0.get_row(i) - cB);
     }
 
   // The output transform components: affine component M and translation b
@@ -178,6 +192,24 @@ AlignByLandmarks<TPixel, VDim>
     for(size_t j = 0; j < 4; j++)
       fout << out_mat[i][j] << (j < 3 ? " " : "\n");
   fout.close();
+
+  // Compute the final distances
+  *c->verbose << "  Distances after alignment: " << std::endl;
+  totaldist = 0;
+  i = 0;
+  for(typename std::set<unsigned long>::iterator it = common.begin(); it!=common.end(); ++it)
+    {
+    unsigned long label = *it;
+    vnl_vector<double> x(4), y;
+    x.fill(1);
+    x.update(A0.get_row(i), 0);
+    y = out_mat * x;
+    double dist = (y.extract(3) - B0.get_row(i)).magnitude();
+    *c->verbose << "    Label " << label << ":   " << dist << std::endl;
+    totaldist += dist;
+    i++;
+    }
+  *c->verbose << "    Total:    " << totaldist << std::endl;
 }
 
 // Invocations

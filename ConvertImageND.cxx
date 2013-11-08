@@ -1,6 +1,7 @@
 #include "ConvertImageND.h"
 
 #include "AddImages.h"
+#include "AlignByLandmarks.h"
 #include "AntiAliasImage.h"
 #include "ApplyMetric.h"
 #include "BiasFieldCorrection.h"
@@ -29,7 +30,7 @@
 #include "LevelSetSegmentation.h"
 #include "MathematicalMorphology.h"
 #include "MixtureModel.h"
-//#include "MRFVote.h"
+#include "MRFVote.h"
 #include "MultiplyImages.h"
 #include "NormalizedCrossCorrelation.h"
 #include "OverlayLabelImage.h"
@@ -127,7 +128,9 @@ ImageConverter<TPixel, VDim>
 ::PrintCommandListing(std::ostream &out)
 {
   out << "Command Listing: " << endl;
+  out << "    -accum" << endl;
   out << "    -add" << endl;
+  out << "    -align-landmarks, -alm" << endl;
   out << "    -anisotropic-diffusion, -ad" << endl;
   out << "    -antialias, -alias" << endl;
   out << "    -as, -set" << endl;
@@ -146,6 +149,7 @@ ImageConverter<TPixel, VDim>
   out << "    -dilate" << endl;
   out << "    -divide" << endl;
   out << "    -dup" << endl;
+  out << "    -endaccum" << endl;
   out << "    -endfor" << endl;
   out << "    -erode" << endl;
   out << "    -erf" << endl;
@@ -268,6 +272,15 @@ ImageConverter<TPixel, VDim>
     BinaryMathOperation<TPixel, VDim> adapter(this);
     adapter(BinaryMathOperation<TPixel, VDim>::ADD);
     return 0;
+    }
+
+  else if (cmd == "-align-landmarks" || cmd == "-alm")
+    {
+    int dof = atoi(argv[1]);
+    std::string fnout = argv[2];
+    AlignByLandmarks<TPixel,VDim> adapter(this);
+    adapter(dof, fnout);
+    return 2;
     }
 
   else if (cmd == "-anisotropic-diffusion" || cmd == "-ad")
@@ -1436,16 +1449,16 @@ ImageConverter<TPixel, VDim>
     adapter(false);
     return 0;
     }
-//
-//  else if (cmd == "-vote-mrf")
-//    {
-//    double beta = atof(argv[1]);
-//    size_t iter = atoi(argv[2]);
-//    MRFVote<TPixel, VDim> adapter(this);
-//    adapter(beta, iter, false);
-//    return 2;
-//    }
-//
+
+  else if (cmd == "-vote-mrf")
+    {
+    double beta = atof(argv[1]);
+    size_t iter = atoi(argv[2]);
+    MRFVote<TPixel, VDim> adapter(this);
+    adapter(beta, iter, false);
+    return 2;
+    }
+
   else if (cmd == "-vote-label")
     {
     UpdateMetadataKey<TPixel, VDim> adapter(this);
