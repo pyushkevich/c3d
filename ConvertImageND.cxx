@@ -6,6 +6,7 @@
 #include "ApplyMetric.h"
 #include "BiasFieldCorrection.h"
 #include "BiasFieldCorrectionN4.h"
+#include "BinaryHoleFill.h"
 #include "BinaryImageCentroid.h"
 #include "BinaryMathOperation.h"
 #include "ClipImageIntensity.h"
@@ -160,6 +161,7 @@ ImageConverter<TPixel, VDim>
   out << "    -foreach" << endl;
   out << "    -glm" << endl;
   out << "    -histmatch, -histogram-match" << endl;
+  out << "    -holefill, -hf" << endl;
   out << "    -info" << endl;
   out << "    -info-full" << endl;
   out << "    -insert, -ins" << endl;
@@ -508,6 +510,16 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if(cmd == "-hf" || cmd == "-holefill")
+    {
+    double foreground = atof(argv[1]);
+    bool full_conn = atoi(argv[2]);
+
+    BinaryHoleFill<TPixel, VDim> adapter(this);
+    adapter(foreground, full_conn);
+
+    return 2;
+    }
 
   else if (cmd == "-histmatch" || cmd == "-histogram-match")
     {

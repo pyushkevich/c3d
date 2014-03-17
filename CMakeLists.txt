@@ -42,6 +42,7 @@ SET(SOURCES
   adapters/AlignByLandmarks.cxx
   adapters/AntiAliasImage.cxx
   adapters/ApplyMetric.cxx
+  adapters/BinaryHoleFill.cxx
   adapters/BiasFieldCorrection.cxx
   adapters/BiasFieldCorrectionN4.cxx
   adapters/BinaryImageCentroid.cxx
