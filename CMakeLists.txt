@@ -69,6 +69,7 @@ SET(SOURCES
   adapters/MixtureModel.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
+  adapters/NormalizeLocalWindow.cxx
   adapters/NormalizedCrossCorrelation.cxx
   adapters/OverlayLabelImage.cxx
   adapters/PadImage.cxx

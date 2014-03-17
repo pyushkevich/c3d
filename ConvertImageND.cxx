@@ -33,6 +33,7 @@
 #include "MRFVote.h"
 #include "MultiplyImages.h"
 #include "NormalizedCrossCorrelation.h"
+#include "NormalizeLocalWindow.h"
 #include "OverlayLabelImage.h"
 #include "PadImage.h"
 #include "PeronaMalik.h"
@@ -184,6 +185,7 @@ ImageConverter<TPixel, VDim>
   out << "    -n4, -n4-bias-correction" << endl;
   out << "    -ncc, -normalized-cross-correlation" << endl;
   out << "    -nmi, -normalized-mutual-info" << endl;
+  out << "    -nlw, -normwin, -normalize-local-window" << endl;
   out << "    -normpdf" << endl;
   out << "    -noround" << endl;
   out << "    -nospm" << endl;
@@ -839,6 +841,14 @@ ImageConverter<TPixel, VDim>
     m_MultiComponentSplit = false; return 0;
     }
 
+  else if (cmd == "-nlw" || cmd == "-normwin" || cmd == "-normalize-local-window")
+    {
+    NormalizeLocalWindow<TPixel, VDim> adapter(this);
+    SizeType radius = ReadSizeVector(argv[1]);
+    adapter(radius);
+    return 1;
+    }
+
   else if (cmd == "-normpdf")
     {
     // Compute normal PDF of intensity values given sigma and mu
@@ -864,7 +874,8 @@ ImageConverter<TPixel, VDim>
 
     // Scale by factor
     ScaleShiftImage<TPixel, VDim> scale3(this);
-	scale3(1.0 / sqrt(2 * vnl_math::pi * s * s), 0.0);
+    scale3(1.0 / sqrt(2 * vnl_math::pi * s * s), 0.0);
+    return 2;
     }
 
   else if (cmd == "-noround")
