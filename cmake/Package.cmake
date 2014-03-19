@@ -63,3 +63,41 @@ ELSE(WIN32 AND NOT UNIX)
 ENDIF(WIN32 AND NOT UNIX)
 
 INCLUDE(CPack)
+
+#--------------------------------------------------------------------------------
+# Uploading code to SourceForge
+#--------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------
+# Configure SCP
+
+FIND_PROGRAM(SCP_PROGRAM NAMES scp DOC "Location of the scp program (optional)")
+MARK_AS_ADVANCED(SCP_PROGRAM)
+
+SET(SCP_ARGUMENTS "-v" CACHE STRING "Optional arguments to the scp command for uploads to SourceForge")
+MARK_AS_ADVANCED(SCP_ARGUMENTS)
+
+SET(SCP_USERNAME "" CACHE STRING "SourceForge.net account id for uploads")
+MARK_AS_ADVANCED(SCP_USERNAME)
+
+SET(NIGHTLY_TARGET "c3d-nightly-${CPACK_SYSTEM_NAME}.${CPACK_EXTENSION}")
+
+SET(SCP_ROOT "frs.sourceforge.net:/home/frs/project/c/c3/c3d/c3d")
+
+#--------------------------------------------------------------------------------
+# Create targets
+
+ADD_CUSTOM_TARGET(upload_nightly 
+  VERBATIM COMMAND "${SCP_PROGRAM}" ${SCP_ARGUMENTS}
+  ${CPACK_PACKAGE_FILE_NAME_WEXT} ${SCP_USERNAME},c3d@${SCP_ROOT}/Nightly/${NIGHTLY_TARGET}
+  DEPENDS ${CPACK_TARGET}
+  WORKING_DIRECTORY ${SNAP_BINARY_DIR}
+  COMMENT "Uploading package ${CPACK_PACKAGE_FILE_NAME_WEXT} to SourceForge.net as ${NIGHTLY_TARGET}")
+
+ADD_CUSTOM_TARGET(upload_experimental 
+  VERBATIM COMMAND "${SCP_PROGRAM}" ${SCP_ARGUMENTS} ${PACKAGE_FILE_NAME_WEXT} ${SCP_USERNAME},c3d@${SCP_ROOT}/Experimental
+  DEPENDS ${CPACK_TARGET}
+  WORKING_DIRECTORY ${SNAP_BINARY_DIR}
+  COMMENT "Uploading package ${CPACK_PACKAGE_FILE_NAME_WEXT} to SourceForge.net to Experimental directory")
+
+
