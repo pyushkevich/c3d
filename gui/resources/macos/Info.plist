@@ -7,7 +7,7 @@
 	<key>CFBundleIconFile</key>
 	<string>c3dgui</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.itksnap</string>
+	<string>org.itksnap.c3dgui</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleName</key>

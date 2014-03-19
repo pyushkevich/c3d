@@ -24,7 +24,7 @@ HessianObjectness<TPixel, VDim>
 
   // Create the objectness filter
   typename ObjectnessFilterType::Pointer of = ObjectnessFilterType::New();
-  of->SetScaleObjectnessMeasure(false); // why?
+  of->SetScaleObjectnessMeasure(true); // why?
   of->SetBrightObject(dimension > 0);
   of->SetObjectDimension(abs(dimension));
   of->SetAlpha(0.5);
