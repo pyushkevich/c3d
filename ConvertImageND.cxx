@@ -22,6 +22,7 @@
 #include "ExtractSlice.h"
 #include "FlipImage.h"
 #include "GeneralLinearModel.h"
+#include "HessianObjectness.h"
 #include "HistogramMatch.h"
 #include "ImageERF.h"
 #include "ImageLaplacian.h"
@@ -160,6 +161,7 @@ ImageConverter<TPixel, VDim>
   out << "    -flip" << endl;
   out << "    -foreach" << endl;
   out << "    -glm" << endl;
+  out << "    -hessobj, -hessian-objectness" << endl;
   out << "    -histmatch, -histogram-match" << endl;
   out << "    -holefill, -hf" << endl;
   out << "    -info" << endl;
@@ -519,6 +521,18 @@ ImageConverter<TPixel, VDim>
     adapter(foreground, full_conn);
 
     return 2;
+    }
+
+  else if (cmd == "-hessobj" || cmd == "-hessian-objectness")
+    {
+    int dimension = atoi(argv[1]);
+    double minscale = atof(argv[2]);
+    double maxscale = atof(argv[3]);
+    
+    HessianObjectness<TPixel, VDim> adapter(this);
+    adapter(dimension, minscale, maxscale);
+
+    return 3;
     }
 
   else if (cmd == "-histmatch" || cmd == "-histogram-match")

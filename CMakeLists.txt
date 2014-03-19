@@ -58,6 +58,7 @@ SET(SOURCES
   adapters/ExtractRegion.cxx
   adapters/ExtractSlice.cxx
   adapters/FlipImage.cxx
+  adapters/HessianObjectness.cxx
   adapters/HistogramMatch.cxx
   adapters/ImageERF.cxx
   adapters/ImageLaplacian.cxx
