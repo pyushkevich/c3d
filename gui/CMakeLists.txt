@@ -44,7 +44,7 @@ QT4_WRAP_CPP(UI_WRAPPED_MOC_HEADERS ${UI_MOC_HEADERS})
 #--------------------------------------------------------------------------------
 # Define main GUI executable
 #--------------------------------------------------------------------------------
-SET(MY_MAIN_SRC
+SET(C3DGUI_MAIN_SRC
     ${UI_QT_CXX}
     ${UI_WRAPPED_MOC_HEADERS}
     ${UI_MOC_HEADERS}
@@ -55,29 +55,29 @@ SET(MY_MAIN_SRC
 IF(APPLE)
 
   # the icon file
-  SET(MY_OSX_ICON ${C3DGUI_SOURCE_DIR}/resources/macos/c3dgui.icns)
+  SET(C3DGUI_OSX_ICON ${C3DGUI_SOURCE_DIR}/resources/macos/c3dgui.icns)
 
   # set how it shows up in the Info.plist file
   SET(MACOSX_BUNDLE_ICON_FILE c3dgui.icns) 
   
   # set where in the bundle to put the icns file
-  SET_SOURCE_FILES_PROPERTIES(${MY_OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  SET_SOURCE_FILES_PROPERTIES(${C3DGUI_OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
   # include the icns file in the target
-  SET(MY_MAIN_SRC ${MY_MAIN_SRC} ${MY_OSX_ICON})
+  SET(C3DGUI_MAIN_SRC ${C3DGUI_MAIN_SRC} ${C3DGUI_OSX_ICON})
 
 ENDIF(APPLE)
 
 # Define the main executable
-SET(MY_BUNDLE_NAME "c3d_gui")
+SET(C3DGUI_BUNDLE_NAME "C3D-GUI")
 
 # Configure the executable's sources and libraries
-ADD_EXECUTABLE(${MY_BUNDLE_NAME} MACOSX_BUNDLE ${MY_MAIN_SRC})
-TARGET_LINK_LIBRARIES(${MY_BUNDLE_NAME} ${QT_LIBRARIES} cnd_adapters cnd_driver)
+ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
+TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${QT_LIBRARIES} cnd_adapters cnd_driver)
 
 # On apple, we also need our custom plist.info file to be configured
 IF(APPLE)
-  SET_TARGET_PROPERTIES(${MY_BUNDLE_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
+  SET_TARGET_PROPERTIES(${C3DGUI_BUNDLE_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
     ${C3DGUI_SOURCE_DIR}/resources/macos/Info.plist)
 ENDIF(APPLE)
 
@@ -88,21 +88,21 @@ IF(APPLE)
 
   # on Apple, the bundle is at the root of the
   # install tree, and on other platforms it'll go into the bin directory.
-  INSTALL(TARGETS ${MY_BUNDLE_NAME} 
+  INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} 
       BUNDLE DESTINATION . COMPONENT Runtime)
 
   # Include the qt4 dependent libraries
   include(DeployQt4)
-  install_qt4_executable(${MY_BUNDLE_NAME}.app "qsqlite;qgif")
+  install_qt4_executable(${C3DGUI_BUNDLE_NAME}.app "qsqlite;qgif")
 
 ELSEIF(WIN32)
 
   # Install to the bin directory
-  INSTALL(TARGETS ${MY_BUNDLE_NAME} RUNTIME DESTINATION bin)
+  INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION bin)
 
   # Include the qt4 dependent libraries
   include(DeployQt4)
-  install_qt4_executable(bin/${MY_BUNDLE_NAME}.exe "qsqlite;qgif")
+  install_qt4_executable(bin/${C3DGUI_BUNDLE_NAME}.exe "qsqlite;qgif")
 
   # CMake does not yet know to install into (x64) program files or not
   IF(CMAKE_CL_64)
@@ -117,17 +117,17 @@ ELSEIF(WIN32)
 
 ELSE()
 
-  # On Linux, we generate forward shared executable
-  #SUBDIRS(Utilities/Forwarding)
+  SET(C3DGUI_EXE "c3d_gui")
+  SET(C3DGUI_MAIN_INSTALL_DIR lib/c3d_gui-${C3D_VERSION_FULL})
+  SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_EXE} ${C3DGUI_BUNDLE_NAME})
+  
+  INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION ${C3DGUI_MAIN_INSTALL_DIR})
 
-  #SET(SNAP_EXE "ITK-SNAP")
-  #SET(SNAP_MAIN_INSTALL_DIR lib/snap-${SNAP_VERSION_FULL})
-  #SET(SNAP_DATA_INSTALL_DIR ${SNAP_MAIN_INSTALL_DIR})
-  #SET(CPACK_PACKAGE_EXECUTABLES "itksnap" "ITK-SNAP")
-  #INSTALL(TARGETS ${SNAP_BUNDLE_NAME} RUNTIME DESTINATION ${SNAP_MAIN_INSTALL_DIR})
+  # On Linux, we generate forward shared executable
+  SUBDIRS(Utilities/Forwarding)
 
   include(DeployQt4)
-  install_qt4_executable(${SNAP_MAIN_INSTALL_DIR}/${SNAP_EXE} "qgif")
+  install_qt4_executable(${C3DGUI_MAIN_INSTALL_DIR}/${SNAP_EXE} "qgif")
 
 ENDIF()
 
