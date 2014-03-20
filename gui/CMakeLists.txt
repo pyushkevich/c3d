@@ -127,7 +127,7 @@ ELSE()
   SUBDIRS(Utilities/Forwarding)
 
   include(DeployQt4)
-  install_qt4_executable(${C3DGUI_MAIN_INSTALL_DIR}/${SNAP_EXE} "qgif")
+  install_qt4_executable(${C3DGUI_MAIN_INSTALL_DIR}/${C3DGUI_BUNDLE_NAME} "qgif")
 
 ENDIF()
 
