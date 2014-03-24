@@ -1,20 +1,16 @@
-PROJECT(C3DGUI)
-
 #--------------------------------------------------------------------------------
-# CMAKE PRELIMINARIES                       
+# Find Qt4
 #--------------------------------------------------------------------------------
-cmake_minimum_required(VERSION 2.8.8)
-
-#############################################
-# REQUIRE QT                                #
-#############################################
 FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 INCLUDE(${QT_USE_FILE})
 ADD_DEFINITIONS(${QT_DEFINITIONS})
 
+#--------------------------------------------------------------------------------
+# Specify source files and headers
+#--------------------------------------------------------------------------------
 INCLUDE_DIRECTORIES(
-    ${C3DGUI_SOURCE_DIR}
-    ${C3DGUI_BINARY_DIR}
+  ${CONVERT3D_SOURCE_DIR}/gui
+  ${CONVERT3D_BINARY_DIR}/gui
 )
 
 SET(UI_QT_CXX
@@ -69,7 +65,7 @@ IF(APPLE)
 ENDIF(APPLE)
 
 # Define the main executable
-SET(C3DGUI_BUNDLE_NAME "C3D-GUI")
+SET(C3DGUI_BUNDLE_NAME "Convert3DGUI")
 
 # Configure the executable's sources and libraries
 ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
@@ -83,6 +79,7 @@ ENDIF(APPLE)
 
 #--------------------------------------------------------------------------------
 # Install the application
+#--------------------------------------------------------------------------------
 
 IF(APPLE)
 
@@ -113,7 +110,7 @@ ELSEIF(WIN32)
   SET(CPACK_PACKAGE_INSTALL_DIRECTORY "C3D GUI ${C3D_VERSION_MAJOR}.${C3D_VERSION_MINOR}")
   
   # On Win32, the executable is the actual exe
-  SET(CPACK_PACKAGE_EXECUTABLES c3d_gui "C3D_GUI")
+  SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME})
 
 ELSE()
 

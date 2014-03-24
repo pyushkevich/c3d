@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>c3d_gui</string>
+	<string>Convert3DGUI</string>
 	<key>CFBundleIconFile</key>
 	<string>c3dgui</string>
 	<key>CFBundleIdentifier</key>
@@ -11,9 +11,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleName</key>
-	<string>c3d_gui</string>
+	<string>Convert3DGUI</string>
 	<key>CFBundleDisplayName</key>
-	<string>C3D Console</string>
+	<string>C3D GUI Console</string>
 	<key>CFBundleVersion</key>
 	<string>59</string>
 	<key>CFBundleShortVersionString</key>
