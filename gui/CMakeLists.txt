@@ -101,6 +101,12 @@ ELSEIF(WIN32)
   include(DeployQt4)
   install_qt4_executable(bin/${C3DGUI_BUNDLE_NAME}.exe "qsqlite;qgif")
 
+  # On windows, we have to configure NSIS
+  SET(CPACK_NSIS_INSTALLED_ICON_NAME "${C3DGUI_BUNDLE_NAME}.exe")
+  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Convert3D GUI")
+  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.itksnap.org/c3d")
+  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.itksnap.org/c3d")
+
   # CMake does not yet know to install into (x64) program files or not
   IF(CMAKE_CL_64)
     SET(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
@@ -110,7 +116,7 @@ ELSEIF(WIN32)
   SET(CPACK_PACKAGE_INSTALL_DIRECTORY "C3D GUI ${C3D_VERSION_MAJOR}.${C3D_VERSION_MINOR}")
   
   # On Win32, the executable is the actual exe
-  SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME})
+  SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME} "C3D GUI")
 
 ELSE()
 
