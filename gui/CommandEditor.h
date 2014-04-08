@@ -24,6 +24,9 @@ public:
 
   bool event(QEvent *e);
 
+  bool canInsertFromMimeData(const QMimeData *source) const;
+  void insertFromMimeData(const QMimeData *source);
+
 protected:
   void keyPressEvent(QKeyEvent *e);
   void focusInEvent(QFocusEvent *e);

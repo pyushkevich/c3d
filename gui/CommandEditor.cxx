@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QDir>
+#include <QUrl>
 #include <QSettings>
 #include <QToolTip>
 
@@ -79,6 +80,32 @@ bool CommandEditor::event(QEvent *e)
 
   else
     return QTextEdit::event(e);
+}
+
+bool CommandEditor::canInsertFromMimeData(const QMimeData *source) const
+{
+  if(source->hasUrls())
+    return true;
+  else return QTextEdit::canInsertFromMimeData(source);
+}
+
+void CommandEditor::insertFromMimeData(const QMimeData *source)
+{
+  if(source->hasUrls())
+    {
+    foreach(QUrl url, source->urls())
+      {
+      if(url.isLocalFile())
+        {
+        this->textCursor().insertText(url.toLocalFile());
+        this->textCursor().insertText(" ");
+        }
+      }
+    }
+  else
+    {
+    QTextEdit::insertFromMimeData(source);
+    }
 }
 
 #include <iostream>

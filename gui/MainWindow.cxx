@@ -11,6 +11,8 @@
 #include <QFileDialog>
 #include <QProcess>
 #include <QHelpEvent>
+#include <QDockWidget>
+#include <QListView>
 #include "ConvertImageND.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -37,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
   QFontMetrics metrics(font);
   ui->teCommand->setTabStopWidth(4 * metrics.width(' '));
 
+  // Enable drag and drop to command editor
+  ui->teCommand->viewport()->setAcceptDrops(true);
+
   // Setup the highlighter
   ConvertSyntaxHighlighter *shl =
     new ConvertSyntaxHighlighter(ui->teCommand->document());
@@ -45,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
   // Setup the filename completer in the editor
   QCompleter *fileCompleter = new QCompleter(this);
   m_FileSystemModel = new QFileSystemModel(fileCompleter);
+  m_FileSystemModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDot);
+  m_FileSystemModel->setSupportedDragActions(Qt::CopyAction);
   fileCompleter->setModel(m_FileSystemModel);
   ui->teCommand->setFileCompleter(fileCompleter);
 
@@ -55,11 +62,28 @@ MainWindow::MainWindow(QWidget *parent) :
   commandCompleter->setModel(cmdlistmodel);
   ui->teCommand->setCommandCompleter(commandCompleter);
 
+  // Add a dock for the file list
+  QDockWidget *dock = new QDockWidget(this);
+  dock->setAllowedAreas(Qt::RightDockWidgetArea | Qt::LeftDockWidgetArea);
+  addDockWidget(Qt::RightDockWidgetArea, dock);
+
+  // Create a list widget with a file model
+  m_CurrentDirView = new QListView(this);
+  m_CurrentDirView->setModel(m_FileSystemModel);
+  m_CurrentDirView->setDragEnabled(true);
+  dock->setWidget(m_CurrentDirView);
+
+  connect(m_CurrentDirView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(onFileListDoubleClick(QModelIndex)));
+
   // Set the directory info
   QSettings settings;
   QString dir = settings.value("working_dir", QDir::currentPath()).toString();
   this->onWorkingDirectoryChanged(dir);
+
 }
+
+#include <QFileSystemModel>
 
 MainWindow::~MainWindow()
 {
@@ -87,6 +111,8 @@ void MainWindow::onWorkingDirectoryChanged(const QString &dir)
 
   QModelIndex index = m_FileSystemModel->index(dir);
   ui->teCommand->fileCompleter()->setCurrentRow(index.row());
+
+  m_CurrentDirView->setRootIndex(index);
 }
 
 void MainWindow::on_btnRun_clicked()
@@ -146,5 +172,23 @@ void MainWindow::onProcessStandardError()
     fmt.setForeground(QColor("red"));
     tc.setCharFormat(fmt);
     tc.insertText(text);
+    }
+}
+
+void MainWindow::onFileListDoubleClick(const QModelIndex &index)
+{
+  if(m_FileSystemModel->isDir(index))
+    {
+    this->onWorkingDirectoryChanged(m_FileSystemModel->fileInfo(index).absoluteFilePath());
+    return;
+    }
+  else
+    {
+    QString filename = m_FileSystemModel->data(index, Qt::DisplayRole).toString();
+    QTextCursor tc = ui->teCommand->textCursor();
+    tc.insertText(filename);
+    if(!ui->teCommand->document()->characterAt(tc.position()+1).isSpace())
+      tc.insertText(" ");
+    m_CurrentDirView->clearFocus();
     }
 }

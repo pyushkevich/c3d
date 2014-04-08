@@ -8,6 +8,8 @@ namespace Ui {
 class MainWindow;
 }
 
+class QListView;
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -26,10 +28,13 @@ private slots:
   void onProcessStandardOutput();
   void onProcessStandardError();
 
+  void onFileListDoubleClick(const QModelIndex &index);
+
 
 private:
   Ui::MainWindow *ui;
   QFileSystemModel *m_FileSystemModel;
+  QListView *m_CurrentDirView;
 };
 
 #endif // MAINWINDOW_H

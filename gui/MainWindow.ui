@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>960</width>
     <height>548</height>
    </rect>
   </property>
@@ -53,7 +53,9 @@
           <string>...</string>
          </property>
          <property name="icon">
-          <iconset theme="window-new"/>
+          <iconset theme="window-new">
+           <normaloff/>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -123,7 +125,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>960</width>
      <height>22</height>
     </rect>
    </property>
