@@ -51,7 +51,7 @@ SET(C3DGUI_MAIN_SRC
 IF(APPLE)
 
   # the icon file
-  SET(C3DGUI_OSX_ICON ${C3DGUI_SOURCE_DIR}/resources/macos/c3dgui.icns)
+  SET(C3DGUI_OSX_ICON ${CONVERT3D_SOURCE_DIR}/gui/resources/macos/c3dgui.icns)
 
   # set how it shows up in the Info.plist file
   SET(MACOSX_BUNDLE_ICON_FILE c3dgui.icns) 
@@ -74,7 +74,7 @@ TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${QT_LIBRARIES} cnd_adapters cnd_dri
 # On apple, we also need our custom plist.info file to be configured
 IF(APPLE)
   SET_TARGET_PROPERTIES(${C3DGUI_BUNDLE_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
-    ${C3DGUI_SOURCE_DIR}/resources/macos/Info.plist)
+    ${CONVERT3D_SOURCE_DIR}/gui/resources/macos/Info.plist)
 ENDIF(APPLE)
 
 #--------------------------------------------------------------------------------
