@@ -17,7 +17,12 @@ ReorderStack<TPixel, VDim>
   *c->verbose << "Reordering " << n << " images with stride of " << k << endl;
 
   // Make a copy of the stack
-  vector<ImagePointer> temp_stack = c->m_ImageStack;
+  ImageStack<ImageType> temp_stack;
+  for(size_t i=0; i < c->m_ImageStack.size(); i++)
+  {
+    temp_stack.push_back(c->m_ImageStack[i]);
+  }
+
   c->m_ImageStack.clear();
 
   // Traverse the stack

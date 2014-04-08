@@ -27,4 +27,12 @@ private:
   std::string message;
 };
 
+class StackAccessException : public ConvertException
+{
+public:
+  StackAccessException()
+  : ConvertException("Image Stack Access Exception") {}
+
+};
+
 #endif // __ConvertException_h_

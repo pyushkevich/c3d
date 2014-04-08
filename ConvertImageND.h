@@ -4,6 +4,7 @@
 #include "itkOrientedRASImage.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkInterpolateImageFunction.h"
+#include "ImageStack.h"
 #include "ConvertException.h"
 
 #include <iostream>
@@ -120,7 +121,7 @@ private:
 public:
 
   // Stack of images from the command line
-  vector<ImagePointer> m_ImageStack;
+  ImageStack<ImageType> m_ImageStack;
 
   // Typeid of the image to be saved
   string m_TypeId;

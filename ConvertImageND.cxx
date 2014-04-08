@@ -1599,6 +1599,9 @@ ImageConverter<TPixel, VDim>
   // Disable multithreading
   itk::MultiThreader::SetGlobalDefaultNumberOfThreads(1);
 
+  // The last command
+  std::string lastCommand;
+
   // Check the number of arguments
   if (argc == 1)
     {
@@ -1622,11 +1625,16 @@ ImageConverter<TPixel, VDim>
       string cmd = argv[i];
       if (cmd[0] == '-')
         {
+        // Save the last command (for exceptions, etc)
+        lastCommand = argv[i];
+
         // A command has been supplied
         i += ProcessCommand(argc-i, argv+i);
         }
       else
         {
+        lastCommand = "";
+
         // An image file name has been provided. If this image is followed by commands
         // read it and push in the pipeline.
         if (i != argc-1)
@@ -1644,15 +1652,31 @@ ImageConverter<TPixel, VDim>
       }
     return 0;
     }
+  catch (StackAccessException &sae)
+    {
+    cerr << "Not enough images on the stack for the requested command." << endl;
+    cerr << "  Requested command: " << lastCommand << endl;
+    cerr << "  Note: C3D requires image operands to precede commands." << endl;
+    cerr << "        message can be caused by incorrect usage, such as" << endl;
+    cerr << "           c3d -command image.nii " << endl;
+    cerr << "        instead of " << endl;
+    cerr << "           c3d image.nii -command" << endl;
+    return -1;
+    }
+  
   catch (std::exception &exc)
     {
     cerr << "Exception caught of type " << typeid(exc).name() << endl;
-    cerr << "What: " << exc.what() << endl;
+    if(lastCommand.size())
+      cerr << "  When processing command: " << lastCommand << endl;
+    cerr << "  Exception detail: " << exc.what() << endl;
     return -1;
     }
   catch (...)
     {
     cerr << "Unknown exception caught by convert3d" << endl;
+    if(lastCommand.size())
+      cerr << "  When processing command: " << lastCommand << endl;
     return -1;
     }
 }
@@ -2041,7 +2065,7 @@ ImageConverter<TPixel, VDim>
   // a state variable to repeat a range of command a bunch of times
 
   // Back up the current stack
-  vector<ImagePointer> in_stack = m_ImageStack, out_stack;
+  ImageStack<ImageType> in_stack = m_ImageStack, out_stack;
 
   // Print out what's going on
   *verbose << "Repeating commands for all " << in_stack.size() << " images" << endl;
@@ -2096,7 +2120,7 @@ ImageConverter<TPixel, VDim>
     }
 
   // Back up the current stack
-  vector<ImagePointer> in_stack = m_ImageStack;
+  ImageStack<ImageType> in_stack = m_ImageStack;
 
   // Print out what's going on
   *verbose << "Accumulating result of binary operation for all " << in_stack.size() << " images" << endl;
