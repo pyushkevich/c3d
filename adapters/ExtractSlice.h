@@ -43,6 +43,8 @@ public:
 private:
   Converter *c;
 
+  void ExtractOneSlice(ImageType *image, unsigned int slicedir, int slicepos);
+
 };
 
 #endif

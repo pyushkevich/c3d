@@ -26,61 +26,28 @@
 #include "ExtractSlice.h"
 #include "ExtractRegion.h"
 #include <string>
+#include <sstream>
 #include <iostream>
 #include "itkExtractImageFilter.h"
 #include "itkImageFileWriter.h"
 
-
 template <class TPixel, unsigned int VDim>
 void
 ExtractSlice<TPixel, VDim>
-::operator() (string axis, char* position)
+::ExtractOneSlice(ImageType *image, unsigned int slicedir, int slicepos)
 {
-  // Check input availability
-  if(c->m_ImageStack.size() < 1)
-    throw ConvertException("No images on stack");
-
-  // Get the image
-  ImagePointer image = c->m_ImageStack.back();
-  SizeType size = image->GetBufferedRegion().GetSize();
-
-  // Process the first parameter
-  unsigned int slicedir;
-  if (!axis.compare("x") || !axis.compare("0"))
-    slicedir = 0;
-  else if (!axis.compare("y") || !axis.compare("1"))
-    slicedir = 1;
-  else if (!axis.compare("z") || !axis.compare("2"))
-    slicedir = 2;
-  else if (!axis.compare("w") || !axis.compare("3") || !axis.compare("t"))
-    slicedir = 3;
-  else
-    throw ConvertException("first parameter to -slice must be x,y,z or w");
-
-  // Process the percent parameter
-  char *pos = new char[strlen(position)];
-  strcpy(pos, position);
-  double percent_pos;
-  int slicepos;
-  std::string s( pos );
-  size_t ipos = s.rfind("%");
-  if(ipos == s.size() - 1)
-    {
-    const char *tok = strtok(pos, "%");
-    percent_pos = atof( tok );
-    slicepos = (int)(0.5 + (percent_pos / 100.0) * (size[slicedir] -1)); 
-    }
-  else
-    slicepos = atoi( pos );
-
   // Say what we are doing
-  *c->verbose << "Extracting slice " << pos << " along " << axis 
+  static const char axis[] = "XYZW";
+  *c->verbose << "Extracting slice " << slicepos << " along " << axis[slicedir] 
     << " axis in image #" << c->m_ImageStack.size()-1 << endl;
 
   // Use the extractor to extract the actual region
   RegionType rslice = image->GetBufferedRegion();
   rslice.SetSize(slicedir, 1);
   rslice.SetIndex(slicedir, slicepos);
+
+  // Push the big image back on the stack 
+  c->m_ImageStack.push_back(image);
 
   ExtractRegion<TPixel, VDim> extractor(c);
   extractor(rslice);
@@ -133,8 +100,102 @@ ExtractSlice<TPixel, VDim>
 
   c->m_ImageStack.pop_back();
   c->m_ImageStack.push_back(imnew);
+}
 
-  delete pos;
+template <class TPixel, unsigned int VDim>
+void
+ExtractSlice<TPixel, VDim>
+::operator() (string axis, char* position)
+{
+  // Check input availability
+  if(c->m_ImageStack.size() < 1)
+    throw ConvertException("No images on stack");
+
+  // Get the image
+  ImagePointer image = c->m_ImageStack.back();
+  SizeType size = image->GetBufferedRegion().GetSize();
+
+  // Process the first parameter
+  unsigned int slicedir;
+  if (!axis.compare("x") || !axis.compare("0"))
+    slicedir = 0;
+  else if (!axis.compare("y") || !axis.compare("1"))
+    slicedir = 1;
+  else if (!axis.compare("z") || !axis.compare("2"))
+    slicedir = 2;
+  else if (!axis.compare("w") || !axis.compare("3") || !axis.compare("t"))
+    slicedir = 3;
+  else
+    throw ConvertException("first parameter to -slice must be x,y,z or w");
+
+  // Now determine the pattern of the second parameter. Allowed formats are
+  // 1. 15      // slice 15 (0-based indexing)
+  // 2. -1      // slice N-1
+  // 3. 20%     // slice at 20% of the stack
+  // 4. 12:-4   // range, every slice
+  // 5. 12:3:-4 // range, every third slice
+  
+  // Split the string on the ':'
+  std::string piece;
+  std::stringstream source(position);
+  std::vector<int> pos_list;
+  while(std::getline(source, piece, ':'))
+    {
+    int slicepos;
+
+    // Process the percentage
+    if(piece[piece.size()-1] == '%')
+      {
+      piece = piece.substr(0, piece.size()-1);
+      double percent_pos = atof(piece.c_str());
+      slicepos = (int)(0.5 + (percent_pos / 100.0) * (size[slicedir] -1));
+      }
+    else
+      {
+      slicepos = atoi(piece.c_str());
+      if(slicepos < 0)
+        slicepos = size[slicedir] + slicepos;
+      }
+
+    pos_list.push_back(slicepos);
+    }
+
+  // Now we have one, two or three numbers parsed
+  int pos_first, pos_step, pos_last;
+  if(pos_list.size() == 1)
+    {
+    pos_first = pos_step = pos_last = pos_list[0];
+    }
+  else if(pos_list.size() == 2)
+    {
+    pos_first = pos_list[0];
+    pos_last = pos_list[1];
+    pos_step = (pos_first <= pos_last) ? 1 : -1;
+    }
+  else if(pos_list.size() == 3)
+    {
+    pos_first = pos_list[0];
+    pos_step = pos_list[1];
+    pos_last = pos_list[2];
+    }
+
+  // Make sure all is legit
+  if(pos_first < pos_last && pos_step <= 0)
+    throw ConvertException(
+      "Wrong slice list specification %d:%d:%d for -slice command! Step should be positive.",
+      pos_first, pos_step, pos_last);
+
+  if(pos_first > pos_last && pos_step >= 0)
+    throw ConvertException(
+      "Wrong slice list specification %d:%d:%d for -slice command! Step should be negative.",
+      pos_first, pos_step, pos_last);
+
+  // Remove the image from stack
+  c->m_ImageStack.pop_back();
+
+  // Now extract each slice
+  for(int i = pos_first; i <= pos_last; i++)
+    this->ExtractOneSlice(image, slicedir, i);
 }
 
 // Invocations
