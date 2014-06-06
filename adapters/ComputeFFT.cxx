@@ -82,3 +82,4 @@ ComputeFFT<TPixel, VDim>
 // Invocations
 template class ComputeFFT<double, 2>;
 template class ComputeFFT<double, 3>;
+template class ComputeFFT<double, 4>;

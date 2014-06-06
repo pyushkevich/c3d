@@ -88,3 +88,4 @@ GeneralLinearModel<TPixel, VDim>
 // Invocations
 template class GeneralLinearModel<double, 2>;
 template class GeneralLinearModel<double, 3>;
+template class GeneralLinearModel<double, 4>;

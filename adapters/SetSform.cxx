@@ -86,3 +86,4 @@ SetSform<TPixel, VDim>
 // Invocations
 template class SetSform<double, 2>;
 template class SetSform<double, 3>;
+template class SetSform<double, 4>;

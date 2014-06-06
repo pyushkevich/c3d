@@ -186,3 +186,4 @@ MRFVote<TPixel, VDim>
 // Invocations
 template class MRFVote<double, 2>;
 template class MRFVote<double, 3>;
+template class MRFVote<double, 4>;

@@ -83,3 +83,4 @@ NormalizedCrossCorrelation<TPixel, VDim>
 // Invocations
 template class NormalizedCrossCorrelation<double, 2>;
 template class NormalizedCrossCorrelation<double, 3>;
+template class NormalizedCrossCorrelation<double, 4>;

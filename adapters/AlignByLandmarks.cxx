@@ -240,3 +240,4 @@ AlignByLandmarks<TPixel, VDim>
 // Invocations
 template class AlignByLandmarks<double, 2>;
 template class AlignByLandmarks<double, 3>;
+template class AlignByLandmarks<double, 4>;

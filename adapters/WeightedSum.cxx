@@ -73,3 +73,4 @@ WeightedSum<TPixel, VDim>
 // Invocations
 template class WeightedSum<double, 2>;
 template class WeightedSum<double, 3>;
+template class WeightedSum<double, 4>;

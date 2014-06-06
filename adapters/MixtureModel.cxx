@@ -117,3 +117,4 @@ MixtureModel<TPixel, VDim>
 // Invocations
 template class MixtureModel<double, 2>;
 template class MixtureModel<double, 3>;
+template class MixtureModel<double, 4>;

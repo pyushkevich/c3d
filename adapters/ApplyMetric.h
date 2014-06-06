@@ -39,7 +39,7 @@ public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
-  typedef vnl_matrix_fixed<double, VDim+1, VDim+1> MatrixType;
+  typedef vnl_matrix<double> MatrixType;
   typedef typename itk::AffineTransform<double, VDim> TransformType;
   typedef typename TransformType::Pointer TransformPointer;
   // Interpolators

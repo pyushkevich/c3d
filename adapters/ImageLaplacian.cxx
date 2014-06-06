@@ -52,3 +52,4 @@ ImageLaplacian<TPixel, VDim>
 // Invocations
 template class ImageLaplacian<double, 2>;
 template class ImageLaplacian<double, 3>;
+template class ImageLaplacian<double, 4>;

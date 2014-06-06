@@ -75,3 +75,4 @@ PadImage<TPixel, VDim>
 // Invocations
 template class PadImage<double, 2>;
 template class PadImage<double, 3>;
+template class PadImage<double, 4>;

@@ -137,3 +137,4 @@ LandmarksToSpheres<TPixel, VDim>
 // Invocations
 template class LandmarksToSpheres<double, 2>;
 template class LandmarksToSpheres<double, 3>;
+template class LandmarksToSpheres<double, 4>;

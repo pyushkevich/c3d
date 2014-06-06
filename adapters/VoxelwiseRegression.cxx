@@ -70,3 +70,4 @@ VoxelwiseRegression<TPixel, VDim>
 // Invocations
 template class VoxelwiseRegression<double, 2>;
 template class VoxelwiseRegression<double, 3>;
+template class VoxelwiseRegression<double, 4>;

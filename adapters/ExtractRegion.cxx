@@ -58,3 +58,4 @@ ExtractRegion<TPixel, VDim>
 // Invocations
 template class ExtractRegion<double, 2>;
 template class ExtractRegion<double, 3>;
+template class ExtractRegion<double, 4>;

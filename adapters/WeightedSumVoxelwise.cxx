@@ -71,3 +71,4 @@ WeightedSumVoxelwise<TPixel, VDim>
 // Invocations
 template class WeightedSumVoxelwise<double, 2>;
 template class WeightedSumVoxelwise<double, 3>;
+template class WeightedSumVoxelwise<double, 4>;

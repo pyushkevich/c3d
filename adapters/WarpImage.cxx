@@ -103,3 +103,4 @@ WarpImage<TPixel, VDim>
 // Invocations
 template class WarpImage<double, 2>;
 template class WarpImage<double, 3>;
+template class WarpImage<double, 4>;

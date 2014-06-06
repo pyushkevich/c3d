@@ -61,3 +61,4 @@ AntiAliasImage<TPixel, VDim>
 // Invocations
 template class AntiAliasImage<double, 2>;
 template class AntiAliasImage<double, 3>;
+template class AntiAliasImage<double, 4>;

@@ -93,3 +93,4 @@ ScalarToRGB<TPixel, VDim>
 // Invocations
 template class ScalarToRGB<double, 2>;
 template class ScalarToRGB<double, 3>;
+template class ScalarToRGB<double, 4>;

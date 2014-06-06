@@ -82,3 +82,4 @@ SplitMultilabelImage<TPixel, VDim>
 // Invocations
 template class SplitMultilabelImage<double, 2>;
 template class SplitMultilabelImage<double, 3>;
+template class SplitMultilabelImage<double, 4>;

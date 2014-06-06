@@ -63,3 +63,4 @@ MultiplyImages<TPixel, VDim>
 // Invocations
 template class MultiplyImages<double, 2>;
 template class MultiplyImages<double, 3>;
+template class MultiplyImages<double, 4>;

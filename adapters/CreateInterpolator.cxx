@@ -93,3 +93,4 @@ CreateInterpolator<TPixel, VDim>
 // Invocations
 template class CreateInterpolator<double, 2>;
 template class CreateInterpolator<double, 3>;
+template class CreateInterpolator<double, 4>;

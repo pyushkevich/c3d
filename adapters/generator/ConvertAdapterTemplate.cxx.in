@@ -44,3 +44,4 @@ void
 // Invocations
 template class %fn%<double, 2>;
 template class %fn%<double, 3>;
+template class %fn%<double, 4>;

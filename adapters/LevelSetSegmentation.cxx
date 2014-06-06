@@ -178,3 +178,4 @@ LevelSetSegmentation<TPixel, VDim>
 // Invocations
 template class LevelSetSegmentation<double, 2>;
 template class LevelSetSegmentation<double, 3>;
+template class LevelSetSegmentation<double, 4>;

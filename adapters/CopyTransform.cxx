@@ -64,3 +64,4 @@ CopyTransform<TPixel, VDim>
 // Invocations
 template class CopyTransform<double, 2>;
 template class CopyTransform<double, 3>;
+template class CopyTransform<double, 4>;

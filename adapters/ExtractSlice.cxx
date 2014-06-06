@@ -46,14 +46,16 @@ ExtractSlice<TPixel, VDim>
 
   // Process the first parameter
   unsigned int slicedir;
-  if (!axis.compare("x"))
+  if (!axis.compare("x") || !axis.compare("0"))
     slicedir = 0;
-  else if (!axis.compare("y"))
+  else if (!axis.compare("y") || !axis.compare("1"))
     slicedir = 1;
-  else if (!axis.compare("z"))
+  else if (!axis.compare("z") || !axis.compare("2"))
     slicedir = 2;
+  else if (!axis.compare("w") || !axis.compare("3") || !axis.compare("t"))
+    slicedir = 3;
   else
-    throw ConvertException("first parameter to -slice must be x,y or z");
+    throw ConvertException("first parameter to -slice must be x,y,z or w");
 
   // Process the percent parameter
   char *pos = new char[strlen(position)];
@@ -137,5 +139,6 @@ ExtractSlice<TPixel, VDim>
 
 // Invocations
 template class ExtractSlice<double, 3>;
+template class ExtractSlice<double, 4>;
 template class ExtractSlice<double, 2>;
 

@@ -87,3 +87,4 @@ OverlayLabelImage<TPixel, VDim>
 // Invocations
 template class OverlayLabelImage<double, 2>;
 template class OverlayLabelImage<double, 3>;
+template class OverlayLabelImage<double, 4>;

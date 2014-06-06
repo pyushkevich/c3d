@@ -56,3 +56,4 @@ ThresholdImage<TPixel, VDim>
 // Invocations
 template class ThresholdImage<double, 2>;
 template class ThresholdImage<double, 3>;
+template class ThresholdImage<double, 4>;

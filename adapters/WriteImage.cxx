@@ -237,3 +237,4 @@ WriteImage<TPixel, VDim>
 // Invocations
 template class WriteImage<double, 2>;
 template class WriteImage<double, 3>;
+template class WriteImage<double, 4>;

@@ -129,3 +129,4 @@ ReadImage<TPixel, VDim>
 // Invocations
 template class ReadImage<double, 2>;
 template class ReadImage<double, 3>;
+template class ReadImage<double, 4>;

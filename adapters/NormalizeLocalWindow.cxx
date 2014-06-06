@@ -117,3 +117,4 @@ NormalizeLocalWindow<TPixel, VDim>
 // Invocations
 template class NormalizeLocalWindow<double, 2>;
 template class NormalizeLocalWindow<double, 3>;
+template class NormalizeLocalWindow<double, 4>;

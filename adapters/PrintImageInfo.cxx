@@ -257,3 +257,4 @@ PrintImageInfo<TPixel, VDim>
 // Invocations
 template class PrintImageInfo<double, 2>;
 template class PrintImageInfo<double, 3>;
+template class PrintImageInfo<double, 4>;

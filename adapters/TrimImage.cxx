@@ -101,3 +101,4 @@ TrimImage<TPixel, VDim>
 // Invocations
 template class TrimImage<double, 2>;
 template class TrimImage<double, 3>;
+template class TrimImage<double, 4>;

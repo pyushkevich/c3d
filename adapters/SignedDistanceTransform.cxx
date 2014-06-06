@@ -65,3 +65,4 @@ SignedDistanceTransform<TPixel, VDim>
 // Invocations
 template class SignedDistanceTransform<double, 2>;
 template class SignedDistanceTransform<double, 3>;
+template class SignedDistanceTransform<double, 4>;

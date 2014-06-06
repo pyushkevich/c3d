@@ -102,4 +102,5 @@ LabelStatistics<TPixel, VDim>
 // Invocations
 template class LabelStatistics<double, 2>;
 template class LabelStatistics<double, 3>;
+template class LabelStatistics<double, 4>;
 

@@ -128,3 +128,4 @@ BiasFieldCorrection<TPixel, VDim>
 // Invocations
 template class BiasFieldCorrection<double, 2>;
 template class BiasFieldCorrection<double, 3>;
+template class BiasFieldCorrection<double, 4>;

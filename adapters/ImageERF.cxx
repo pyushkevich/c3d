@@ -55,3 +55,4 @@ ImageERF<TPixel, VDim>
 // Invocations
 template class ImageERF<double, 2>;
 template class ImageERF<double, 3>;
+template class ImageERF<double, 4>;

@@ -60,3 +60,4 @@ ReciprocalImage<TPixel, VDim>
 // Invocations
 template class ReciprocalImage<double, 2>;
 template class ReciprocalImage<double, 3>;
+template class ReciprocalImage<double, 4>;

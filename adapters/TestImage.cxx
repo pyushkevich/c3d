@@ -91,3 +91,4 @@ TestImage<TPixel, VDim>
 // Invocations
 template class TestImage<double, 2>;
 template class TestImage<double, 3>;
+template class TestImage<double, 4>;

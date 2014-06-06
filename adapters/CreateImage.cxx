@@ -56,3 +56,4 @@ CreateImage<TPixel, VDim>
 // Invocations
 template class CreateImage<double, 2>;
 template class CreateImage<double, 3>;
+template class CreateImage<double, 4>;

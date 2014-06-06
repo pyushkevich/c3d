@@ -217,3 +217,4 @@ BiasFieldCorrectionN4<TPixel, VDim>
 // Invocations
 template class BiasFieldCorrectionN4<double, 2>;
 template class BiasFieldCorrectionN4<double, 3>;
+template class BiasFieldCorrectionN4<double, 4>;

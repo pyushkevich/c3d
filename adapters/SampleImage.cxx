@@ -57,3 +57,4 @@ SampleImage<TPixel, VDim>
 // Invocations
 template class SampleImage<double, 2>;
 template class SampleImage<double, 3>;
+template class SampleImage<double, 4>;

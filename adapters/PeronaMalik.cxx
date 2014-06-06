@@ -54,3 +54,4 @@ PeronaMalik<TPixel, VDim>
 // Invocations
 template class PeronaMalik<double, 2>;
 template class PeronaMalik<double, 3>;
+template class PeronaMalik<double, 4>;

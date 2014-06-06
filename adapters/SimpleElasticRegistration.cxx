@@ -730,3 +730,4 @@ SimpleElasticRegistration<TPixel, VDim>
 // Invocations
 template class SimpleElasticRegistration<double, 2>;
 template class SimpleElasticRegistration<double, 3>;
+template class SimpleElasticRegistration<double, 4>;

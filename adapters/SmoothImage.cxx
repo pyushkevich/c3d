@@ -58,4 +58,5 @@ SmoothImage<TPixel, VDim>
 // Invocations
 template class SmoothImage<double, 2>;
 template class SmoothImage<double, 3>;
+template class SmoothImage<double, 4>;
 

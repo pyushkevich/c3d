@@ -83,3 +83,4 @@ Rank<TPixel, VDim>
 // Invocations
 template class Rank<double, 2>;
 template class Rank<double, 3>;
+template class Rank<double, 4>;

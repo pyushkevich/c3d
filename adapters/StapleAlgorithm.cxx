@@ -68,3 +68,4 @@ StapleAlgorithm<TPixel, VDim>
 // Invocations
 template class StapleAlgorithm<double, 2>;
 template class StapleAlgorithm<double, 3>;
+template class StapleAlgorithm<double, 4>;

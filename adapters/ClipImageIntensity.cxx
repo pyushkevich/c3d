@@ -52,3 +52,4 @@ ClipImageIntensity<TPixel, VDim>
 // Invocations
 template class ClipImageIntensity<double, 2>;
 template class ClipImageIntensity<double, 3>;
+template class ClipImageIntensity<double, 4>;

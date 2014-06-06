@@ -45,3 +45,4 @@ UnaryMathOperation<TPixel, VDim>
 // Invocations
 template class UnaryMathOperation<double, 2>;
 template class UnaryMathOperation<double, 3>;
+template class UnaryMathOperation<double, 4>;

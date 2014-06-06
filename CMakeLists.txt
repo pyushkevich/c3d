@@ -131,7 +131,10 @@ ADD_EXECUTABLE(c3d Convert3DMain.cxx)
 
 ADD_EXECUTABLE(c2d Convert2DMain.cxx)
 
-INSTALL(TARGETS c3d c2d 
+ADD_EXECUTABLE(c4d Convert4DMain.cxx)
+
+
+INSTALL(TARGETS c3d c2d c4d
         RUNTIME DESTINATION bin)
 
 INCLUDE(cmake/Package.cmake)

@@ -2261,4 +2261,5 @@ ImageConverter<TPixel, VDim>
 
 template class ImageConverter<double, 2>;
 template class ImageConverter<double, 3>;
+template class ImageConverter<double, 4>;
 

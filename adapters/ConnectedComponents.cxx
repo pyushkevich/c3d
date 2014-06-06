@@ -92,3 +92,4 @@ ConnectedComponents<TPixel, VDim>
 // Invocations
 template class ConnectedComponents<double, 2>;
 template class ConnectedComponents<double, 3>;
+template class ConnectedComponents<double, 4>;

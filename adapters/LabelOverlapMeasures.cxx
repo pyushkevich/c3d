@@ -132,3 +132,4 @@ LabelOverlapMeasures<TPixel, VDim>
 // Invocations
 template class LabelOverlapMeasures<double, 2>;
 template class LabelOverlapMeasures<double, 3>;
+template class LabelOverlapMeasures<double, 4>;

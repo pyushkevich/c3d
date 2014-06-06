@@ -80,3 +80,4 @@ CoordinateMap<TPixel, VDim>
 // Invocations
 template class CoordinateMap<double, 2>;
 template class CoordinateMap<double, 3>;
+template class CoordinateMap<double, 4>;

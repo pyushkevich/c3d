@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   C3D: Command-line companion tool to ITK-SNAP
-  Module:    UpdateMetadataKey.cxx
+  Module:    Convert3DMain.cxx
   Language:  C++
   Website:   itksnap.org/c3d
   Copyright (c) 2014 Paul A. Yushkevich
@@ -23,31 +23,16 @@
 
 =========================================================================*/
 
-#include "UpdateMetadataKey.h"
-#include "itkMetaDataDictionary.h"
-#include "itkMetaDataObject.h"
+#include "ConvertImageND.h"
+#include "itkVoxBoCUBImageIOFactory.h"
+#include "itkPovRayDF3ImageIOFactory.h"
 
-template <class TPixel, unsigned int VDim>
-void
-UpdateMetadataKey<TPixel, VDim>
-::operator() (const char *key, const char *value)
+int main(int argc, char *argv[])
 {
-  // Get image from stack
-  ImagePointer img = c->m_ImageStack.back();
+  // Load the ITK factories
+  itk::ObjectFactoryBase::RegisterFactory(itk::VoxBoCUBImageIOFactory::New());
+  itk::ObjectFactoryBase::RegisterFactory(itk::PovRayDF3ImageIOFactory::New());
 
-  // Report what we are doing
-  *c->verbose << "Updating metadata in #" << c->m_ImageStack.size() << endl;
-  *c->verbose << "  Setting key " << key << " to value " << value << endl;
-
-  // Update the metadata values
-  itk::MetaDataDictionary &mdd = img->GetMetaDataDictionary();
-  typedef itk::MetaDataObject<string> StringMetaData;
-  typename StringMetaData::Pointer mdval = StringMetaData::New();
-  mdval->SetMetaDataObjectValue(value);
-  mdd[key] = mdval;
+  ImageConverter<double, 4> convert;
+  return convert.ProcessCommandLine(argc, argv);
 }
-
-// Invocations
-template class UpdateMetadataKey<double, 2>;
-template class UpdateMetadataKey<double, 3>;
-template class UpdateMetadataKey<double, 4>;

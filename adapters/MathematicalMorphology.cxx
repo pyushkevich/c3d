@@ -78,3 +78,4 @@ MathematicalMorphology<TPixel, VDim>
 // Invocations
 template class MathematicalMorphology<double, 2>;
 template class MathematicalMorphology<double, 3>;
+template class MathematicalMorphology<double, 4>;

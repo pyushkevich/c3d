@@ -60,3 +60,4 @@ ScaleShiftImage<TPixel, VDim>
 // Invocations
 template class ScaleShiftImage<double, 2>;
 template class ScaleShiftImage<double, 3>;
+template class ScaleShiftImage<double, 4>;

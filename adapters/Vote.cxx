@@ -101,3 +101,4 @@ Vote<TPixel, VDim>
 // Invocations
 template class Vote<double, 2>;
 template class Vote<double, 3>;
+template class Vote<double, 4>;

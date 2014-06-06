@@ -84,3 +84,4 @@ HessianObjectness<TPixel, VDim>
 // Invocations
 template class HessianObjectness<double, 2>;
 template class HessianObjectness<double, 3>;
+template class HessianObjectness<double, 4>;

@@ -152,3 +152,4 @@ WarpLabelImage<TPixel, VDim>
 // Invocations
 template class WarpLabelImage<double, 2>;
 template class WarpLabelImage<double, 3>;
+template class WarpLabelImage<double, 4>;

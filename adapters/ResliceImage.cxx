@@ -97,22 +97,23 @@ ResliceImage<TPixel, VDim>
     {
     // Read the matrix
     itk::Matrix<double,VDim+1,VDim+1> matrix;
-    itk::Matrix<double,VDim,VDim> amat;
-    itk::Vector<double, VDim> aoff;
-
     ReadMatrix<VDim>(fn_tran.c_str(), matrix);
-    amat.GetVnlMatrix().update(
-      matrix.GetVnlMatrix().extract(VDim, VDim));
-    aoff.GetVnlVector().update(
-      matrix.GetVnlMatrix().get_column(VDim).extract(VDim));
+
+    // Get the transform matrix and the offset vector
+    vnl_matrix<double> A_ras = matrix.GetVnlMatrix().extract(VDim, VDim); 
+    vnl_vector<double> b_ras = matrix.GetVnlMatrix().extract(VDim, 1, 0, VDim).get_column(0);
 
     // Extrernal matrices are assumed to be RAS to RAS, so we must convert to LPS to LPS
     vnl_vector<double> v_lps_to_ras(VDim, 1.0);
     v_lps_to_ras[0] = v_lps_to_ras[1] = -1.0;
     vnl_diag_matrix<double> m_lps_to_ras(v_lps_to_ras);
-    vnl_matrix<double> mold = amat.GetVnlMatrix();
-    amat.GetVnlMatrix().update(m_lps_to_ras * mold * m_lps_to_ras);
-    aoff.GetVnlVector().update(m_lps_to_ras * aoff.GetVnlVector());
+    vnl_matrix<double> A_lps = m_lps_to_ras * A_ras * m_lps_to_ras;
+    vnl_vector<double> b_lps = m_lps_to_ras * b_ras;
+
+    // Stick these into the itk matrix/vector
+    itk::Matrix<double,VDim,VDim> amat(A_lps);
+    itk::Vector<double, VDim> aoff;
+    aoff.SetVnlVector(b_lps);
 
     // Put the values in the transform
     atran->SetMatrix(amat);
@@ -157,8 +158,8 @@ ResliceImage<TPixel, VDim>
   *c->verbose << "  Interpolation method: " << c->m_Interpolation << endl;
   *c->verbose << "  Background intensity: " << c->m_Background << endl;
   *c->verbose << "  Affine Transform: " << endl;
-  vnl_matrix_fixed<double, VDim+1, VDim+1> amat(0.0);
-  vnl_vector_fixed<double, VDim+1> atmp(1.0);
+  vnl_matrix<double> amat(VDim+1, VDim+1, 0); 
+  vnl_vector<double> atmp(VDim+1, 0); 
   amat.update(atran->GetMatrix().GetVnlMatrix(), 0, 0);
   atmp.update(atran->GetOffset().GetVnlVector(), 0);
   amat.set_column(VDim, atmp);
@@ -178,3 +179,4 @@ ResliceImage<TPixel, VDim>
 // Invocations
 template class ResliceImage<double, 2>;
 template class ResliceImage<double, 3>;
+template class ResliceImage<double, 4>;

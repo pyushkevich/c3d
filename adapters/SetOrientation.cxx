@@ -83,3 +83,4 @@ SetOrientation<TPixel, VDim>
 // Invocations
 template class SetOrientation<double, 2>;
 template class SetOrientation<double, 3>;
+template class SetOrientation<double, 4>;

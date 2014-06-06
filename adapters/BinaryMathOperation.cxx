@@ -92,3 +92,4 @@ BinaryMathOperation<TPixel, VDim>
 // Invocations
 template class BinaryMathOperation<double, 2>;
 template class BinaryMathOperation<double, 3>;
+template class BinaryMathOperation<double, 4>;

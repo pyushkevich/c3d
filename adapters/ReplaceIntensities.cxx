@@ -76,3 +76,4 @@ ReplaceIntensities<TPixel, VDim>
 // Invocations
 template class ReplaceIntensities<double, 2>;
 template class ReplaceIntensities<double, 3>;
+template class ReplaceIntensities<double, 4>;

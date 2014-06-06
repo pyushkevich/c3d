@@ -94,3 +94,4 @@ ComputeOverlaps<TPixel, VDim>
 // Invocations
 template class ComputeOverlaps<double, 2>;
 template class ComputeOverlaps<double, 3>;
+template class ComputeOverlaps<double, 4>;

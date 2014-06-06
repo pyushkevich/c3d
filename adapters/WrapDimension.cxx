@@ -87,3 +87,4 @@ WrapDimension<TPixel, VDim>
 // Invocations
 template class WrapDimension<double, 2>;
 template class WrapDimension<double, 3>;
+template class WrapDimension<double, 4>;

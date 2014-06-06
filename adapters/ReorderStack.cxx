@@ -59,3 +59,4 @@ ReorderStack<TPixel, VDim>
 // Invocations
 template class ReorderStack<double, 2>;
 template class ReorderStack<double, 3>;
+template class ReorderStack<double, 4>;

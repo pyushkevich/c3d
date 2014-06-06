@@ -65,3 +65,4 @@ BinaryImageCentroid<TPixel, VDim>
 // Invocations
 template class BinaryImageCentroid<double, 2>;
 template class BinaryImageCentroid<double, 3>;
+template class BinaryImageCentroid<double, 4>;

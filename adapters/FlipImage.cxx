@@ -62,3 +62,4 @@ FlipImage<TPixel, VDim>
 // Invocations
 template class FlipImage<double, 2>;
 template class FlipImage<double, 3>;
+template class FlipImage<double, 4>;

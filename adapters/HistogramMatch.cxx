@@ -66,3 +66,4 @@ HistogramMatch<TPixel, VDim>
 // Invocations
 template class HistogramMatch<double, 2>;
 template class HistogramMatch<double, 3>;
+template class HistogramMatch<double, 4>;

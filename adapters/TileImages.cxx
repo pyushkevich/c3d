@@ -47,21 +47,27 @@ TileImages<TPixel, VDim>
   // 2x2x0 which matches the input of the tile filter
   typename TileFilterType::LayoutArrayType loArray;
   
-  if(tileParam == "x" || tileParam == "X")
+  if(tileParam == "x" || tileParam == "X" || tileParam == "0")
     {
     loArray.Fill(1);
     loArray[0] = c->m_ImageStack.size();
     }
-  else if(tileParam == "y" || tileParam == "Y")
+  else if(tileParam == "y" || tileParam == "Y" || tileParam == "1")
     {
     loArray.Fill(1);
     loArray[1] = c->m_ImageStack.size();
     }
-  else if(tileParam == "z" || tileParam == "Z")
+  else if(tileParam == "z" || tileParam == "Z" || tileParam == "2")
     {
     if(VDim < 3) throw ConvertException("Can not tile in z-dimension using c2d, use c3d");
     loArray.Fill(1);
     loArray[2] = c->m_ImageStack.size();
+    }
+  else if(tileParam == "w" || tileParam == "W" || tileParam == "t" || tileParam == "T" || tileParam == "3")
+    {
+    if(VDim < 4) throw ConvertException("Can not tile in w-dimension using c3d, use c4d");
+    loArray.Fill(1);
+    loArray[3] = c->m_ImageStack.size();
     }
   else
     {
@@ -85,3 +91,4 @@ TileImages<TPixel, VDim>
 // Invocations
 template class TileImages<double, 2>;
 template class TileImages<double, 3>;
+template class TileImages<double, 4>;

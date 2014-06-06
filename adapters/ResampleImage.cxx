@@ -87,3 +87,4 @@ ResampleImage<TPixel, VDim>
 // Invocations
 template class ResampleImage<double, 2>;
 template class ResampleImage<double, 3>;
+template class ResampleImage<double, 4>;

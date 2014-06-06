@@ -55,3 +55,4 @@ BinaryHoleFill<TPixel, VDim>
 // Invocations
 template class BinaryHoleFill<double, 2>;
 template class BinaryHoleFill<double, 3>;
+template class BinaryHoleFill<double, 4>;

@@ -62,3 +62,4 @@ AddImages<TPixel, VDim>
 // Invocations
 template class AddImages<double, 2>;
 template class AddImages<double, 3>;
+template class AddImages<double, 4>;
