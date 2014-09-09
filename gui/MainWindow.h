@@ -27,6 +27,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QProcess>
 #include <QFileSystemModel>
 
 namespace Ui {
@@ -34,6 +35,8 @@ class MainWindow;
 }
 
 class QListView;
+class HistoryDialog;
+class SettingsDialog;
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +45,11 @@ class MainWindow : public QMainWindow
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
+
+public slots:
+
+  void onCommandReceive(QString command);
+  void onImageViewRequested(QString filename);
 
 private slots:
   void on_btnChangeDir_clicked();
@@ -52,14 +60,26 @@ private slots:
   void onProcessFinished(int rc);
   void onProcessStandardOutput();
   void onProcessStandardError();
+  void onProcessFailed(QProcess::ProcessError errorCode);
 
   void onFileListDoubleClick(const QModelIndex &index);
 
+  void on_btnClear_clicked();
+
+  void on_btnHistory_clicked();
+
+  void on_actionPreferences_triggered();
+
+protected:
 
 private:
   Ui::MainWindow *ui;
   QFileSystemModel *m_FileSystemModel;
   QListView *m_CurrentDirView;
+  void setupSearchPaths();
+
+  HistoryDialog *m_History;
+  SettingsDialog *m_Settings;
 };
 
 #endif // MAINWINDOW_H

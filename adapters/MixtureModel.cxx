@@ -28,7 +28,7 @@
 #include "itkImageToListSampleAdaptor.h"
 #include "itkGaussianMixtureModelComponent.h"
 #include "itkExpectationMaximizationMixtureModelEstimator.h"
-#include "itkScalarToArrayCastImageFilter.h"
+#include "itkComposeImageFilter.h"
 
 using namespace itk;
 using namespace itk::Statistics;
@@ -45,8 +45,7 @@ MixtureModel<TPixel, VDim>
   // creat a new image with array pixel type from the source
   typedef itk::FixedArray< TPixel, 1 > ArrayPixelType ;
   typedef itk::Image< ArrayPixelType, VDim > ArrayPixelImageType ;
-  typedef itk::ScalarToArrayCastImageFilter< ImageType, ArrayPixelImageType >
-    ImageCastFilterType ;
+  typedef itk::ComposeImageFilter< ImageType, ArrayPixelImageType > ImageCastFilterType ;
   typename ImageCastFilterType::Pointer castFilter = ImageCastFilterType::New() ;
   castFilter->SetInput(img);
   castFilter->Update() ;

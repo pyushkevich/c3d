@@ -24,7 +24,7 @@
 =========================================================================*/
 
 #ifndef __ImageStack_h_
-#define __ImageStack_H_
+#define __ImageStack_h_
 
 #include <itkSmartPointer.h>
 #include <ConvertException.h>

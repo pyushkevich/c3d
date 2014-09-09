@@ -32,6 +32,9 @@
 #include <QUrl>
 #include <QSettings>
 #include <QToolTip>
+#include <QDebug>
+#include <QMimeData>
+#include <QMouseEvent>
 
 CommandEditor::CommandEditor(QWidget *parent):
   QTextEdit(parent)
@@ -159,6 +162,24 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
       default:
         break;
       }
+    }
+
+  // Command-enter - execute command
+  if((e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return)
+     && (e->modifiers() == Qt::ControlModifier))
+    {
+    emit commandAccepted();
+    e->ignore();
+    return;
+    }
+
+  // Command-backspace - clear contents
+  if((e->key() == Qt::Key_Backspace || e->key() == Qt::Key_Delete)
+     && (e->modifiers() == Qt::ControlModifier))
+    {
+    emit clearRequested();
+    e->ignore();
+    return;
     }
 
   // Indentation. If the user pressed enter, mimic the leading spaces
@@ -330,6 +351,21 @@ void CommandEditor::focusInEvent(QFocusEvent *e)
   if (m_fileCompleter)
     m_fileCompleter->setWidget(this);
   QTextEdit::focusInEvent(e);
+}
+
+void CommandEditor::mousePressEvent(QMouseEvent *mev)
+{
+  QTextCursor cursor = this->cursorForPosition(mev->pos());
+  QString filename = this->filenameUnderCursor(cursor);
+  QFileInfo fi(QDir(QSettings().value("working_dir").toString()), filename);
+
+  // Does the file exist?
+  if(fi.exists() && fi.isFile() && fi.isReadable())
+    {
+    emit validFilenameClicked(fi.absoluteFilePath());
+    }
+  else
+    QTextEdit::mousePressEvent(mev);
 }
 
 void CommandEditor::insertFileCompletion(const QString &completion)

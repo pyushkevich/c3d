@@ -50,6 +50,11 @@ void ConvertSyntaxHighlighter::highlightBlock(const QString &text)
   fmtFile.setUnderlineStyle(QTextCharFormat::SingleUnderline);
   fmtFile.setForeground(QColor("blue"));
 
+  // Format for filenames
+  QTextCharFormat fmtExe;
+  fmtExe.setFontWeight(QFont::Bold);
+  fmtExe.setForeground(QColor("darkred"));
+
   // Find things that start with a minus sign
   // QRegExp reCommand = QRegExp("\\-\\b\\[a-z]+\\b");
   QRegExp reCommand = QRegExp("(^|\\s)(-[a-z\\-]+)(\\s|$)");
@@ -75,5 +80,12 @@ void ConvertSyntaxHighlighter::highlightBlock(const QString &text)
       setFormat(reCommand.pos(2), testfile.length(), fmtFile);
       }
     index = text.indexOf(reCommand, std::max(reCommand.pos(3), index+1));
+    }
+
+  reCommand = QRegExp("(^|\\s)([Cc][2-4][Dd])(\\s|$)");
+  index = text.indexOf(reCommand, 0);
+  if(index >= 0)
+    {
+    setFormat(reCommand.pos(2), reCommand.cap(2).length(), fmtExe);
     }
 }

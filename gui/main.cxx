@@ -25,7 +25,47 @@
 
 #include <QApplication>
 #include <QSettings>
+#include <QStandardPaths>
 #include "MainWindow.h"
+
+void findViewer()
+{
+  // Name list to look through
+  QStringList appNameList;
+
+  // Start with the one saved in the system
+  appNameList.append(QSettings().value("viewerPath").toString());
+
+#ifdef __APPLE__
+
+  // This code tries to find ITK-SNAP
+  QStringList appDirList = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+  foreach (QString path, appDirList)
+    {
+    appNameList.append(QString("%1/ITK-SNAP.app/Contents/MacOS/ITK-SNAP").arg(path));
+    appNameList.append(QString("%1/ITK-SNAP.app/Contents/MacOS/InsightSNAP").arg(path));
+    }
+
+  appNameList.append("/usr/local/bin/itksnap");
+  appNameList.append("/usr/local/bin/snap");
+  appNameList.append("/usr/bin/itksnap");
+  appNameList.append("/usr/bin/snap");
+
+#elif WINDOWS
+
+#endif
+
+  // Search through all options
+  foreach (QString prog, appNameList)
+    {
+    QFileInfo fi(prog);
+    if(fi.exists() && fi.isExecutable())
+      {
+      QSettings().setValue("viewerPath", prog);
+      break;
+      }
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -33,8 +73,13 @@ int main(int argc, char *argv[])
   QCoreApplication::setOrganizationDomain("itksnap.org");
   QCoreApplication::setApplicationName("Convert3DGUI");
 
+  // Find ITK-SNAP
+  findViewer();
+
   QApplication app(argc, argv);
   MainWindow *mwin = new MainWindow();
   mwin->show();
   app.exec();
+
+  delete mwin;
 }

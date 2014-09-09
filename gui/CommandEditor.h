@@ -52,9 +52,16 @@ public:
   bool canInsertFromMimeData(const QMimeData *source) const;
   void insertFromMimeData(const QMimeData *source);
 
+signals:
+
+  void commandAccepted();
+  void clearRequested();
+  void validFilenameClicked(QString);
+
 protected:
   void keyPressEvent(QKeyEvent *e);
   void focusInEvent(QFocusEvent *e);
+  void mousePressEvent(QMouseEvent *mev);
 
 private slots:
   void insertFileCompletion(const QString &completion);

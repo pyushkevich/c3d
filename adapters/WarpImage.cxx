@@ -25,7 +25,6 @@
 
 #include "WarpImage.h"
 #include "itkWarpImageFilter.h"
-#include "itkImageToVectorImageFilter.h"
 #include "CreateInterpolator.h"
 
 template <class TPixel, unsigned int VDim>

@@ -30,7 +30,16 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -93,6 +102,16 @@
      <widget class="QWidget" name="widget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
+        <widget class="QPushButton" name="btnHistory">
+         <property name="text">
+          <string>History</string>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+H</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -106,12 +125,22 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="btnClear">
+         <property name="text">
+          <string>Clear</string>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+Backspace</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="btnRun">
          <property name="text">
           <string>Execute</string>
          </property>
          <property name="shortcut">
-          <string>Shift+Return, Ctrl+S, Ctrl+Y</string>
+          <string>Ctrl+Return</string>
          </property>
         </widget>
        </item>
@@ -129,8 +158,20 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences ...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
