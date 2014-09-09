@@ -109,6 +109,10 @@ MainWindow::MainWindow(QWidget *parent) :
     new ConvertSyntaxHighlighter(ui->teCommand->document());
   shl->setCommandList(cmdlist);
 
+  // Highlighted needs to be aware of invalidations
+  connect(this, SIGNAL(highlightingInvalidated()),
+          shl, SLOT(rehighlight()));
+
   // Setup the filename completer in the editor
   QCompleter *fileCompleter = new QCompleter(this);
   m_FileSystemModel = new C3DFileSystemModel(fileCompleter);
@@ -133,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_CurrentDirView->setModel(m_FileSystemModel);
   m_CurrentDirView->setDragEnabled(true);
   dock->setWidget(m_CurrentDirView);
+  dock->setWindowTitle("Working Directory");
 
   connect(m_CurrentDirView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(onFileListDoubleClick(QModelIndex)));
@@ -152,6 +157,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Load the history from settings
   m_History->loadHistory();
+
+  // Add another dock for the history
+  QDockWidget *dock2 = new QDockWidget(this);
+  dock2->setAllowedAreas(Qt::RightDockWidgetArea | Qt::LeftDockWidgetArea);
+  addDockWidget(Qt::RightDockWidgetArea, dock2);
+  dock2->setWidget(m_History);
+  dock2->setWindowTitle("Command History");
+
 
   // Settings
   m_Settings = new SettingsDialog(this);
@@ -196,6 +209,10 @@ void MainWindow::onWorkingDirectoryChanged(const QString &dir)
   ui->teCommand->fileCompleter()->setCurrentRow(index.row());
 
   m_CurrentDirView->setRootIndex(index);
+
+  emit highlightingInvalidated();
+
+
 }
 
 void MainWindow::onImageViewRequested(QString filename)
@@ -289,7 +306,11 @@ void MainWindow::onProcessFinished(int rc)
   // Grab a picture of the screen
   QSize docsize(ui->teCommand->document()->idealWidth() + 2, ui->teCommand->document()->size().height() + 2);
   QImage image(docsize, QImage::Format_ARGB32);
-  image.fill(Qt::white);
+
+  if(rc == 0)
+    image.fill(Qt::white);
+  else
+    image.fill(QColor(0xff,0xee,0xee,0xff));
 
   QPaintDevice *old = ui->teCommand->document()->documentLayout()->paintDevice();
   ui->teCommand->document()->documentLayout()->setPaintDevice(&image);
@@ -301,17 +322,42 @@ void MainWindow::onProcessFinished(int rc)
   ui->teCommand->document()->documentLayout()->setPaintDevice(old);
 
   // QPixmap screen = ui->teCommand->grab(QRect(QPoint(1,1), docsize));
-
+  /*
   QRgb whitey = QColor(Qt::white).rgba();
   for(int i = 0; i < image.width(); i++)
     for(int j = 0; j < image.height(); j++)
       if(image.pixel(i,j) == whitey)
         image.setPixel(i, j, qRgba(0,0,0,0));
+        */
 
   m_History->addHistoryEntry(image, wd, command);
 
   // Disable the execute button
   ui->btnRun->setEnabled(true);
+
+  // Update highlighting
+  emit highlightingInvalidated();
+
+  // A message for the user
+  QTextCursor tc = ui->teOutput->textCursor();
+  QTextCharFormat fmt;
+  QProcess *process = qobject_cast<QProcess *>(this->sender());
+
+  if(rc == 0)
+    {
+    fmt.setForeground(QColor("blue"));
+    tc.setCharFormat(fmt);
+    tc.insertText(QString("Command %1 completed successfully").arg(process->program()));
+    }
+  else
+    {
+    fmt.setForeground(QColor("darkred"));
+    tc.setCharFormat(fmt);
+    tc.insertText(QString("Command %1 returned with error code %1").arg(process->program().arg(rc)));
+    }
+
+
+
 }
 
 void MainWindow::onProcessFailed(QProcess::ProcessError errorCode)
@@ -376,14 +422,15 @@ void MainWindow::on_btnClear_clicked()
   ui->teOutput->document()->clear();
 }
 
-void MainWindow::on_btnHistory_clicked()
-{
-  m_History->show();
-  m_History->raise();
-}
-
 void MainWindow::on_actionPreferences_triggered()
 {
   m_Settings->show();
   m_Settings->raise();
+}
+
+#include <QDesktopServices>
+
+void MainWindow::on_actionC3D_Manual_triggered()
+{
+  QDesktopServices::openUrl(QUrl("http://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Documentation"));
 }

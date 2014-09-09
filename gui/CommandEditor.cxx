@@ -94,6 +94,7 @@ void CommandEditor::setCommandList(const QStringList &cl)
   m_CommandList = cl;
 }
 
+#include <QDateTime>
 bool CommandEditor::event(QEvent *e)
 {
   if (e->type() == QEvent::ToolTip)
@@ -102,6 +103,18 @@ bool CommandEditor::event(QEvent *e)
     QTextCursor tc = this->cursorForPosition(helpEvent->pos());
     QString fn = this->filenameUnderCursor(tc);
     QString help = QString("future help for %1").arg(fn);
+
+    // Special handling for real files
+    QFileInfo fi(QDir(QSettings().value("working_dir").toString()), fn);
+    if(fi.exists() && fi.isReadable())
+      {
+      help=QString("<html><b>File: </b>%2<br><b>Directory: </b>%1<br><b>Last Modified:  </b>%3<br><br><br><i>Double click to open in a 3D viewer</i></html>")
+          .arg(fi.absolutePath())
+          .arg(fi.fileName())
+          .arg(fi.lastModified().toLocalTime().toString());
+      }
+
+
     QToolTip::showText(helpEvent->globalPos(), help);
     return true;
     }
@@ -353,7 +366,7 @@ void CommandEditor::focusInEvent(QFocusEvent *e)
   QTextEdit::focusInEvent(e);
 }
 
-void CommandEditor::mousePressEvent(QMouseEvent *mev)
+void CommandEditor::mouseDoubleClickEvent(QMouseEvent *mev)
 {
   QTextCursor cursor = this->cursorForPosition(mev->pos());
   QString filename = this->filenameUnderCursor(cursor);

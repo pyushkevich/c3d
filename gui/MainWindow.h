@@ -46,6 +46,10 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
+signals:
+
+  void highlightingInvalidated();
+
 public slots:
 
   void onCommandReceive(QString command);
@@ -66,9 +70,9 @@ private slots:
 
   void on_btnClear_clicked();
 
-  void on_btnHistory_clicked();
-
   void on_actionPreferences_triggered();
+
+  void on_actionC3D_Manual_triggered();
 
 protected:
 

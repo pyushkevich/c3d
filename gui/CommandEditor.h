@@ -61,7 +61,7 @@ signals:
 protected:
   void keyPressEvent(QKeyEvent *e);
   void focusInEvent(QFocusEvent *e);
-  void mousePressEvent(QMouseEvent *mev);
+  void mouseDoubleClickEvent(QMouseEvent *mev);
 
 private slots:
   void insertFileCompletion(const QString &completion);

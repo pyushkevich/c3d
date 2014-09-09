@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 namespace Ui {
 class HistoryDialog;
@@ -25,9 +26,12 @@ public:
 
   void saveHistory();
   void loadHistory();
+
+  virtual QSize sizeHint() const;
 protected:
 
   QStandardItemModel *m_HistoryModel;
+  QSortFilterProxyModel *m_ProxyModel;
 
 private slots:
 

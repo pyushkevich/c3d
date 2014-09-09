@@ -11,10 +11,21 @@ HistoryDialog::HistoryDialog(QWidget *parent) :
   ui->setupUi(this);
   m_HistoryModel = new QStandardItemModel(0, 1);
   m_HistoryModel->setHeaderData(0, Qt::Horizontal, "Command");
-  ui->tvHistory->setModel(m_HistoryModel);
+
+  m_ProxyModel = new QSortFilterProxyModel(this);
+  m_ProxyModel->setSourceModel(m_HistoryModel);
+  ui->tvHistory->setModel(m_ProxyModel);
+
+  m_ProxyModel->setFilterRole(Qt::UserRole+3);
+  m_ProxyModel->setSortRole(Qt::UserRole+2);
+  m_ProxyModel->setDynamicSortFilter(true);
+  m_ProxyModel->sort(0, Qt::DescendingOrder);
 
   connect(ui->tvHistory, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(onHistoryIndexDoubleClick(QModelIndex)));
+
+  connect(ui->inSearch, SIGNAL(textChanged(QString)),
+          m_ProxyModel, SLOT(setFilterWildcard(QString)));
 }
 
 HistoryDialog::~HistoryDialog()
@@ -62,6 +73,13 @@ void HistoryDialog::loadHistory()
   settings.endArray();
 }
 
+QSize HistoryDialog::sizeHint() const
+{
+  QSize hint = QWidget::sizeHint();
+  hint.setWidth(400);
+  return hint;
+}
+
 void HistoryDialog::saveHistory()
 {
   QSettings settings;
@@ -101,7 +119,7 @@ void HistoryDialog::on_btnCopy_clicked()
 
 void HistoryDialog::onHistoryIndexDoubleClick(QModelIndex mi)
 {
-  int row = mi.row();
+  int row = m_ProxyModel->mapToSource(mi).row();
   QStandardItem *item = m_HistoryModel->item(row);
   QString command = item->data(Qt::UserRole+3).toString();
   emit commandCopyRequested(command);
