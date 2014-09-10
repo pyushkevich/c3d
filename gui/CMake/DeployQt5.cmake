@@ -326,7 +326,6 @@ function(install_qt5_executable executable)
       list(APPEND libs ${installed_plugin_paths})
     endforeach()
   endif()
-
   resolve_qt5_paths(libs "")
 
   install(CODE

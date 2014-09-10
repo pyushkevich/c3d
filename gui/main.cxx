@@ -51,7 +51,31 @@ void findViewer()
   appNameList.append("/usr/bin/itksnap");
   appNameList.append("/usr/bin/snap");
 
-#elif WINDOWS
+#elif _WIN32
+
+  // Look in Program Files
+  QStringList appDirList;
+  appDirList.append(qgetenv("PROGRAMFILES").constData());
+  appDirList.append(qgetenv("PROGRAMFILES(x86)").constData());
+
+  foreach (QString path, appDirList)
+    {
+    QDir dir(path);
+    if(dir.exists())
+      {
+      dir.setNameFilters(QStringList("ITK-SNAP*"));
+      dir.setSorting(QDir::Time | QDir::Reversed);
+      QStringList matches = dir.entryList();
+      foreach(QString prog, matches)
+        {
+        appNameList.append(QString("%1\\%2\\bin\\ITK-SNAP.exe").arg(path).arg(prog));
+        }
+      }
+    }
+
+#else
+
+  // This 
 
 #endif
 
