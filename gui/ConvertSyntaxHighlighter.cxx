@@ -82,7 +82,7 @@ void ConvertSyntaxHighlighter::highlightBlock(const QString &text)
     index = text.indexOf(reCommand, std::max(reCommand.pos(3), index+1));
     }
 
-  reCommand = QRegExp("(^|\\s)([Cc][2-4][Dd])(\\s|$)");
+  reCommand = QRegExp("(^|\\s)(c[2-4]d|snap|itksnap|view)(\\s|$)", Qt::CaseInsensitive);
   index = text.indexOf(reCommand, 0);
   if(index >= 0)
     {

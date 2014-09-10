@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
   QFont font;
   font.setFamily("Courier");
   font.setFixedPitch(true);
-  font.setPointSize(12);
+  font.setPixelSize(12);
 
   ui->teCommand->setFont(font);
 
@@ -153,7 +153,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Set up the history dialog
   m_History = new HistoryDialog(this);
-  connect(m_History, SIGNAL(commandCopyRequested(QString)), this, SLOT(onCommandReceive(QString)));
+  connect(m_History, SIGNAL(commandCopyRequested(QString)),
+          this, SLOT(onCommandReceive(QString)));
+  connect(m_History, SIGNAL(changeDirectoryRequested(QString)),
+          this, SLOT(onWorkingDirectoryChanged(QString)));
 
   // Load the history from settings
   m_History->loadHistory();
@@ -252,21 +255,33 @@ void MainWindow::on_btnRun_clicked()
     command = words[0];
     words.removeFirst();
     }
+  else if(words[0].toLower() == "snap" || words[0].toLower() == "itksnap"|| words[0].toLower() == "view")
+    {
+    command = "snap";
+    words.removeFirst();
+    }
 
-#ifdef _WIN32
-  QFile fCommand(QString("c3d:%1.exe").arg(command));
-#else
-  QFile fCommand(QString("c3d:%1").arg(command));
-#endif
-
+  // Find the command
   QFileInfo fiCommand;
-  fiCommand.setFile(fCommand);
+  if(command == "snap")
+    {
+    fiCommand.setFile(QSettings().value("viewerPath").toString());
+    }
+  else
+    {
+#ifdef _WIN32
+    QFile fCommand(QString("c3d:%1.exe").arg(command));
+#else
+    QFile fCommand(QString("c3d:%1").arg(command));
+#endif
+    fiCommand.setFile(fCommand);
+    }
 
   // Verify that C3D command exists
   if(!fiCommand.exists())
     {
     QMessageBox::warning(this, "Convert3DGUI",
-                         QString("Unable to find C3D executable %1").arg(fiCommand.fileName()));
+                         QString("Unable to find executable %1").arg(fiCommand.fileName()));
     return;
     }
 

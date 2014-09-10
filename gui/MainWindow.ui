@@ -86,6 +86,9 @@
         <pointsize>12</pointsize>
        </font>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
      </widget>
     </item>
     <item>
@@ -96,7 +99,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QPlainTextEdit" name="teOutput"/>
+     <widget class="QPlainTextEdit" name="teOutput">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QWidget" name="widget" native="true">

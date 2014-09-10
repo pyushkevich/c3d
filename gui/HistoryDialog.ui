@@ -32,25 +32,13 @@
    <item>
     <widget class="QListView" name="tvHistory">
      <property name="styleSheet">
-      <string notr="true">QListView::item { border-bottom: 1px solid black; }
-
-QListView::item:alternate {
-     background: #EEEEEE;
-}
-
-QListView::item:selected {
-     background: #DDFFDD;
-}
-
-QListView::item:selected:alternate {
-     background: #CCEECC;
-}</string>
+      <string notr="true"/>
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
      <property name="alternatingRowColors">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>

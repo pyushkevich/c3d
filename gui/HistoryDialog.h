@@ -16,6 +16,7 @@ class HistoryDialog : public QDialog
 signals:
 
   void commandCopyRequested(QString);
+  void changeDirectoryRequested(QString);
 
 public:
   explicit HistoryDialog(QWidget *parent = 0);
@@ -40,6 +41,8 @@ private slots:
   void on_btnCopy_clicked();
 
   void onHistoryIndexDoubleClick(QModelIndex mi);
+
+  void onHistoryContextRequest(const QPoint &point);
 
 private:
   Ui::HistoryDialog *ui;

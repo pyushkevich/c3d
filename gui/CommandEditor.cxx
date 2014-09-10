@@ -204,13 +204,12 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
     tc.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
 
     // Indent after 'c3d ' or after spaces
-    QRegExp indentme("c[2-4]d\\s*|\\s*");
+    QRegExp indentme("(c[2-4]d|snap|itksnap|view)\\s*|\\s*", Qt::CaseInsensitive);
     QString leading = this->document()->find(indentme, tc).selectedText();
     QTextEdit::keyPressEvent(e);
-    textCursor().insertText(leading.length()," ");
+    textCursor().insertText(QString(leading.length(),' '));
     return;
     }
-
 
   // Test for the shortcut
   bool isShortcut = (!e->modifiers() && e->key() == Qt::Key_Tab);
@@ -225,7 +224,7 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
   QTextCursor tc = textCursor();
   if(tc.position() == 0)
     {
-    QTextEdit::keyPressEvent(e);
+    textCursor().insertText("    ");
     return;
     }
 
@@ -233,7 +232,7 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
   tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
   if(tc.selectedText().indexOf(QRegExp("\\s+")) >= 0)
     {
-    QTextEdit::keyPressEvent(e);
+    textCursor().insertText("    ");
     return;
     }
 

@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QDateTime>
 #include <QDebug>
+#include <QClipboard>
 
 HistoryDialog::HistoryDialog(QWidget *parent) :
     QDialog(parent),
@@ -26,6 +27,11 @@ HistoryDialog::HistoryDialog(QWidget *parent) :
 
   connect(ui->inSearch, SIGNAL(textChanged(QString)),
           m_ProxyModel, SLOT(setFilterWildcard(QString)));
+
+  // Context menu
+  ui->tvHistory->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(ui->tvHistory, SIGNAL(customContextMenuRequested(QPoint)),
+          this, SLOT(onHistoryContextRequest(QPoint)));
 }
 
 HistoryDialog::~HistoryDialog()
@@ -40,10 +46,11 @@ void HistoryDialog::addHistoryEntry(QImage &pixmap, const QString &wd, QString &
     timestamp = QDateTime::currentDateTimeUtc();
 
   QStandardItem *item = new QStandardItem();
-  item->setData(pixmap, Qt::DecorationRole);
+  // item->setData(pixmap, Qt::DecorationRole);
   item->setData(wd, Qt::UserRole+1);
   item->setData(timestamp, Qt::UserRole+2);
   item->setData(command, Qt::UserRole+3);
+  item->setData(command.simplified(), Qt::DisplayRole);
 
   QDateTime ts = timestamp.toDateTime();
 
@@ -123,4 +130,48 @@ void HistoryDialog::onHistoryIndexDoubleClick(QModelIndex mi)
   QStandardItem *item = m_HistoryModel->item(row);
   QString command = item->data(Qt::UserRole+3).toString();
   emit commandCopyRequested(command);
+}
+
+#include <QMenu>
+
+void HistoryDialog::onHistoryContextRequest(const QPoint &point)
+{
+  QPoint globalPos = ui->tvHistory->viewport()->mapToGlobal(point);
+  QModelIndex idx = ui->tvHistory->indexAt(point);
+
+
+  if(!idx.isValid())
+    return;
+
+  QMenu myMenu;
+  QAction *a_use = myMenu.addAction("Place in Editor");
+  QAction *a_copy = myMenu.addAction("Copy to Clipboard");
+  QAction *a_chdir = myMenu.addAction("Change to Command's Directory");
+  myMenu.addSeparator();
+  QAction *a_remove = myMenu.addAction("Remove from History");
+
+  QAction* action = myMenu.exec(globalPos);
+  if(!action)
+    return;
+
+  int row = m_ProxyModel->mapToSource(idx).row();
+  QStandardItem *item = m_HistoryModel->item(row);
+
+  if(action == a_chdir)
+    {
+    emit changeDirectoryRequested(item->data(Qt::UserRole+1).toString());
+    }
+  else if(action == a_remove)
+    {
+    m_HistoryModel->removeRow(row);
+    }
+  else if(action == a_use)
+    {
+    emit commandCopyRequested(item->data(Qt::UserRole+3).toString());
+    }
+  else if(action == a_copy)
+    {
+    QApplication::clipboard()->setText(item->data(Qt::UserRole+3).toString());
+    }
+
 }
