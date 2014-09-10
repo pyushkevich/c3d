@@ -202,9 +202,12 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
     // Go to the beginning of the line and count the blank characters
     QTextCursor tc = textCursor();
     tc.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
-    QString spaces = this->document()->find(QRegExp("\\s*"), tc).selectedText();
+
+    // Indent after 'c3d ' or after spaces
+    QRegExp indentme("c[2-4]d\\s*|\\s*");
+    QString leading = this->document()->find(indentme, tc).selectedText();
     QTextEdit::keyPressEvent(e);
-    textCursor().insertText(spaces);
+    textCursor().insertText(leading.length()," ");
     return;
     }
 

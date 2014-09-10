@@ -353,7 +353,7 @@ void MainWindow::onProcessFinished(int rc)
     {
     fmt.setForeground(QColor("darkred"));
     tc.setCharFormat(fmt);
-    tc.insertText(QString("Command %1 returned with error code %1").arg(process->program().arg(rc)));
+    tc.insertText(QString("Command %1 returned with error code %2").arg(process->program()).arg(rc));
     }
 
 
