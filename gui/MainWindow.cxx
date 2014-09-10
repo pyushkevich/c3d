@@ -253,7 +253,7 @@ void MainWindow::on_btnRun_clicked()
     words.removeFirst();
     }
 
-#if WINDOWS
+#ifdef _WIN32
   QFile fCommand(QString("c3d:%1.exe").arg(command));
 #else
   QFile fCommand(QString("c3d:%1").arg(command));

@@ -1,7 +1,7 @@
 PROJECT(CONVERT3D)
 
 # Nonsense for cmake 2.6 compatibility
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
@@ -199,7 +199,7 @@ IF(BUILD_GUI)
   SET(C3DGUI_BUNDLE_NAME "Convert3DGUI")
 
   # Configure the executable's sources and libraries
-  ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
+  ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
   TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} cnd_adapters cnd_driver)
 
   #--------------------------------------------------------------------------------
@@ -232,6 +232,10 @@ IF(BUILD_GUI)
 
   ELSEIF(WIN32)
 
+    # Set the PATH to include Qt libraries
+	GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
+	GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt5Core_DIR}/../../" ABSOLUTE)
+
     # Install to the bin directory
     INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION bin)
 
@@ -244,7 +248,7 @@ IF(BUILD_GUI)
 
     # On windows, we have to configure NSIS
     SET(CPACK_NSIS_INSTALLED_ICON_NAME "${C3DGUI_BUNDLE_NAME}.exe")
-    SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Convert3D GUI")
+    SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Convert3D")
     SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.itksnap.org/c3d")
     SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.itksnap.org/c3d")
 
@@ -254,10 +258,10 @@ IF(BUILD_GUI)
     ENDIF(CMAKE_CL_64)
 
     # Give it a windowsy directory name
-    SET(CPACK_PACKAGE_INSTALL_DIRECTORY "C3D GUI ${C3D_VERSION_MAJOR}.${C3D_VERSION_MINOR}")
+	SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Convert3D")
     
     # On Win32, the executable is the actual exe
-    SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME} "C3D GUI")
+    SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME} "Convert3D GUI")
 
   ELSE()
 
@@ -281,10 +285,11 @@ IF(BUILD_GUI)
 ELSE(BUILD_GUI)
 
   INSTALL(TARGETS c3d c2d c4d RUNTIME DESTINATION bin)
-  INCLUDE(cmake/Package.cmake)
 
 ENDIF(BUILD_GUI)
 
+# Do the packaging
+INCLUDE(cmake/Package.cmake)
 
 # CDash Support
 ENABLE_TESTING()

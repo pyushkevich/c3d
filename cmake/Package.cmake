@@ -3,15 +3,16 @@
 # ----------------------------------------------------------------
 
 # On Win32, we must include the redistributable
-IF(MSVC80 OR MSVC90)
+MESSAGE(WARNING "MSVC version: ${MSVC_VERSION}")
+IF(MSVC_VERSION GREATER 1399)
   FIND_PROGRAM(VCREDIST_X86 vcredist_x86.exe)
   IF(VCREDIST_X86)
     INSTALL(FILES ${VCREDIST_X86} DESTINATION bin)
     SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS 
-      "ExecWait '\\\"$INSTDIR\\\\bin\\\\vcredist_x86.exe\\\" /q:a'"
-      "CreateShortCut 'c:\\Windows\\system32\\cmd.exe' '$INSTDIR\\c3dshell.lnk'")
+      "ExecWait '\\\"$INSTDIR\\\\bin\\\\vcredist_x86.exe\\\" /passive'"
+      "CreateShortCut 'c:\\\\Windows\\\\system32\\\\cmd.exe' '$INSTDIR\\\\c3dshell.lnk'")
   ENDIF(VCREDIST_X86)
-ENDIF(MSVC80 OR MSVC90)
+ENDIF(MSVC_VERSION GREATER 1399)
 
 # Allow package generation
 SET(CPACK_PACKAGE_NAME "c3d")
@@ -20,7 +21,6 @@ SET(CPACK_PACKAGE_VENDOR "itksnap.org")
 SET(CPACK_PACKAGE_VERSION_MAJOR "${C3D_VERSION_MAJOR}")
 SET(CPACK_PACKAGE_VERSION_MINOR "${C3D_VERSION_MINOR}")
 SET(CPACK_PACKAGE_VERSION_PATCH "${C3D_VERSION_PATCH}")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "c3d-${C3D_VERSION_FULL}")
 SET(CPACK_NSIS_MODIFY_PATH ON)
 
 
