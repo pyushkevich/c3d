@@ -275,7 +275,7 @@ IF(BUILD_GUI)
     INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION bin)
 
     # On Linux, we generate forward shared executable
-    SUBDIRS(Utilities/Forwarding)
+    SUBDIRS(gui/Utilities/Forwarding)
 
     include(DeployQt5)
     install_qt5_executable(${C3DGUI_MAIN_INSTALL_DIR}/${C3DGUI_BUNDLE_NAME} "qgif")
