@@ -245,7 +245,12 @@ IF(BUILD_GUI)
 
     # Include the qt4 dependent libraries
     include(DeployQt5)
-    install_qt5_executable(bin/${C3DGUI_BUNDLE_NAME}.exe "qsqlite;qgif")
+
+    # Make sure the GIF plugin is included
+    get_property(QT_WIN_PLUGIN TARGET Qt5::QWindowsIntegrationPlugin PROPERTY LOCATION_RELEASE)
+
+    # Install with the plugin
+    install_qt5_executable(bin/${C3DGUI_BUNDLE_NAME}.exe "${QT_WIN_PLUGIN}")
 
     # On windows, we have to configure NSIS
     SET(CPACK_NSIS_INSTALLED_ICON_NAME "${C3DGUI_BUNDLE_NAME}.exe")
@@ -276,7 +281,7 @@ IF(BUILD_GUI)
     INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION bin)
 
     # On Linux, we generate forward shared executable
-    SUBDIRS(Utilities/Forwarding)
+    SUBDIRS(gui/Utilities/Forwarding)
 
     include(DeployQt5)
     install_qt5_executable(${C3DGUI_MAIN_INSTALL_DIR}/${C3DGUI_BUNDLE_NAME} "qgif")

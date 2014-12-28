@@ -1,5 +1,5 @@
 #include "SettingsDialog.h"
-#include "ui_settingsdialog.h"
+#include "ui_SettingsDialog.h"
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QSettings>
