@@ -78,6 +78,7 @@
 #include "SetOrientation.h"
 #include "SetSform.h"
 #include "SignedDistanceTransform.h"
+#include "SLICSuperVoxel.h"
 #include "SmoothImage.h"
 #include "SplitMultilabelImage.h"
 #include "StapleAlgorithm.h"
@@ -258,6 +259,7 @@ ImageConverter<TPixel, VDim>
   out << "    -spm" << endl;
   out << "    -stretch" << endl;
   out << "    -subtract" << endl;
+  out << "    -supervoxel, -sv" << endl;
   out << "    -test-image" << endl;
   out << "    -test-probe" << endl;
   out << "    -threshold, -thresh" << endl;
@@ -1381,6 +1383,15 @@ ImageConverter<TPixel, VDim>
     BinaryMathOperation<TPixel, VDim> adapter(this);
     adapter(BinaryMathOperation<TPixel, VDim>::SUBTRACT);
     return 0;
+    }
+
+  else if (cmd == "-supervoxel" || cmd == "-sv")
+    {
+    SLICSuperVoxel<TPixel,VDim> adapter(this);
+    int samples = atoi(argv[1]);
+    double m = atof(argv[2]);
+    adapter(samples, m);
+    return 2;
     }
 
   // Stretch the intensity range

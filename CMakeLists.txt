@@ -87,6 +87,7 @@ SET(SOURCES
   adapters/SetSform.cxx
   adapters/SetOrientation.cxx
   adapters/SignedDistanceTransform.cxx
+  adapters/SLICSuperVoxel.cxx
   adapters/SmoothImage.cxx
   adapters/SplitMultilabelImage.cxx
   adapters/StapleAlgorithm.cxx
