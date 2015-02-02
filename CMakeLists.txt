@@ -44,6 +44,7 @@ SET(SOURCES
   adapters/BiasFieldCorrectionN4.cxx
   adapters/BinaryImageCentroid.cxx
   adapters/BinaryMathOperation.cxx
+  adapters/Canny.cxx
   adapters/ClipImageIntensity.cxx
   adapters/ComputeFFT.cxx
   adapters/ComputeOverlaps.cxx
@@ -65,6 +66,7 @@ SET(SOURCES
   adapters/LandmarksToSpheres.cxx
   adapters/LevelSetSegmentation.cxx
   adapters/MathematicalMorphology.cxx
+  adapters/MeanFilter.cxx
   adapters/MixtureModel.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx

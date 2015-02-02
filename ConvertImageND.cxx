@@ -34,6 +34,7 @@
 #include "BinaryHoleFill.h"
 #include "BinaryImageCentroid.h"
 #include "BinaryMathOperation.h"
+#include "Canny.h"
 #include "ClipImageIntensity.h"
 #include "ComputeFFT.h"
 #include "ComputeOverlaps.h"
@@ -56,6 +57,7 @@
 #include "LandmarksToSpheres.h"
 #include "LevelSetSegmentation.h"
 #include "MathematicalMorphology.h"
+#include "MeanFilter.h"
 #include "MixtureModel.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
@@ -166,6 +168,7 @@ ImageConverter<TPixel, VDim>
   out << "    -background" << endl;
   out << "    -biascorr" << endl;
   out << "    -binarize" << endl;
+  out << "    -canny" << endl;
   out << "    -centroid" << endl;
   out << "    -clear" << endl;
   out << "    -clip" << endl;
@@ -208,6 +211,7 @@ ImageConverter<TPixel, VDim>
   out << "    -mcs, -multicomponent-split" << endl;
   out << "    -mean" << endl;
   out << "    -merge" << endl;
+  out << "    -mf, -mean-filter" << endl;
   out << "    -mi, -mutual-info" << endl;
   out << "    -min, -minimum" << endl;
   out << "    -mixture, -mixture-model" << endl;
@@ -374,6 +378,18 @@ ImageConverter<TPixel, VDim>
     adapter(m_Background, m_Background, 0.0, 1.0);
     return 0;
     }
+
+  else if (cmd == "-canny")
+    {
+    Canny<TPixel, VDim> adapter(this);
+    RealVector sigma = ReadRealSize(argv[1]);
+    double tLower = ReadIntensityValue(argv[1]);
+    double tUpper = ReadIntensityValue(argv[3]);
+
+    adapter(sigma, tLower, tUpper);
+    return 3;
+    }
+
 
   else if (cmd == "-centroid")
     {
@@ -749,6 +765,14 @@ ImageConverter<TPixel, VDim>
     Vote<TPixel, VDim> adapter(this);
     adapter(true);
     return 0;
+    }
+
+  else if (cmd == "-mf" || cmd == "-mean-filter")
+    {
+    MeanFilter<TPixel, VDim> adapter(this);
+    SizeType sz = ReadSizeVector(argv[1]);
+    adapter(sz);
+    return 1;
     }
 
   else if (cmd == "-mi" || cmd == "-mutual-info")
