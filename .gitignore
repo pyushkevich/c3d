@@ -8,6 +8,7 @@ Thumbs.db
 # Backup files
 *.bak
 *.un~
+*~
 
 # Qt Creator stuff
 CMakeLists.txt.user*

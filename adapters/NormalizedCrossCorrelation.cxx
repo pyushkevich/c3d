@@ -35,6 +35,9 @@
 
 #include "itkImageFileWriter.h"
 
+/**
+ * A class for sweep algorithm for NCC computation. This should be moved out into its own filter
+ */
 template <class TInputImage>
 class OneDimensionalInPlaceAccumulateFilter : public itk::InPlaceImageFilter<TInputImage, TInputImage>
 {
@@ -242,56 +245,6 @@ NormalizedCrossCorrelation<TPixel, VDim>
   ImagePointer i1 = c->m_ImageStack[c->m_ImageStack.size()-1];
   ImagePointer i2 = c->m_ImageStack[c->m_ImageStack.size()-2];
 
-  // Iterate over both images with a neighborhood iterator
-  typedef typename  itk::ConstNeighborhoodIterator<ImageType> Iter;
-  Iter q1(radius, i1,i1->GetBufferedRegion());
-  Iter q2(radius, i2,i2->GetBufferedRegion());
-
-  itk::TimeProbe clock1;
-  clock1.Start();
- 
-
-
-  typename ImageType::Pointer iout = ImageType::New();
-  iout->CopyInformation(i1);
-  iout->SetRegions(i1->GetBufferedRegion());
-  iout->Allocate();
-
-  Iterator it(iout, iout->GetBufferedRegion());
-
-  for(; !q1.IsAtEnd() && !q2.IsAtEnd(); ++q1, ++q2, ++it)
-    {
-    // Compute correlation at this location
-    double sumx=0.0, ssqx = 0.0; 
-    double sumy=0.0, ssqy = 0.0; 
-    double sumxy=0.0;
-    size_t n = 0;
-
-    for(size_t i = 0; i < q1.Size(); i++)
-      {
-      bool inb1,inb2;
-      double x = q1.GetPixel(i, inb1);
-      double y = q2.GetPixel(i, inb2);
-      sumx += x;
-      sumy += y;
-      sumxy += x * y;
-      ssqx += x * x;
-      ssqy += y * y;
-      n++;
-      }
-
-    double cc = (sumxy - sumx * sumy / n) / 
-      (sqrt((ssqx - sumx * sumx / n) * (ssqy - sumy * sumy / n)));
-
-    it.Set(cc);
-    }
-
-  clock1.Stop();
-  std::cout << "Total slow code: " << clock1.GetTotal() << std::endl; 
-
-  itk::TimeProbe clock2;
-  clock2.Start();
-
   // Alternative approach
   typedef itk::Vector<TPixel, 6> StatsVector;
   typedef itk::Image<StatsVector, VDim> StatsImage;
@@ -316,15 +269,6 @@ NormalizedCrossCorrelation<TPixel, VDim>
     pipeTail = flt.GetPointer();
 
     flt->Update();
-    /*
-    typedef itk::ImageFileWriter<StatsImage> W;
-    typename W::Pointer w = W::New();
-    w->SetInput(flt->GetOutput());
-    char buffer[256];
-    sprintf(buffer, "dump%02d.nii.gz", d);
-    w->SetFileName(buffer);
-    w->Update();
-    */
     }
     
   typedef StatsToNCCFunctor<StatsVector, TPixel> NCCFunctor;
@@ -340,15 +284,9 @@ NormalizedCrossCorrelation<TPixel, VDim>
   fltNCC->SetFunctor(funk);
   fltNCC->Update();
 
-
-  clock2.Stop();
-  std::cout << "Total fast code: " << clock2.GetTotal() << std::endl; 
-
-
   // Put result on stack
   c->m_ImageStack.pop_back();
   c->m_ImageStack.pop_back();
-  c->m_ImageStack.push_back(iout);
   c->m_ImageStack.push_back(fltNCC->GetOutput());
 }
 
