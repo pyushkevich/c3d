@@ -3,7 +3,6 @@
 # ----------------------------------------------------------------
 
 # On Win32, we must include the redistributable
-MESSAGE(WARNING "MSVC version: ${MSVC_VERSION}")
 IF(MSVC_VERSION GREATER 1399)
   FIND_PROGRAM(VCREDIST_X86 vcredist_x86.exe)
   IF(VCREDIST_X86)

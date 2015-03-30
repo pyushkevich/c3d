@@ -67,6 +67,11 @@ WriteImage<TPixel, VDim>
   for(size_t i = 0; i < n; i++)
     output->GetBufferPointer()[i] = (TOutPixel) (input->GetBufferPointer()[i] + xRoundFactor);
 
+  // Set the file notes for this image
+  itk::EncapsulateMetaData<string>(
+    output->GetMetaDataDictionary(),itk::ITK_FileNotes,
+        std::string("Created by Convert3D"));
+
   // Write the image out
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
   typename WriterType::Pointer writer = WriterType::New();

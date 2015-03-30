@@ -123,16 +123,21 @@ SUBDIRS(itkextras)
 ADD_LIBRARY(cnd_adapters ${SOURCES})
 ADD_LIBRARY(cnd_driver ConvertImageND.cxx)
 
-LINK_LIBRARIES(
+SET(C3D_LINK_LIBRARIES
   cnd_adapters cnd_driver ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)
 
+
 ADD_EXECUTABLE(c3d Convert3DMain.cxx)
+TARGET_LINK_LIBRARIES(c3d ${C3D_LINK_LIBRARIES})
 
 ADD_EXECUTABLE(c2d Convert2DMain.cxx)
+TARGET_LINK_LIBRARIES(c2d ${C3D_LINK_LIBRARIES})
 
 ADD_EXECUTABLE(c4d Convert4DMain.cxx)
+TARGET_LINK_LIBRARIES(c4d ${C3D_LINK_LIBRARIES})
 
 ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
+TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
 
 SET(CMDLINE_TARGETS c2d c3d c4d c3d_affine_tool)
 
@@ -203,7 +208,7 @@ IF(BUILD_GUI)
 
   # Configure the executable's sources and libraries
   ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
-  TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} cnd_adapters cnd_driver)
+  TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} ${C3D_LINK_LIBRARIES})
 
   #--------------------------------------------------------------------------------
   # Install the application
