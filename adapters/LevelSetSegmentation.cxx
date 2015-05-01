@@ -27,6 +27,7 @@
 #include "itkSegmentationLevelSetImageFilter.h"
 #include "itkSegmentationLevelSetFunction.h"
 #include "itkShiftScaleImageFilter.h"
+#include "itkImageAlgorithm.h"
 
 template<class TImageType, class TFeatureImageType = TImageType>
 class MyLevelSetFunction :
@@ -45,6 +46,15 @@ public:
 
   // New pointer
   itkNewMacro(Self);
+
+  // Calculate speed image - just copy the feature image
+  virtual void CalculateSpeedImage() 
+    {
+    itk::ImageAlgorithm::Copy( this->GetFeatureImage(),
+      this->GetSpeedImage(),
+      this->GetFeatureImage()->GetRequestedRegion(),
+      this->GetFeatureImage()->GetRequestedRegion() );
+    }
 
 protected:
 
@@ -150,6 +160,7 @@ LevelSetSegmentation<TPixel, VDim>
   fltSegment->SetFeatureImage(i2);
   fltSegment->SetNumberOfLayers(3);
   fltSegment->SetIsoSurfaceValue(0.0);
+  fltSegment->SetMaximumRMSError(1.0e-4);
   fltSegment->SetNumberOfIterations(nIter);
 
   *c->verbose << "  NIterations:    " << nIter << endl;
