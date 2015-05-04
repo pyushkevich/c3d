@@ -194,7 +194,7 @@ ExtractSlice<TPixel, VDim>
   c->m_ImageStack.pop_back();
 
   // Now extract each slice
-  for(int i = pos_first; i <= pos_last; i++)
+  for(int i = pos_first; i <= pos_last; i+=pos_step)
     this->ExtractOneSlice(image, slicedir, i);
 }
 
