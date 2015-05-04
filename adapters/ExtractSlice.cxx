@@ -153,15 +153,13 @@ ExtractSlice<TPixel, VDim>
     else
       {
       slicepos = atoi(piece.c_str());
-      if(slicepos < 0)
-        slicepos = size[slicedir] + slicepos;
       }
 
     pos_list.push_back(slicepos);
     }
 
   // Now we have one, two or three numbers parsed
-  int pos_first, pos_step, pos_last;
+  int pos_first, pos_step = 1, pos_last;
   if(pos_list.size() == 1)
     {
     pos_first = pos_step = pos_last = pos_list[0];
@@ -170,13 +168,26 @@ ExtractSlice<TPixel, VDim>
     {
     pos_first = pos_list[0];
     pos_last = pos_list[1];
-    pos_step = (pos_first <= pos_last) ? 1 : -1;
     }
   else if(pos_list.size() == 3)
     {
     pos_first = pos_list[0];
     pos_step = pos_list[1];
     pos_last = pos_list[2];
+    }
+
+  // Deal with negative values for start/stop
+  if(pos_first < 0)
+    pos_first = size[slicedir] + pos_first;
+
+  if(pos_last < 0)
+    pos_last = size[slicedir] + pos_last;
+
+  // Deal with the sign of the step
+  if((pos_first < pos_last && pos_step < 0)
+    || (pos_first > pos_last && pos_step > 0))
+    {
+    pos_step *= -1;
     }
 
   // Make sure all is legit
