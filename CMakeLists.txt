@@ -124,8 +124,7 @@ ADD_LIBRARY(cnd_adapters ${SOURCES})
 ADD_LIBRARY(cnd_driver ConvertImageND.cxx)
 
 SET(C3D_LINK_LIBRARIES
-  cnd_adapters cnd_driver ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)
-
+  cnd_driver cnd_adapters ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)
 
 ADD_EXECUTABLE(c3d Convert3DMain.cxx)
 TARGET_LINK_LIBRARIES(c3d ${C3D_LINK_LIBRARIES})

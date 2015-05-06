@@ -31,6 +31,7 @@
 #include "itkDivideImageFilter.h"
 #include "itkMinimumImageFilter.h"
 #include "itkMaximumImageFilter.h"
+#include "itkAtan2ImageFilter.h"
 
 template <class TPixel, unsigned int VDim>
 void
@@ -60,6 +61,9 @@ BinaryMathOperation<TPixel, VDim>
     {
     case ADD:
       filter = itk::AddImageFilter<ImageType, ImageType, ImageType>::New();
+      break;
+    case ATAN2:
+      filter = itk::Atan2ImageFilter<ImageType, ImageType, ImageType>::New();
       break;
     case SUBTRACT:
       filter = itk::SubtractImageFilter<ImageType, ImageType, ImageType>::New();

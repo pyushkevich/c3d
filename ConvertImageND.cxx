@@ -165,6 +165,7 @@ ImageConverter<TPixel, VDim>
   out << "    -anisotropic-diffusion, -ad" << endl;
   out << "    -antialias, -alias" << endl;
   out << "    -as, -set" << endl;
+  out << "    -atan2" << endl;
   out << "    -background" << endl;
   out << "    -biascorr" << endl;
   out << "    -binarize" << endl;
@@ -177,6 +178,7 @@ ImageConverter<TPixel, VDim>
   out << "    -coordinate-map-voxel, -cmv" << endl;
   out << "    -coordinate-map-physical, -cmp" << endl;
   out << "    -copy-transform, -ct" << endl;
+  out << "    -cos" << endl;
   out << "    -create" << endl;
   out << "    -dilate" << endl;
   out << "    -divide" << endl;
@@ -254,6 +256,7 @@ ImageConverter<TPixel, VDim>
   out << "    -set-sform" << endl;
   out << "    -shift" << endl;
   out << "    -signed-distance-transform, -sdt" << endl;
+  out << "    -sin" << endl;
   out << "    -slice" << endl;
   out << "    -smooth" << endl;
   out << "    -spacing" << endl;
@@ -350,6 +353,13 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  else if (cmd == "-atan2")
+    {
+    BinaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(BinaryMathOperation<TPixel, VDim>::ATAN2);
+    return 0;
+    }
+
   else if (cmd == "-background")
     {
     m_Background = atof(argv[1]);
@@ -443,6 +453,13 @@ ImageConverter<TPixel, VDim>
     {
     CopyTransform<TPixel, VDim> adapter(this);
     adapter();
+    return 0;
+    }
+
+  else if (cmd == "-cos")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_cos);
     return 0;
     }
 
@@ -1331,6 +1348,13 @@ ImageConverter<TPixel, VDim>
     adapter( fn_tran );
 
     return 1;
+    }
+
+  else if (cmd == "-sin")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_sin);
+    return 0;
     }
 
   else if (cmd == "-slice")

@@ -39,6 +39,7 @@ public:
   enum Operation 
     {
     ADD = 0,
+    ATAN2,
     SUBTRACT,
     MULTIPLY,
     DIVIDE,
