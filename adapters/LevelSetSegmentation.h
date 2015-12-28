@@ -28,6 +28,18 @@
 
 #include "ConvertAdapter.h"
 
+struct LevelSetParameters
+{
+  double CurvatureWeight;
+  double AdvectionWeight;
+
+  LevelSetParameters()
+    {
+    CurvatureWeight = 0.2;
+    AdvectionWeight = 0.0;
+    }
+};
+
 template<class TPixel, unsigned int VDim>
 class LevelSetSegmentation : public ConvertAdapter<TPixel, VDim>
 {
@@ -37,7 +49,7 @@ public:
 
   LevelSetSegmentation(Converter *c) : c(c) {}
 
-  void operator() (int nIter);
+  void operator() (int nIter, const LevelSetParameters &param);
 
 private:
   Converter *c;

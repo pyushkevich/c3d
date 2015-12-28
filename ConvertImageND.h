@@ -44,6 +44,9 @@ using namespace std;
 
 template <class TPixel, unsigned int VDim> class ConvertAdapter;
 
+template <class TPixel, unsigned int VDim> struct ConvertAlgorithmParameters;
+class Documentation;
+
 template<class TPixel, unsigned int VDim>
 class ImageConverter
 {
@@ -72,6 +75,7 @@ public:
   typedef itk::InterpolateImageFunction<ImageType, double> Interpolator;
   
   ImageConverter();
+  ~ImageConverter();
   int ProcessCommandLine(int argc, char *argv[]);
 
   friend class ConvertAdapter<TPixel, VDim>;
@@ -112,7 +116,9 @@ public:
   RealVector ReadRealSize(const char *vec);
   TPixel ReadIntensityValue(const char *vec);
 
-  static void PrintCommandListing(std::ostream &out);
+  void PrintManual(std::ostream &out);
+  void PrintCommandListing(std::ostream &out);
+  void PrintCommandHelp(std::ostream &out, const char *command);
 
 private:
 
@@ -169,11 +175,9 @@ public:
   // Number of iterations for various algorithms
   size_t m_Iterations;
 
-  // Root mean square error for anti-aliasing algorithm
-  double m_AntiAliasRMS;
-
-  // Level set algorithm parameters
-  double m_LevSetCurvature, m_LevSetAdvection;
+  // Parameters for various algorithms
+  typedef ConvertAlgorithmParameters<TPixel, VDim> ParameterType;
+  ParameterType *m_Param;
 
   // How % is handled for intensity specs
   enum PercentIntensityMode { PIM_QUANTILE, PIM_FGQUANTILE, PIM_RANGE };
@@ -182,6 +186,9 @@ public:
   // Verbose output stream
   std::ostringstream devnull;
   std::ostream *verbose;
+
+  // Documentation object
+  Documentation *m_Documentation;
 };
 
 #endif

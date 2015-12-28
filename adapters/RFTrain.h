@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   C3D: Command-line companion tool to ITK-SNAP
-  Module:    AntiAliasImage.h
+  Module:    %fn%.h
   Language:  C++
   Website:   itksnap.org/c3d
   Copyright (c) 2014 Paul A. Yushkevich
@@ -23,21 +23,41 @@
 
 =========================================================================*/
 
-#ifndef __AntiAliasImage_h_
-#define __AntiAliasImage_h_
+#ifndef __RFTrain_h_
+#define __RFTrain_h_
 
 #include "ConvertAdapter.h"
 
+template <class TPixel, unsigned int VDim>
+struct RFParameters
+{
+  itk::Size<VDim> patch_radius;
+  bool use_coordinate_features;
+  int tree_depth;
+  int forest_size;
+
+  RFParameters()
+    {
+    patch_radius.Fill(0);
+    use_coordinate_features = false;
+    tree_depth = 30;
+    forest_size = 50;
+    }
+};
+
 template<class TPixel, unsigned int VDim>
-class AntiAliasImage : public ConvertAdapter<TPixel, VDim>
+class RFTrain : public ConvertAdapter<TPixel, VDim>
 {
 public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
-  AntiAliasImage(Converter *c) : c(c) {}
+  // Parameters
+  typedef RFParameters<TPixel, VDim> ParametersType;
 
-  void operator() (double xIsoSurface, double rms);
+  RFTrain(Converter *c) : c(c) {}
+
+  void operator() (const char * train_file, const ParametersType &param);
 
 private:
   Converter *c;

@@ -120,7 +120,7 @@ void DumpProgress(itk::Object *object, const itk::EventObject &obj, void *client
 template <class TPixel, unsigned int VDim>
 void
 LevelSetSegmentation<TPixel, VDim>
-::operator() (int nIter)
+::operator() (int nIter, const LevelSetParameters &param)
 {
   // Check input availability
   if(c->m_ImageStack.size() < 2)
@@ -148,8 +148,8 @@ LevelSetSegmentation<TPixel, VDim>
   // Create the function
   typedef MyLevelSetFunction<UnorientedImageType> SegFunction;
   typename SegFunction::Pointer fnSegment = SegFunction::New();
-  fnSegment->SetCurvatureWeight(c->m_LevSetCurvature);
-  fnSegment->SetAdvectionWeight(c->m_LevSetAdvection);
+  fnSegment->SetCurvatureWeight(param.CurvatureWeight);
+  fnSegment->SetAdvectionWeight(param.AdvectionWeight);
   fnSegment->SetPropagationWeight(1.0);
   fnSegment->Initialize(rad);
   fnSegment->SetSpeedImage(i2);
@@ -164,8 +164,8 @@ LevelSetSegmentation<TPixel, VDim>
   fltSegment->SetNumberOfIterations(nIter);
 
   *c->verbose << "  NIterations:    " << nIter << endl;
-  *c->verbose << "  Curv Weight:    " << c->m_LevSetCurvature << endl;
-  *c->verbose << "  Adv Weight:     " << c->m_LevSetAdvection << endl;
+  *c->verbose << "  Curv Weight:    " << param.CurvatureWeight << endl;
+  *c->verbose << "  Adv Weight:     " << param.AdvectionWeight << endl;
 
   // Execute the filter
   fltSegment->Update();

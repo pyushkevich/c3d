@@ -74,6 +74,7 @@
 #include "ReplaceIntensities.h"
 #include "ResampleImage.h"
 #include "ResliceImage.h"
+#include "RFTrain.h"
 #include "SampleImage.h"
 #include "ScalarToRGB.h"
 #include "ScaleShiftImage.h"
@@ -102,10 +103,14 @@
 #include <cstring>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 // Support for regular expressions via KWSYS in ITK
 #include <itksys/RegularExpression.hxx>
+
+// Documentation manual
+#include <doc/c3d.md.h>
 
 using namespace itksys;
 
@@ -121,12 +126,355 @@ double myatof(char *str)
   return d;
 };
 
+// Helper function: trim whitespace
+// from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+//
+// trim from start
+static inline std::string &ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+  return s;
+}
+
+// trim from end
+static inline std::string &rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+  return s;
+}
+
+// trim from both ends
+static inline std::string &trim(std::string &s) {
+  return ltrim(rtrim(s));
+}
+
 std::string str_to_lower(const char *input)
 {
   std::string s(input);
   std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
   return s;
 }
+
+/**
+ * Documentation parsing system
+ */
+class Documentation
+{
+public:
+
+  struct CommandDoc
+    {
+    std::string Title;
+    std::vector<std::string> Aliases;
+    std::string ShortDesc;
+    std::string LongDesc;
+    };
+
+  struct Category
+    {
+    std::string Title;
+    std::vector<CommandDoc> Commands;
+    Category(const std::string name) : Title(name) {}
+    };
+
+  Documentation(unsigned char* rawdoc, int n_bytes);
+
+  void PrintCommandListing(std::ostream &out);
+  bool PrintCommandHelp(std::ostream &out, const std::string &command);
+  void PrintManual(std::ostream &out);
+
+private:
+
+  // Complete manual text
+  std::string m_Text;
+
+  // Headings for commands and categories
+  std::string m_CategoryHeading, m_CommandHeading;
+
+  // Grouping of commands
+  std::vector<Category> m_Categories;
+
+};
+
+Documentation::Documentation(unsigned char *rawdoc, int n_bytes)
+: m_Text((const char *) rawdoc, n_bytes)
+{
+  // Headings
+  m_CategoryHeading = "### ";
+  m_CommandHeading = "#### ";
+
+  // Configure command categories
+  m_Categories.push_back(Category("Image Processing"));
+  m_Categories.push_back(Category("Stack Manipulation"));
+  m_Categories.push_back(Category("Options"));
+
+  // Parse the file
+  std::istringstream iss(m_Text);
+
+  // Current category
+  int current_cat = -1;
+  std::string current_command = "";
+
+  // Read lines from the file
+  std::string line;
+  while(std::getline(iss, line)) 
+    {
+    if(line.find(m_CategoryHeading) == 0)
+      {
+      // This is a category - find out which one
+      current_cat = -1;
+      for(int i = 0; i < m_Categories.size(); i++)
+        {
+        if(line.find(m_Categories[i].Title) != line.npos)
+          {
+          current_cat = i;
+          current_command = "";
+          break;
+          }
+        }
+      }
+
+    else if(line.find(m_CommandHeading) == 0 && current_cat >= 0)
+      {
+      // This is a parseable command. Parse out all of its information
+      std::string rexp1 = m_CommandHeading + " *(.*): *(.*)$";
+      RegularExpression re1(rexp1.c_str());
+      if(re1.find(line))
+        {
+        CommandDoc cdoc;
+        cdoc.Title = re1.match(1);
+        cdoc.ShortDesc = re1.match(2);
+        current_command = cdoc.Title;
+
+        // Split the title into aliases
+        std::istringstream isstmp(cdoc.Title);
+        std::string cmdline;
+        while(std::getline(isstmp, cmdline, ','))
+          cdoc.Aliases.push_back(trim(cmdline));
+
+        m_Categories[current_cat].Commands.push_back(cdoc);
+        }
+      else
+        {
+        current_command = "";
+        }
+      }
+
+    else if(current_command.length() > 0 && current_cat >= 0)
+      {
+      // Line from a description
+      m_Categories[current_cat].Commands.back().LongDesc += line;
+      m_Categories[current_cat].Commands.back().LongDesc += "\n";
+      }
+    } 
+}
+
+void Documentation::PrintCommandListing(std::ostream &out)
+{
+  for(int i = 0; i < m_Categories.size(); i++)
+    {
+    out << m_Categories[i].Title << ": " << std::endl;
+    for(int j = 0; j < m_Categories[i].Commands.size(); j++)
+      {
+      out << "    ";
+      out << std::setw(32) << std::left;
+      out << m_Categories[i].Commands[j].Title;
+      out << ": ";
+      out << m_Categories[i].Commands[j].ShortDesc;
+      out << std::endl;
+      }
+    }
+}
+
+void Documentation::PrintManual(std::ostream &out)
+{
+  out << m_Text << std::endl;
+}
+
+bool Documentation::PrintCommandHelp(std::ostream &out, const std::string &command)
+{
+  // Create a search string
+  if(command.length() == 0)
+    return false;
+
+  std::string req = command[0] == '-' ? command : std::string("-") + command;
+  req = str_to_lower(req.c_str());
+
+  for(int i = 0; i < m_Categories.size(); i++)
+    {
+    for(int j = 0; j < m_Categories[i].Commands.size(); j++)
+      {
+      CommandDoc &cmd = m_Categories[i].Commands[j];
+      for(int k = 0; k < cmd.Aliases.size(); k++)
+        {
+        if(str_to_lower(cmd.Aliases[k].c_str()) == req)
+          {
+          out << std::setw(32) << std::left;
+          out << m_Categories[i].Commands[j].Title;
+          out << ": ";
+          out << m_Categories[i].Commands[j].ShortDesc;
+          out << std::endl;
+          out << cmd.LongDesc;
+          out << std::endl;
+          return true;
+          }
+        }
+      }
+    }
+
+  return false;
+}
+
+    /*
+    out << "Command Listing: " << endl;
+    out << "    -accum" << endl;
+    out << "    -add" << endl;
+    out << "    -align-landmarks, -alm" << endl;
+    out << "    -anisotropic-diffusion, -ad" << endl;
+    out << "    -antialias, -alias" << endl;
+    out << "    -as, -set" << endl;
+    out << "    -atan2" << endl;
+    out << "    -background" << endl;
+    out << "    -biascorr" << endl;
+    out << "    -binarize" << endl;
+     ***  out << "    -canny" << endl;
+     out << "    -centroid" << endl;
+     out << "    -clear" << endl;
+     out << "    -clip" << endl;
+     out << "    -colormap, -color-map" << endl;
+     out << "    -connected-components, -connected, -comp" << endl;
+     out << "    -coordinate-map-voxel, -cmv" << endl;
+     out << "    -coordinate-map-physical, -cmp" << endl;
+     out << "    -copy-transform, -ct" << endl;
+     out << "    -cos" << endl;
+     out << "    -create" << endl;
+     out << "    -dilate" << endl;
+     out << "    -divide" << endl;
+     out << "    -dup" << endl;
+     out << "    -endaccum" << endl;
+     out << "    -endfor" << endl;
+     out << "    -erode" << endl;
+     out << "    -erf" << endl;
+     out << "    -exp" << endl;
+     ***  out << "    -fft" << endl;
+     out << "    -flip" << endl;
+     out << "    -foreach" << endl;
+     out << "    -glm" << endl;
+     ***  out << "    -hessobj, -hessian-objectness" << endl;
+     ***  out << "    -histmatch, -histogram-match" << endl;
+     out << "    -holefill, -hf" << endl;
+     out << "    -info" << endl;
+     out << "    -info-full" << endl;
+     out << "    -insert, -ins" << endl;
+     out << "    -interpolation, -interp, -int" << endl;
+     out << "    -iterations" << endl;
+     ***  out << "    -label-overlap" << std::endl;
+     out << "    -label-statistics, -lstat" << endl;
+     out << "    -landmarks-to-spheres, -lts" << endl;
+     out << "    -laplacian, -laplace" << endl;
+     out << "    -levelset" << endl;
+     out << "    -levelset-curvature" << endl;
+     out << "    -levelset-advection" << endl;
+     out << "    -ln, -log" << endl;
+     out << "    -log10" << endl;
+     out << "    -max, -maximum" << endl;
+     out << "    -mcs, -multicomponent-split" << endl;
+     out << "    -mean" << endl;
+     out << "    -merge" << endl;
+     ***  out << "    -mf, -mean-filter" << endl;
+     out << "    -mi, -mutual-info" << endl;
+     out << "    -min, -minimum" << endl;
+     out << "    -mixture, -mixture-model" << endl;
+     out << "    -multiply, -times" << endl;
+     out << "    -n4, -n4-bias-correction" << endl;
+     out << "    -ncc, -normalized-cross-correlation" << endl;
+     out << "    -nmi, -normalized-mutual-info" << endl;
+     ***  out << "    -nlw, -normwin, -normalize-local-window" << endl;
+     ***  out << "    -normpdf" << endl;
+     out << "    -noround" << endl;
+     out << "    -nospm" << endl;
+     out << "    -o" << endl;
+     out << "    -omc, -output-multicomponent" << endl;
+     out << "    -oo, -output-multiple" << endl;
+    out << "    -orient" << endl;
+    out << "    -origin" << endl;
+    out << "    -origin-voxel" << endl;
+    out << "    -overlap" << endl;
+    out << "    -overlay-label-image, -oli" << endl;
+    out << "    -pad" << endl;
+    out << "    -percent-intensity-mode, -pim" << endl;
+    ***  out << "    -pixel" << endl;
+    out << "    -pop" << endl;
+    out << "    -popas" << endl;
+    out << "    -probe" << endl;
+    out << "    -push, -get" << endl;
+    out << "    -rank" << endl;
+    out << "    -reciprocal" << endl;
+    out << "    -region" << endl;
+    out << "    -reorder" << endl;
+    out << "    -replace" << endl;
+    out << "    -resample" << endl;
+    out << "    -resample-mm" << endl;
+    out << "    -reslice-itk" << endl;
+    out << "    -reslice-matrix" << endl;
+    out << "    -reslice-identity" << endl;
+    ***  out << "    -rf-train" << endl;
+    out << "    -rms" << endl;
+    out << "    -round" << endl;
+    out << "    -scale" << endl;
+    out << "    -set-sform" << endl;
+    out << "    -shift" << endl;
+    out << "    -signed-distance-transform, -sdt" << endl;
+    out << "    -sin" << endl;
+    out << "    -slice" << endl;
+    out << "    -smooth" << endl;
+    out << "    -spacing" << endl;
+    out << "    -split" << endl;
+    out << "    -sqrt" << endl;
+    out << "    -staple" << endl;
+    out << "    -spm" << endl;
+    out << "    -stretch" << endl;
+    ***  out << "    -subtract" << endl;
+    ***  out << "    -supervoxel, -sv" << endl;
+    out << "    -test-image" << endl;
+    out << "    -test-probe" << endl;
+    out << "    -threshold, -thresh" << endl;
+    out << "    -tile" << endl;
+    out << "    -trim" << endl;
+    out << "    -trim-to-size" << endl;
+    out << "    -type" << endl;
+    out << "    -verbose" << endl;
+    ***  out << "    -version" << endl;
+    out << "    -vote" << endl;
+    out << "    -vote-label" << endl;
+    out << "    -voxel-sum" << endl;
+    out << "    -voxel-integral, -voxel-int" << endl;
+    out << "    -voxelwise-regression, -voxreg" << endl;
+    out << "    -warp" << endl;
+    out << "    -wrap" << endl;
+    out << "    -weighted-sum, -wsum" << endl;
+    out << "    -weighted-sum-voxelwise, -wsv" << endl;
+    */
+
+/**
+ * Parameters for the various algorithms. Stored in a separate structure 
+ * in order to reduce number of variables declared in the header
+ */
+template <class TPixel, unsigned int VDim>
+struct ConvertAlgorithmParameters
+{
+  // Root mean square error for anti-aliasing algorithm
+  double m_AntiAliasRMS;
+
+  // Level set algorithm parameters
+  LevelSetParameters m_LevelSet;
+
+  // Random forest parameters
+  RFParameters<TPixel, VDim> m_RandomForest;
+
+  ConvertAlgorithmParameters()
+    {
+    m_AntiAliasRMS = 0.07;
+    }
+};
 
 
 template<class TPixel, unsigned int VDim>
@@ -140,151 +488,87 @@ ImageConverter<TPixel,VDim>
   m_RoundFactor = 0.5;
   m_FlagSPM = false;
   m_MultiComponentSplit = false;
-  m_AntiAliasRMS = 0.07;
   m_Iterations = 0;
   m_LoopType = LOOP_NONE;
   m_PercentIntensityMode = PIM_QUANTILE;
 
-  m_LevSetCurvature = 0.2;
-  m_LevSetAdvection = 0.0;
+  // Create the parameters
+  m_Param = new ParameterType();
+
+  // Documentation initially NULL to not waste time parsing it
+  m_Documentation = NULL;
 
   // Create an interpolator
   m_Interpolation = "linear";
   CreateInterpolator<TPixel, VDim>(this).CreateLinear();
 }
 
+
+template<class TPixel, unsigned int VDim>
+ImageConverter<TPixel,VDim>
+::~ImageConverter()
+{
+  delete m_Param;
+  if(m_Documentation)
+    delete m_Documentation;
+}
+
+
+
+
 template<class TPixel, unsigned int VDim>
 void
 ImageConverter<TPixel, VDim>
 ::PrintCommandListing(std::ostream &out)
 {
-  out << "Command Listing: " << endl;
-  out << "    -accum" << endl;
-  out << "    -add" << endl;
-  out << "    -align-landmarks, -alm" << endl;
-  out << "    -anisotropic-diffusion, -ad" << endl;
-  out << "    -antialias, -alias" << endl;
-  out << "    -as, -set" << endl;
-  out << "    -atan2" << endl;
-  out << "    -background" << endl;
-  out << "    -biascorr" << endl;
-  out << "    -binarize" << endl;
-  out << "    -canny" << endl;
-  out << "    -centroid" << endl;
-  out << "    -clear" << endl;
-  out << "    -clip" << endl;
-  out << "    -colormap, -color-map" << endl;
-  out << "    -connected-components, -connected, -comp" << endl;
-  out << "    -coordinate-map-voxel, -cmv" << endl;
-  out << "    -coordinate-map-physical, -cmp" << endl;
-  out << "    -copy-transform, -ct" << endl;
-  out << "    -cos" << endl;
-  out << "    -create" << endl;
-  out << "    -dilate" << endl;
-  out << "    -divide" << endl;
-  out << "    -dup" << endl;
-  out << "    -endaccum" << endl;
-  out << "    -endfor" << endl;
-  out << "    -erode" << endl;
-  out << "    -erf" << endl;
-  out << "    -exp" << endl;
-  out << "    -fft" << endl;
-  out << "    -flip" << endl;
-  out << "    -foreach" << endl;
-  out << "    -glm" << endl;
-  out << "    -hessobj, -hessian-objectness" << endl;
-  out << "    -histmatch, -histogram-match" << endl;
-  out << "    -holefill, -hf" << endl;
-  out << "    -info" << endl;
-  out << "    -info-full" << endl;
-  out << "    -insert, -ins" << endl;
-  out << "    -interpolation, -interp, -int" << endl;
-  out << "    -iterations" << endl;
-  out << "    -label-overlap" << std::endl;
-  out << "    -label-statistics, -lstat" << endl;
-  out << "    -landmarks-to-spheres, -lts" << endl;
-  out << "    -laplacian, -laplace" << endl;
-  out << "    -levelset" << endl;
-  out << "    -levelset-curvature" << endl;
-  out << "    -levelset-advection" << endl;
-  out << "    -ln, -log" << endl;
-  out << "    -log10" << endl;
-  out << "    -max, -maximum" << endl;
-  out << "    -mcs, -multicomponent-split" << endl;
-  out << "    -mean" << endl;
-  out << "    -merge" << endl;
-  out << "    -mf, -mean-filter" << endl;
-  out << "    -mi, -mutual-info" << endl;
-  out << "    -min, -minimum" << endl;
-  out << "    -mixture, -mixture-model" << endl;
-  out << "    -multiply, -times" << endl;
-  out << "    -n4, -n4-bias-correction" << endl;
-  out << "    -ncc, -normalized-cross-correlation" << endl;
-  out << "    -nmi, -normalized-mutual-info" << endl;
-  out << "    -nlw, -normwin, -normalize-local-window" << endl;
-  out << "    -normpdf" << endl;
-  out << "    -noround" << endl;
-  out << "    -nospm" << endl;
-  out << "    -o" << endl;
-  out << "    -omc, -output-multicomponent" << endl;
-  out << "    -oo, -output-multiple" << endl;
-  out << "    -orient" << endl;
-  out << "    -origin" << endl;
-  out << "    -origin-voxel" << endl;
-  out << "    -overlap" << endl;
-  out << "    -overlay-label-image, -oli" << endl;
-  out << "    -pad" << endl;
-  out << "    -percent-intensity-mode, -pim" << endl;
-  out << "    -pixel" << endl;
-  out << "    -pop" << endl;
-  out << "    -popas" << endl;
-  out << "    -probe" << endl;
-  out << "    -push, -get" << endl;
-  out << "    -rank" << endl;
-  out << "    -reciprocal" << endl;
-  out << "    -region" << endl;
-  out << "    -reorder" << endl;
-  out << "    -replace" << endl;
-  out << "    -resample" << endl;
-  out << "    -resample-mm" << endl;
-  out << "    -reslice-itk" << endl;
-  out << "    -reslice-matrix" << endl;
-  out << "    -reslice-identity" << endl;
-  out << "    -rms" << endl;
-  out << "    -round" << endl;
-  out << "    -scale" << endl;
-  out << "    -set-sform" << endl;
-  out << "    -shift" << endl;
-  out << "    -signed-distance-transform, -sdt" << endl;
-  out << "    -sin" << endl;
-  out << "    -slice" << endl;
-  out << "    -smooth" << endl;
-  out << "    -spacing" << endl;
-  out << "    -split" << endl;
-  out << "    -sqrt" << endl;
-  out << "    -staple" << endl;
-  out << "    -spm" << endl;
-  out << "    -stretch" << endl;
-  out << "    -subtract" << endl;
-  out << "    -supervoxel, -sv" << endl;
-  out << "    -test-image" << endl;
-  out << "    -test-probe" << endl;
-  out << "    -threshold, -thresh" << endl;
-  out << "    -tile" << endl;
-  out << "    -trim" << endl;
-  out << "    -trim-to-size" << endl;
-  out << "    -type" << endl;
-  out << "    -verbose" << endl;
-  out << "    -version" << endl;
-  out << "    -vote" << endl;
-  out << "    -vote-label" << endl;
-  out << "    -voxel-sum" << endl;
-  out << "    -voxel-integral, -voxel-int" << endl;
-  out << "    -voxelwise-regression, -voxreg" << endl;
-  out << "    -warp" << endl;
-  out << "    -wrap" << endl;
-  out << "    -weighted-sum, -wsum" << endl;
-  out << "    -weighted-sum-voxelwise, -wsv" << endl;
+  if(!m_Documentation)
+    m_Documentation = new Documentation(c3d_md, c3d_md_len);
+
+  // Print the automatically generated command listing
+  m_Documentation->PrintCommandListing(out);
+
+  // Print additional information on getting help
+  out << "Getting help:" << std::endl;
+
+  out << "    " 
+    << std::setw(32) << std::left 
+    << "-h"
+    << ": List commands" << std::endl;
+
+  out << "    " 
+    << std::setw(32) << std::left 
+    << "-h command"
+    << ": Print help on command (e.g. -h add)" << std::endl;
+
+  out << "    " 
+    << std::setw(32) << std::left 
+    << "-manual"
+    << ": Print complete reference manual" << std::endl;
+}
+
+template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::PrintCommandHelp(std::ostream &out, const char *command)
+{
+  if(!m_Documentation)
+    m_Documentation = new Documentation(c3d_md, c3d_md_len);
+
+  if(!m_Documentation->PrintCommandHelp(out, command))
+    {
+    out << "No help available for command " << command << std::endl;
+    }
+}
+
+template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::PrintManual(std::ostream &out)
+{
+  if(!m_Documentation)
+    m_Documentation = new Documentation(c3d_md, c3d_md_len);
+
+  m_Documentation->PrintManual(out);
 }
 
 template<class TPixel, unsigned int VDim>
@@ -338,7 +622,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-antialias" || cmd == "-alias")
     {
     AntiAliasImage<TPixel, VDim> adapter(this);
-    adapter(atof(argv[1]));
+    adapter(atof(argv[1]), m_Param->m_AntiAliasRMS);
     return 1;
     }
 
@@ -566,10 +850,18 @@ ImageConverter<TPixel, VDim>
     return 2;
     }
 
-  else if (cmd == "-h")
+  else if (cmd == "-h" || cmd == "-help" || cmd == "--help")
     {
-    PrintCommandListing(std::cout);
-    return 0;
+    if(argc > 1 && argv[1][0] != '-')
+      {
+      PrintCommandHelp(std::cout, argv[1]);
+      return 1;
+      }
+    else
+      {
+      PrintCommandListing(std::cout);
+      return 0;
+      }
     }
 
   else if(cmd == "-hf" || cmd == "-holefill")
@@ -722,19 +1014,19 @@ ImageConverter<TPixel, VDim>
     {
     int nIter = atoi(argv[1]);
     LevelSetSegmentation<TPixel, VDim> adapter(this);
-    adapter(nIter);
+    adapter(nIter, m_Param->m_LevelSet);
     return 1;
     }
 
   else if (cmd == "-levelset-curvature")
     {
-    m_LevSetCurvature = atof(argv[1]);
+    m_Param->m_LevelSet.CurvatureWeight = atof(argv[1]);
     return 1;
     }
 
   else if (cmd == "-levelset-advection")
     {
-    m_LevSetAdvection = atof(argv[1]);
+    m_Param->m_LevelSet.AdvectionWeight = atof(argv[1]);
     return 1;
     }
 
@@ -749,6 +1041,12 @@ ImageConverter<TPixel, VDim>
     {
     UnaryMathOperation<TPixel, VDim> adapter(this);
     adapter(&vcl_log10);
+    return 0;
+    }
+
+  else if (cmd == "-manual")
+    {
+    this->PrintManual(std::cout);
     return 0;
     }
 
@@ -1240,6 +1538,18 @@ ImageConverter<TPixel, VDim>
 
     }
 
+  else if (cmd == "-rf-train")
+    {
+    // Get the filename for the training output
+    std::string rf_file = argv[1];
+
+    // Get the current parameters
+    RFTrain<TPixel, VDim> adapter(this);
+    adapter(rf_file.c_str(), m_Param->m_RandomForest);
+
+    return 1;
+    }
+
   else if (cmd == "-set-sform")
     {
     string fn_tran( argv[1] );
@@ -1325,7 +1635,7 @@ ImageConverter<TPixel, VDim>
     }
 
   else if (cmd == "-rms")
-    { m_AntiAliasRMS = atof(argv[1]); return 1; }
+    { m_Param->m_AntiAliasRMS = atof(argv[1]); return 1; }
 
   else if (cmd == "-round")
     { m_RoundFactor = 0.5; return 0; }
@@ -1558,6 +1868,9 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-verbose")
     { verbose = &std::cout; return 0; }
 
+  else if (cmd == "-noverbose")
+    { verbose = &devnull; return 0; }
+
   else if (cmd == "-version")
     {
     cout << "Version " << ImageConverter_VERSION_STRING << endl;
@@ -1689,10 +2002,10 @@ ImageConverter<TPixel, VDim>
   // Check the number of arguments
   if (argc == 1)
     {
-    cerr << "PICSL convert3d tool" << endl;
+    cerr << "PICSL convert3d tool - from the creators of ITK-SNAP" << endl;
     cerr << "For full documentation and usage examples, see" << endl;
-    cerr << "    http://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Documentation" << endl;
-    cerr << "For a brief summary of commands, call" << endl;
+    cerr << "    http://www.itksnap.org/c3d" << endl;
+    cerr << "To get help on available commands, call" << endl;
     cerr << "    " << argv[0] << " -h" << endl;
     return -1;
     }

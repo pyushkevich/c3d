@@ -8,7 +8,7 @@ endif(COMMAND cmake_policy)
 
 # Versioning information
 SET(C3D_VERSION_MAJOR 1)
-SET(C3D_VERSION_MINOR 0)
+SET(C3D_VERSION_MINOR 1)
 SET(C3D_VERSION_PATCH 0)
 SET(C3D_VERSION_FULL "${C3D_VERSION_MAJOR}.${C3D_VERSION_MINOR}.${C3D_VERSION_PATCH}")
 
@@ -22,6 +22,7 @@ INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/VoxBoIO)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/PovRayIO)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/N3ITK)
+INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/RandomForest)
 
 # Get ITK
 FIND_PACKAGE(ITK REQUIRED)
@@ -83,6 +84,7 @@ SET(SOURCES
   adapters/ReplaceIntensities.cxx
   adapters/ResampleImage.cxx
   adapters/ResliceImage.cxx
+  adapters/RFTrain.cxx
   adapters/SampleImage.cxx
   adapters/ScaleShiftImage.cxx
   adapters/ScalarToRGB.cxx

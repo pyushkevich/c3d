@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Get the list of available commands
   std::ostringstream oss;
-  ImageConverter<double,3>::PrintCommandListing(oss);
+  ImageConverter<double,3> conv; conv.PrintCommandListing(oss);
   QString cmdliststr(oss.str().c_str());
   QStringList cmdlist = cmdliststr.split(QRegExp("(,|\\s)"), QString::SkipEmptyParts);
 
