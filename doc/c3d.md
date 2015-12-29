@@ -1,5 +1,7 @@
 # [Convert3D][1] Documentation
 
+[TOC]
+
 ### What's New?
 
 *   **-cos**,**-sin**,**-atan2** commands 
@@ -135,7 +137,7 @@ Syntax: `-info-full`
 
 Prints extended information about the last image on the stack, such as the metadata dictionary. For example, 
 
-    c3d image.hdr -info
+    c3d image.hdr -info-full
 
 #### -mcs, -multicomponent-split: Enable splitting of multi-component images on read
 
