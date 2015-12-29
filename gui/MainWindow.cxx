@@ -45,6 +45,15 @@
 #include <SettingsDialog.h>
 #include "ConvertImageND.h"
 
+#include "Documentation.h"
+
+// Markdown documentation string generated at compile-time
+// this looks a little odd, but works - the include file contains raw bytes
+unsigned char c3d_md[] = {
+  #include "markdown_docs.h"
+  0x00 
+};
+
 class C3DFileSystemModel : public QFileSystemModel
 {
 public:
@@ -77,11 +86,17 @@ MainWindow::MainWindow(QWidget *parent) :
   // Set up the search paths
   this->setupSearchPaths();
 
+  // Parse the markdown documentation
+  m_Documentation = new Documentation(c3d_md);
+
   // Get the list of available commands
-  std::ostringstream oss;
-  ImageConverter<double,3> conv; conv.PrintCommandListing(oss);
-  QString cmdliststr(oss.str().c_str());
-  QStringList cmdlist = cmdliststr.split(QRegExp("(,|\\s)"), QString::SkipEmptyParts);
+  const std::set<std::string> &cmdset = m_Documentation->GetAllCommands();
+  QStringList cmdlist;
+  for(std::set<std::string>::const_iterator it = cmdset.begin(); it != cmdset.end(); ++it)
+    cmdlist.push_back(QString::fromStdString(*it));
+
+  // Pass the documentation to the editor
+  ui->teCommand->setDocumentation(m_Documentation);
 
   // Set the font in the editors
   QFont font;
@@ -180,6 +195,7 @@ MainWindow::~MainWindow()
 {
   m_History->saveHistory();
   delete ui;
+  delete m_Documentation;
 }
 
 void MainWindow::onCommandReceive(QString command)
@@ -358,13 +374,7 @@ void MainWindow::onProcessFinished(int rc)
   QTextCharFormat fmt;
   QProcess *process = qobject_cast<QProcess *>(this->sender());
 
-  if(rc == 0)
-    {
-    fmt.setForeground(QColor("blue"));
-    tc.setCharFormat(fmt);
-    tc.insertText(QString("Command %1 completed successfully").arg(process->program()));
-    }
-  else
+  if(rc != 0)
     {
     fmt.setForeground(QColor("darkred"));
     tc.setCharFormat(fmt);

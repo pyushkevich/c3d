@@ -23,6 +23,7 @@ INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/VoxBoIO)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/PovRayIO)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/N3ITK)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/RandomForest)
+INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/utilities/doc)
 
 # Get ITK
 FIND_PACKAGE(ITK REQUIRED)
@@ -141,7 +142,11 @@ CONFIGURE_FILE(
 SUBDIRS(itkextras)
 
 ADD_LIBRARY(cnd_adapters ${SOURCES})
-ADD_LIBRARY(cnd_driver ConvertImageND.cxx)
+
+ADD_LIBRARY(cnd_driver 
+  ConvertImageND.cxx
+  utilities/doc/Documentation.cxx)
+
 ADD_DEPENDENCIES(cnd_driver markdown_docs)
 
 SET(C3D_LINK_LIBRARIES

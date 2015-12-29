@@ -37,6 +37,7 @@ class MainWindow;
 class QListView;
 class HistoryDialog;
 class SettingsDialog;
+class Documentation;
 
 class MainWindow : public QMainWindow
 {
@@ -84,6 +85,7 @@ private:
 
   HistoryDialog *m_History;
   SettingsDialog *m_Settings;
+  Documentation *m_Documentation;
 };
 
 #endif // MAINWINDOW_H

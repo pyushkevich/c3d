@@ -30,6 +30,7 @@
 #include <QTextCursor>
 
 class QCompleter;
+class Documentation;
 
 class CommandEditor : public QTextEdit
 {
@@ -45,7 +46,7 @@ public:
   void setCommandCompleter(QCompleter *c);
   QCompleter *commandCompleter() const;
 
-  void setCommandList(const QStringList &cl);
+  void setDocumentation(Documentation *doc);
 
   bool event(QEvent *e);
 
@@ -77,6 +78,9 @@ private:
   QRect m_popupRect;
 
   QStringList m_CommandList;
+
+  /** Documentation system */
+  Documentation *m_Documentation;
 
 signals:
   

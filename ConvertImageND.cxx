@@ -110,7 +110,14 @@
 #include <itksys/RegularExpression.hxx>
 
 // Documentation manual
-#include <doc/c3d.md.h>
+#include "Documentation.h"
+
+// Markdown documentation string generated at compile-time
+// this looks a little odd, but works - the include file contains raw bytes
+unsigned char c3d_md[] = {
+  #include "markdown_docs.h"
+  0x00 
+};
 
 using namespace itksys;
 
@@ -126,25 +133,6 @@ double myatof(char *str)
   return d;
 };
 
-// Helper function: trim whitespace
-// from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-//
-// trim from start
-static inline std::string &ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-  return s;
-}
-
-// trim from end
-static inline std::string &rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-  return s;
-}
-
-// trim from both ends
-static inline std::string &trim(std::string &s) {
-  return ltrim(rtrim(s));
-}
 
 std::string str_to_lower(const char *input)
 {
@@ -153,175 +141,7 @@ std::string str_to_lower(const char *input)
   return s;
 }
 
-/**
- * Documentation parsing system
- */
-class Documentation
-{
-public:
 
-  struct CommandDoc
-    {
-    std::string Title;
-    std::vector<std::string> Aliases;
-    std::string ShortDesc;
-    std::string LongDesc;
-    };
-
-  struct Category
-    {
-    std::string Title;
-    std::vector<CommandDoc> Commands;
-    Category(const std::string name) : Title(name) {}
-    };
-
-  Documentation(unsigned char* rawdoc);
-
-  void PrintCommandListing(std::ostream &out);
-  bool PrintCommandHelp(std::ostream &out, const std::string &command);
-  void PrintManual(std::ostream &out);
-
-private:
-
-  // Complete manual text
-  std::string m_Text;
-
-  // Headings for commands and categories
-  std::string m_CategoryHeading, m_CommandHeading;
-
-  // Grouping of commands
-  std::vector<Category> m_Categories;
-
-};
-
-Documentation::Documentation(unsigned char *rawdoc)
-: m_Text((const char *) rawdoc)
-{
-  // Headings
-  m_CategoryHeading = "### ";
-  m_CommandHeading = "#### ";
-
-  // Configure command categories
-  m_Categories.push_back(Category("Image Processing"));
-  m_Categories.push_back(Category("Stack Manipulation"));
-  m_Categories.push_back(Category("Options"));
-
-  // Parse the file
-  std::istringstream iss(m_Text);
-
-  // Current category
-  int current_cat = -1;
-  std::string current_command = "";
-
-  // Read lines from the file
-  std::string line;
-  while(std::getline(iss, line)) 
-    {
-    if(line.find(m_CategoryHeading) == 0)
-      {
-      // This is a category - find out which one
-      current_cat = -1;
-      for(int i = 0; i < m_Categories.size(); i++)
-        {
-        if(line.find(m_Categories[i].Title) != line.npos)
-          {
-          current_cat = i;
-          current_command = "";
-          break;
-          }
-        }
-      }
-
-    else if(line.find(m_CommandHeading) == 0 && current_cat >= 0)
-      {
-      // This is a parseable command. Parse out all of its information
-      std::string rexp1 = m_CommandHeading + " *(.*): *(.*)$";
-      RegularExpression re1(rexp1.c_str());
-      if(re1.find(line))
-        {
-        CommandDoc cdoc;
-        cdoc.Title = re1.match(1);
-        cdoc.ShortDesc = re1.match(2);
-        current_command = cdoc.Title;
-
-        // Split the title into aliases
-        std::istringstream isstmp(cdoc.Title);
-        std::string cmdline;
-        while(std::getline(isstmp, cmdline, ','))
-          cdoc.Aliases.push_back(trim(cmdline));
-
-        m_Categories[current_cat].Commands.push_back(cdoc);
-        }
-      else
-        {
-        current_command = "";
-        }
-      }
-
-    else if(current_command.length() > 0 && current_cat >= 0)
-      {
-      // Line from a description
-      m_Categories[current_cat].Commands.back().LongDesc += line;
-      m_Categories[current_cat].Commands.back().LongDesc += "\n";
-      }
-    } 
-}
-
-void Documentation::PrintCommandListing(std::ostream &out)
-{
-  for(int i = 0; i < m_Categories.size(); i++)
-    {
-    out << m_Categories[i].Title << ": " << std::endl;
-    for(int j = 0; j < m_Categories[i].Commands.size(); j++)
-      {
-      out << "    ";
-      out << std::setw(32) << std::left;
-      out << m_Categories[i].Commands[j].Title;
-      out << ": ";
-      out << m_Categories[i].Commands[j].ShortDesc;
-      out << std::endl;
-      }
-    }
-}
-
-void Documentation::PrintManual(std::ostream &out)
-{
-  out << m_Text << std::endl;
-}
-
-bool Documentation::PrintCommandHelp(std::ostream &out, const std::string &command)
-{
-  // Create a search string
-  if(command.length() == 0)
-    return false;
-
-  std::string req = command[0] == '-' ? command : std::string("-") + command;
-  req = str_to_lower(req.c_str());
-
-  for(int i = 0; i < m_Categories.size(); i++)
-    {
-    for(int j = 0; j < m_Categories[i].Commands.size(); j++)
-      {
-      CommandDoc &cmd = m_Categories[i].Commands[j];
-      for(int k = 0; k < cmd.Aliases.size(); k++)
-        {
-        if(str_to_lower(cmd.Aliases[k].c_str()) == req)
-          {
-          out << std::setw(32) << std::left;
-          out << m_Categories[i].Commands[j].Title;
-          out << ": ";
-          out << m_Categories[i].Commands[j].ShortDesc;
-          out << std::endl;
-          out << cmd.LongDesc;
-          out << std::endl;
-          return true;
-          }
-        }
-      }
-    }
-
-  return false;
-}
 
     /*
     out << "Command Listing: " << endl;

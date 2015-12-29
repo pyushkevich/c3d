@@ -35,6 +35,10 @@
 #include <QDebug>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QDateTime>
+#include <QFontMetrics>
+#include "Documentation.h"
+#include <sstream>
 
 CommandEditor::CommandEditor(QWidget *parent):
   QTextEdit(parent)
@@ -89,12 +93,42 @@ QCompleter *CommandEditor::commandCompleter() const
   return m_commandCompleter;
 }
 
-void CommandEditor::setCommandList(const QStringList &cl)
+void CommandEditor::setDocumentation(Documentation *doc)
 {
-  m_CommandList = cl;
+  m_Documentation = doc;
 }
 
-#include <QDateTime>
+
+QString splitTooltip(QString text, int width) 
+{ 
+    QFontMetrics fm(QToolTip::font()); 
+    QString result; 
+
+    for (;;) { 
+        int i = 0; 
+        while (i < text.length()) { 
+            if (fm.width(text.left(++i + 1)) > width) { 
+                int j = text.lastIndexOf(' ', i); 
+                if (j > 0) 
+                    i = j; 
+                result += text.left(i); 
+                result += '\n'; 
+                text = text.mid(i+1); 
+                break; 
+            } 
+            else if(text[i] == '\n')
+              {
+              result += text.left(i+1);
+              text = text.mid(i+1);
+              }
+        } 
+        if (i >= text.length()) 
+            break; 
+    } 
+    return result + text; 
+} 
+
+#include <iostream>
 bool CommandEditor::event(QEvent *e)
 {
   if (e->type() == QEvent::ToolTip)
@@ -104,16 +138,34 @@ bool CommandEditor::event(QEvent *e)
     QString fn = this->filenameUnderCursor(tc);
     QString help = QString("future help for %1").arg(fn);
 
+    // Get the c++ string
+    std::string fn_std = fn.toStdString();
+
     // Special handling for real files
     QFileInfo fi(QDir(QSettings().value("working_dir").toString()), fn);
     if(fi.exists() && fi.isReadable())
       {
-      help=QString("<html><b>File: </b>%2<br><b>Directory: </b>%1<br><b>Last Modified:  </b>%3<br><br><br><i>Double click to open in a 3D viewer</i></html>")
+      help=QString(
+        "<html><b>File: </b>%2<br>"
+        "<b>Directory: </b>%1<br>"
+        "<b>Last Modified:  </b>%3<br><br><br>"
+        "<i>Double click to open in a 3D viewer</i></html>")
           .arg(fi.absolutePath())
           .arg(fi.fileName())
           .arg(fi.lastModified().toLocalTime().toString());
       }
 
+    // Special handling for c3d commands
+    else if(m_Documentation->GetAllCommands().find(fn_std)
+      != m_Documentation->GetAllCommands().end())
+      {
+      std::ostringstream oss;
+      std::string nodash = fn_std.substr(1);
+      if(m_Documentation->PrintCommandHelp(oss, nodash.c_str()))
+        {
+        help = splitTooltip(QString::fromStdString(oss.str()), 600);
+        }
+      }
 
     QToolTip::showText(helpEvent->globalPos(), help);
     return true;
