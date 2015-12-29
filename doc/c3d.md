@@ -263,6 +263,12 @@ Converts an image to binary by mapping all background values (the background is 
     c3d -background 10 -binarize -o binary.img
     c3d test.img -threshold 10 10 0 1              // equivalent to above command
 
+#### -canny: Canny edge detector
+
+Syntax: `-canny <sigma_vector> <t_lower> <t_upper>`
+
+Performs edge detection on the last image on the stack using the Canny filter. The parameters are a vector of standard deviations defining the scale of the edges detected and lower and upper thresholds for edge selection. See documentation on the [ITK Canny Filter][14].
+
 #### -centroid: Report centroid of foreground voxels
 
 Syntax: `-centroid`
@@ -371,7 +377,7 @@ Syntax: `-erf mu sigma`
 
 Computes the standard error function. This is useful for applying soft thresholds. The function computes y = erf((x - mu)/sigma). 
 
-  c3d input.img -erf 5 2 -o erf.img
+    c3d input.img -erf 5 2 -o erf.img
 
 #### -exp, -log, -ln, -log10: Compute exponent or logarithm of each voxel    
 
@@ -1233,3 +1239,4 @@ To summarize, here is a checklist for adding a new command
  [11]: http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=1309714
  [12]: http://picsl.upenn.edu/ANTS/index.php
  [13]: http://www.imagemagick.org/script/command-line-options.php#colorspace
+ [14]: http://www.itk.org/Doxygen/html/classitk_1_1CannyEdgeDetectionImageFilter.html

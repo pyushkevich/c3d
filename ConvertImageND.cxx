@@ -175,7 +175,7 @@ public:
     Category(const std::string name) : Title(name) {}
     };
 
-  Documentation(unsigned char* rawdoc, int n_bytes);
+  Documentation(unsigned char* rawdoc);
 
   void PrintCommandListing(std::ostream &out);
   bool PrintCommandHelp(std::ostream &out, const std::string &command);
@@ -194,8 +194,8 @@ private:
 
 };
 
-Documentation::Documentation(unsigned char *rawdoc, int n_bytes)
-: m_Text((const char *) rawdoc, n_bytes)
+Documentation::Documentation(unsigned char *rawdoc)
+: m_Text((const char *) rawdoc)
 {
   // Headings
   m_CategoryHeading = "### ";
@@ -522,7 +522,7 @@ ImageConverter<TPixel, VDim>
 ::PrintCommandListing(std::ostream &out)
 {
   if(!m_Documentation)
-    m_Documentation = new Documentation(c3d_md, c3d_md_len);
+    m_Documentation = new Documentation(c3d_md);
 
   // Print the automatically generated command listing
   m_Documentation->PrintCommandListing(out);
@@ -552,7 +552,7 @@ ImageConverter<TPixel, VDim>
 ::PrintCommandHelp(std::ostream &out, const char *command)
 {
   if(!m_Documentation)
-    m_Documentation = new Documentation(c3d_md, c3d_md_len);
+    m_Documentation = new Documentation(c3d_md);
 
   if(!m_Documentation->PrintCommandHelp(out, command))
     {
@@ -566,7 +566,7 @@ ImageConverter<TPixel, VDim>
 ::PrintManual(std::ostream &out)
 {
   if(!m_Documentation)
-    m_Documentation = new Documentation(c3d_md, c3d_md_len);
+    m_Documentation = new Documentation(c3d_md);
 
   m_Documentation->PrintManual(out);
 }

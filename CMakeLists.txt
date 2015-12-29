@@ -35,6 +35,24 @@ IF(WIN32)
   SOURCE_GROUP("Adapter Headers" REGULAR_EXPRESSION "adapters/*h")
 ENDIF(WIN32)
 
+# Markdown documentation compiled into the C code
+# modified from: https://github.com/starseeker/tinyscheme-cmake/blob/master/CMakeLists.txt
+# # Rather than load the init.scm file at run time,
+# # with the uncertainties as to where exactly the file
+# # resides, use William Ahern's hexdump to generate 
+# # an embeddable version. Build our own copy of hexdump
+# # to ensure consistent behavior and portability.
+# # See http://25thandclement.com/~william/projects/hexdump.c.html
+ADD_EXECUTABLE(markdown_to_hex utilities/hexdump.c)
+set_property(TARGET markdown_to_hex APPEND PROPERTY COMPILE_DEFINITIONS "HEXDUMP_MAIN")
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/markdown_docs.h
+  COMMAND markdown_to_hex -i ${CMAKE_CURRENT_SOURCE_DIR}/doc/c3d.md > ${CMAKE_CURRENT_BINARY_DIR}/markdown_docs.h
+  DEPENDS markdown_to_hex ${CMAKE_CURRENT_SOURCE_DIR}/doc/c3d.md)
+ADD_CUSTOM_TARGET(markdown_docs ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/markdown_docs.h)
+
+
+
 SET(SOURCES
   adapters/AddImages.cxx
   adapters/AlignByLandmarks.cxx
@@ -124,6 +142,7 @@ SUBDIRS(itkextras)
 
 ADD_LIBRARY(cnd_adapters ${SOURCES})
 ADD_LIBRARY(cnd_driver ConvertImageND.cxx)
+ADD_DEPENDENCIES(cnd_driver markdown_docs)
 
 SET(C3D_LINK_LIBRARIES
   cnd_driver cnd_adapters ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)
