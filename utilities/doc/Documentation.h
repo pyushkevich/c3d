@@ -63,6 +63,9 @@ public:
   const std::set<std::string> &GetAllCommands() const
     { return m_AllCommands; }
 
+  const std::vector<Category> &GetCategories() const
+    { return m_Categories; }
+
   // Text processing routines
   static std::string &ltrim(std::string &s);
   static std::string &rtrim(std::string &s);

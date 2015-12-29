@@ -109,6 +109,96 @@ However, this causes some aliasing of the results. It is sometimes useful to ass
 
 This command is somewhat complex, mainly because the **-reslice-matrix** command requires a reference image as the first operand, and we have to use named images to insert it on the stack in the right place. 
 
+### Commands: Image Input/Output and Information
+
+Passing an image on the command line (without any switches) results in that image being read and placed at the end of the stack. For example:
+
+    c3d myimage.nii -info another.nii -info
+
+will result in information printed for both images. At the end, `myimage.nii` will be in the first position on the stack and `another.nii` will be at the end of the stack.
+
+#### -info: Display brief image information        
+
+Syntax: `-info`
+
+Prints brief information about the last image on the stack. Does not affect the stack.
+
+    c3d image.hdr -info
+
+Use with the **-foreach** command to get information on multiple images
+
+    c3d images*.nii -foreach -info -endfor
+
+#### -info-full: Display verbose image information        
+
+Syntax: `-info-full`
+
+Prints extended information about the last image on the stack, such as the metadata dictionary. For example, 
+
+    c3d image.hdr -info
+
+#### -mcs, -multicomponent-split: Enable splitting of multi-component images on read
+
+Syntax: `-mcs`
+
+Enable reading of multi-component images. By default, when a multi-component image is encountered, the components are combined into a single image. Setting the **-mcs** flag changes this behavior, and each of the components is loaded sequentially. See the section below on multi-component image support. 
+
+    $ c3d -mcs rgb.mha -foreach -probe 110x110x80mm -endfor
+    Interpolated image value at 110 110 80 is 1
+    Interpolated image value at 110 110 80 is 66
+    Interpolated image value at 110 110 80 is 29
+
+    $ c3d rgb.mha -foreach -probe 110x110x80mm -endfor
+    Interpolated image value at 110 110 80 is 49.5198
+
+#### -nomcs, -no-multicomponent-split: Disable splitting of multi-component images on read
+
+Syntax: `-nomcs`
+
+Used to reverse the effect of previous **-mcs** command.
+
+#### -o: Output (write) last image on the stack to image file    
+
+Syntax: `-o filename`
+
+Write image, overriding an existing image. Without the **-o** option, **convert3d** will write an image only if it does not exist. The **-o** options protects input images from being accidentally deleted. Here we copy an image, changing format:
+
+    c3d image1.mha -o image2.nii
+
+The **-o** option can also be used to save an intermediate image in the stack: 
+
+    c3d image1.img -threshold 1 10 1 0 -o thresh.img -resample 50% -o final.img
+
+
+#### -omc, -output-multicomponent: Output multiple images to single file
+
+Syntax: `-omc [number] filename`
+
+Write multiple images on the **Convert3d** stack as a single multi-component image file. If the optional number *n* is specified, only the last *n* images on the stack will be used. Not all file formats support multi-component output. NIFTI is the safest bet.
+
+    c3d red.nii green.nii blue.nii -omc rgb.mha
+
+For 2D images, this command can be used to generate color PNG files:
+
+    c3d image.nii -slice z 50% -colormap jet -type uchar -omc colorslice.png
+
+#### -oo: Output multiple images to multiple files 
+
+Syntax: `-oo image_list` or `-oo image_spec`
+
+Write all images on the **convert3d** stack as multiple files. There are two ways to use this command. The first is to supply a list of file names, separated by spaces: 
+
+    c3d labelimage.nii -split -oo labelA.nii labelB.nii labelC.nii
+
+In the above example, the image at the end of the stack will be saved as *labelC.nii*, the image next to the end of the stack will be saved as *labelB.nii* and so on. 
+
+The second way to use the **-oo** command is to supply a pattern for the output filenames. In this case, all the images on the stack will be written. The format for the pattern is the same as for the [C++ printf command][8]. For example, the following command 
+
+    c3d labelimage.nii -split -oo label%02d.nii
+
+will generate images *label00.nii*, *label01.nii*, *label02.nii* and so on. The image at the end of the stack will have the highest number, and the image at the beginning of the stack will have number 00. 
+
+
 ### Commands: Stack Manipulation and Flow Control
 
 These commands are used to manipulate the **convert3d** stack. The stack is a linear array of images. Every time an image is specified on the command line, it is loaded and placed at the end of the stack. Most operations take one image from the end of the stack, apply some operation to it, and place the result on the end of the stack. Certain commands like **-levelset** and **-reslice-matrix** take two images from the end of the stack as the input and replace them with a single output. Some other commands, like **-mean** and **-vote** take all images on the stack and replace them with a single output. 
@@ -199,12 +289,9 @@ Duplicates the image at the end of the stack. This is equivalent to **-as var -p
 
     c3d input.img -dup -times -o square.img
 
+### Commands: Voxelwise Calculations
 
-### Commands: Image Processing
-
-The following commands invoke an action that is applied to images. Unary commands apply the action to the last image on the stack, binary commands apply to the last two images and so on. Commands are affected by options, which are listed separately. 
-
-#### -add: Add two images
+#### -add: Voxelwise image addition
 
 Syntax: `-add`
 
@@ -220,6 +307,290 @@ Adds the last two images on the stack, and places the sum at the end of the stac
     # Subtract two images, using -scale command: x = a - b
     c3d a.img b.img -scale -1 -add -o x.img
 
+#### -atan2: Voxelwise angle from sine and cosine
+
+Syntax: `-atan2`
+
+Computes the angle in radians from images containing sine and cosine. This is a voxel-wise operation. It requires two images on the stack (sine followed by cosine): 
+
+    c3d sin_theta.nii.gz cos_theta.nii.gz -atan2 -o theta.nii.gz
+
+#### -clip: Clip image intensity to range
+
+Syntax: `-clip iMin iMax`
+
+Clips image intensities, so that the values below *iMin* are converted to *iMin* and values greater than *iMax* are converted to *iMax*. This is useful for eliminating hyperintensities in images. Values *iMin* and *iMax* are intensity specifications (see below). 
+
+    c3d mri.img -clip 1000 8000 -o mriclip01.img          // Clips below and above
+    c3d mri.img -clip -inf 8000 -o mriclip02.img          // Clips above only
+    c3d mri.img -clip -inf 95% -o mriclip03.img           // Clips at 95th percentile
+
+#### -cos: Voxelwise cosine 
+
+Syntax: `-sin`
+
+Replaces the last image on the stack with the cosine trigonometric operation applied to all voxels. Input must be in radians.
+
+#### -divide: Voxelwise image division    
+
+Syntax: `-divide`
+
+Divides one image by another. For instance to compute C = A / B, use the command 
+
+    c3d A.img B.img -divide -o C.img
+
+Divison may generate infinite and not-a-number (NaN) values if B contains zeros. You can use **-replace** to get rid of these values
+
+    c3d A.img B.img -divide -replace inf 1000 -inf -1000 NaN 0 -o C2.img
+
+#### -exp: Voxelwise natural exponent
+
+Syntax: `-exp`
+
+Computes exponent of each voxel in the last image on the stack.
+
+    c3d input.img -exp -o output.img
+
+#### -erf: Standard error function
+
+Syntax: `-erf mu sigma`
+
+Computes the standard error function. This is useful for applying soft thresholds. The function computes y = erf((x - mu)/sigma). 
+
+    c3d input.img -erf 5 2 -o erf.img
+
+#### -log, -ln: Voxelwise natural logarithm
+
+Syntax: `-log`
+
+Computes natural logarithm of each voxel in the last image on the stack.
+
+#### -log10: Voxelwise base 10 logarithm
+
+Syntax: `-log10`
+
+Computes base 10 logarithm of each voxel in the last image on the stack.
+
+#### -max: Voxel-wise maximum of two images
+
+Syntax: `-max`
+
+Computes the voxel-wise maximum of two images. Can be used with the **-accum** command to compute maximum of all images. 
+
+    c3d i1.nii i2.nii -max -o max12.nii
+    c3d i1.nii i2.nii i3.nii i4.nii -accum -max -endaccum -o max1234.nii
+
+#### -min: Voxel-wise minimum of two images
+
+Syntax: `-min`
+
+Computes the voxel-wise minimum of two images. Can be used with the **-accum** command to compute minimum of all images. 
+
+    c3d i1.nii i2.nii -min -o min12.nii
+    c3d i1.nii i2.nii i3.nii i4.nii -accum -min -endaccum -o min1234.nii
+
+#### -mean: Mean of all images on the stack    
+
+Syntax: `-mean `
+
+Computes the mean of all the images on the stack. All images on the stack are replaced with the mean image.
+
+    c3d image_*.nii -mean -o mean.nii
+
+#### -multiply, -times: Multiply two images
+
+Syntax: `-multiply`
+
+Multiply two images voxel-by-voxel. The operation is applied to the last two images on the stack. 
+
+    # Compute x = a * b
+    c3d a.img b.img -multiply -o x.img
+
+    # Compute x = a * (b + c) using add and -multiply
+    c3d a.img b.img c.img -multiply -add -o x.img
+
+Combine with the **-dup** command to compute voxelwise square of the image
+
+    # Compute x = a^2
+    c3d a.img -dup -multiply -o x.img
+
+#### -reciprocal: Image voxelwise reciprocal 
+
+Syntax: `-reciprocal `
+
+Computes the reciprocal of an image. For instance to compute B = 1 / A, use the command 
+
+    c3d A.img -reciprocal -o B.img
+
+#### -replace: Replace intensities in image
+
+Syntax: `-replace I1 J1 I2 J2 ... `
+
+Replace intensity I1 by J1, I2 by J2 and so on. Allowed values of intensity include **nan**, **inf** and **-inf**. 
+
+    c3d img1.img -replace 1 128 nan 0.0 -o img2.img
+
+#### -rms: Voxelwise vector norm
+
+Syntax: `-rms`
+
+Computes RMS (root mean square) of all images on the stack. The command takes the square of each image on the stack, adds all the squared images and takes the square root of the result. This is very useful for statistical operations. Images must have the same size. 
+
+    c3d img1.img img2.img img3.img img4.img -rms -o rms.img
+
+The equivalent of this command is
+
+    c3d img1.img img2.img img3.img img4.img -foreach -dup -times -endfor \
+        -accum -add -endaccum -sqrt -o rms.img
+
+#### -scale: Scale intensity by constant factor
+
+Syntax: `-scale <factor>`
+
+Multiplies the intensity of each voxel in the last image on the stack by the given factor. 
+
+    c3d img1.img -scale 0.5 -o img2.img
+
+#### -shift: Shift image intensity by constant
+
+Syntax: `-shift <constant>`
+
+Adds the given constant to every voxel.
+
+    c3d img1.img -shift 100 -o img2.img
+
+#### -sin: Sine
+
+Syntax: `-sin`
+
+Replaces the last image on the stack with the sine trigonometric operation applied to all voxels. Input must be in radians.
+
+#### -sqrt: Take square root of image
+
+Syntax: `-sqrt `
+
+Computes square root of each voxel in the image.
+
+    c3d input.img -sqrt -o output.img
+
+#### -stretch: Stretch image intensities linearly
+
+Syntax: `-stretch <u1 u2 v1 v2> `
+
+Stretches the intensities in the image linearly, such that u1 maps to v1 and u2 maps to v2. The linear transformation is applied to all intensities in the image, whether inside the range or not. For example, to map a floating point image with intensities in interval (0,1) to the full range of an unsigned short image, use 
+
+    c3d input.img -stretch 0.0 1.0 0 65535 -type ushort -o output.img
+
+#### -thresh, -threshold: Binary thresholding
+
+Syntax: `-thresh <u1 u2 vIn vOut> `
+
+Thresholds the image, setting voxels whose intensity is in the range [u1,u2] to vIn and all other voxels to vOut. Values *u1* and *u2* are intensity specifications (see below). This means that you can supply values **inf** and **-inf** for u1 and u2 to construct a one-sided threshold. You can also specify *u1* and *u2* as percentiles. 
+    c3d in.img -threshold -inf 128 1 0 -o out.img
+    c3d in.img -threshold 64 128 1 0 -o out.img
+    c3d in.img -threshold 20% 40% 1 0 -o out.img
+
+#### -voxel-sum: Print sum of all voxel intensities
+
+Syntax: `-voxel-sum `
+
+Print the sum of all voxels in the image. 
+
+    $ c3d image.img -voxel-sum 
+    Voxel Sum: 200923123
+
+#### -voxel-integral: Print volume integral of all voxel intensities
+
+Syntax: `-voxel-integral`
+
+Like **-voxel-sum**, but multiplies the sum of voxel intensities by voxel volume. This is useful for computing volumes of objects represented by binary images. The result is in 'ml'. 
+
+    $ c3d image.img -voxel-integral 
+    Voxel Integral: 2341
+
+#### -wsum, -weighted-sum: Weighed sum of images with constant weights
+
+Syntax: `-wsum weight1 weight2 ... weightN `
+
+Computes weighted sum of the last N images on the stack. 
+
+    c3d image1.nii image2.nii image3.nii -wsum 0.2 0.7 0.1 -o wsum.nii
+
+This command is particularly useful for combining components in a multicomponent image. For example, for an RGB image, we can convert it to grayscale (using [ImageMagick][13] formula) as follows: 
+
+    c3d -mcs rgb.nii -wsum 0.29900 0.58700 0.11400 -o gray.nii
+
+#### -wsv, -weighed-sum-voxelwise: Weighed sum of images with spatially varying weights
+
+Syntax: `-wsv `
+
+Computes weighted sum of N weight images and N scalar images. The images must be interleaved on the stack. All images on the stack are used.
+
+    c3d weight1.nii image1.nii weight2.nii image2.nii weight3.nii image3.nii -wsv -o mysum.nii.gz
+
+The **-reorder** command can simplify loading the images:
+
+    c3d weight*.nii image*.nii -reorder 0.5 -wsv -o mysum.nii.gz
+
+### Commands: Image Header Manipulation
+
+#### -copy-transform: Copy header information 
+
+Syntax: `-copy-transform`
+
+Copies the image header, specifically the image to physical space transform (origin, spacing, direction cosines), from the first image to the second image. This is best done with NIFTI images, which store this information well. In the example below, *out.nii* will have the same header as *first.nii* and the same intensities as *second.nii*.
+
+    c3d first.nii second.nii -copy-transform -o out.nii
+
+#### -orient: Change image orientation
+
+Syntax: `-orient CODE`
+
+Set the orientation of the image using one of 48 canonical orientations. The orientation describes the mapping from the voxel coordinate system (i,j,k) to the physical coordinate system (x,y,z). In the voxel coordinate system, i runs along columns of voxels, j runs along rows of voxels, and k runs along slices of voxels. It is assumed (by the NIFTI convention) that the axes of the physical coordinate system run as follows: x from (L)eft to (R)ight, y from (P)osterior to (A)nterior, z from (I)nferior to (S)uperior. 
+
+The CODE passed in is a three-letter code consisting of letters RLAPSI. Each letter describes the anatomical direction corresponding to the voxel coordinates (i,j,k). For example, code RAI means that i runs from Right to Left, j from Anterior to Posterior, and k from Inferior to Superior. 
+
+    c3d input.img -orient RAI -o output.img
+    c3d input.img -orient SAL -o output.img
+
+This command has the same behavior as the 'Reorient Image' menu option in ITK-SNAP. 
+
+#### -origin: Set image origin
+
+Syntax: `-origin vector `
+
+Set the origin of the image. The origin is the world coordinate (in NIfTI coordinate space) of the center of the voxel (0,0,0) in the image. The origin should be specified in millimeters. 
+
+    c3d input.img -origin 100x100x100mm -o output.img
+
+#### -origin-voxel: Assign image origin to a voxel
+
+Syntax: `-origin-voxel vector `
+
+Set the origin of the image by specifying the voxel coordinates of the center of the patient (RAS) coordinate system. The vector should be specified in voxel units. 
+
+    c3d input.img -origin-voxel 60x70x35 -o output.img
+    c3d input.img -origin-voxel 50% -o output.img        # image centered around origin
+
+#### -set-sform: Set the transform to physical space
+
+Syntax: `-set-sform <sform.mat> `
+
+Sets the Nifti sform of the last image on the stack to the 4x4 matrix provided. 
+
+#### -spacing: Set voxel spacing
+
+Syntax: `-spacing <vector> `
+
+Sets the voxel spacing of the image. This should always be a vector with positive components. For example, to set the spacing of the image to 1mm isotropic, use the command below. This command only changes the header of the image, not its contents. 
+
+    c3d img.nii -spacing 1x1x1mm -o out.img
+
+
+### Commands: Image Processing
+
+The following commands invoke an action that is applied to images. Unary commands apply the action to the last image on the stack, binary commands apply to the last two images and so on. Commands are affected by options, which are listed separately. 
+
 #### -ad, -anisotropic-diffusion: Perona-Malik anisotropic diffusion filter
 
 Syntax: `-ad conductance n_iter`
@@ -227,14 +598,6 @@ Syntax: `-ad conductance n_iter`
 Executes the Perona-Malik anisotropic diffusion algorithm on the image. This smoothes the image, but with edge preservation. *Conductance* is a number between 0 and 1 that determines how well edges are preserved. *n_iter* is the number of iterations, which affects the scale of the smoothing. 
 
     c3d x.img -ad 0.1 100 -o ad.img
-
-#### -atan2: Compute angle from sine and cosine
-
-Syntax: `-atan2`
-
-Computes the angle in radians from images containing sine and cosine. This is a voxel-wise operation. It requires two images on the stack (sine followed by cosine): 
-
-    c3d sin_theta.nii.gz cos_theta.nii.gz -atan2 -o theta.nii.gz
 
 #### -biascorr: Automatic MRI bias field correction
 
@@ -280,16 +643,6 @@ Reports the centroid, in physical coordinates, of all foreground voxels in the i
     c3d labelimage.img -thresh 5 5 1 0 -centroid          // centroid of all voxels with label 5
     c3d labelimage.img -split -foreach -centroid -endfor  // centroids of all labels (including 0)
 
-#### -clip: Clip image intensity to range
-
-Syntax: `-clip iMin iMax`
-
-Clips image intensities, so that the values below *iMin* are converted to *iMin* and values greater than *iMax* are converted to *iMax*. This is useful for eliminating hyperintensities in images. Values *iMin* and *iMax* are intensity specifications (see below). 
-
-    c3d mri.img -clip 1000 8000 -o mriclip01.img          // Clips below and above
-    c3d mri.img -clip -inf 8000 -o mriclip02.img          // Clips above only
-    c3d mri.img -clip -inf 95% -o mriclip03.img           // Clips at 95th percentile
-
 #### -color-map, -colormap: Convert scalar image to RGB using color map    
 
 Syntax: `-color-map ColormapName`
@@ -328,20 +681,6 @@ Syntax: `-cmp`
 
 This command is similar to **-cmv** (**-coordinate-map-voxel**), but the output will contain the physical coordinates of the voxels, in the NIFTI (RAS) coordinate frame. 
 
-#### -copy-transform: Copy header information 
-
-Syntax: `-copy-transform`
-
-Copies the image header, specifically the image to physical space transform (origin, spacing, direction cosines), from the first image to the second image. This is best done with NIFTI images, which store this information well. In the example below, *out.nii* will have the same header as *first.nii* and the same intensities as *second.nii*.
-
-    c3d first.nii second.nii -copy-transform -o out.nii
-
-#### -cos, -sin: Trigonometic operations
-
-Syntax: `-cos`, `-sin`
-
-Replaces the last image on the stack with the result of the respective trigonometric operation applied to all voxels. Input must be in radians.
-
 #### -create: Generate blank image
 
 Syntax: `-create dimensions voxel_size`
@@ -351,41 +690,21 @@ Creates a new blank image with specified dimensions and voxel size, and places i
     c3d -create 256x256x160 1x1x1mm -o newimage.img
     c3d -background 128 -create 256x256x160 1x1x1mm -origin 128x128x80mm -o newimage.img
 
-#### -dilate, -erode: Binary dilation and erosion
+#### -dilate: Binary dilation
 
-Syntax: `-dilate label radius` or `-erode label radius`
+Syntax: `-dilate <label> <radius_vector>`
 
-Applies the dilation (or erosion) [mathematical morphology][5] operation to a binary image. The first parameter is the intensity value of the object that is to be dilated. The second is the radius of the dilation structuring element in 3D. 
+Applies the dilation [mathematical morphology][5] operation to a binary image. The first parameter is the intensity value of the object that is to be dilated. The second is the radius of the dilation structuring element in 3D. 
 
-    c3d binary.img -dilate 255 3x3x3mm -o newimage.img
+    c3d binary.img -dilate 255 3x3x3vox -o newimage.img
 
-#### -divide: Image division    
+#### -erode: Binary erosion
 
-Syntax: `-divide`
+Syntax: `-erode <label> <radius_vector>`
 
-Divides one image by another. For instance to compute C = A / B, use the command 
+Applies erosion [mathematical morphology][5] operation to a binary image. The first parameter is the intensity value of the object that is to be eroded. The second is the radius of the erosion structuring element in 3D. 
 
-    c3d A.img B.img -divide -o C.img
-
-Divison may generate infinite and not-a-number (NaN) values if B contains zeros. You can use **-replace** to get rid of these values
-
-    c3d A.img B.img -divide -replace inf 1000 -inf -1000 NaN 0 -o C2.img
-
-#### -erf: Standard error function
-
-Syntax: `-erf mu sigma`
-
-Computes the standard error function. This is useful for applying soft thresholds. The function computes y = erf((x - mu)/sigma). 
-
-    c3d input.img -erf 5 2 -o erf.img
-
-#### -exp, -log, -ln, -log10: Compute exponent or logarithm of each voxel    
-
-Syntax: `-exp`, `-log`, etc.
-
-Computes exponent (**-exp**), natural logarithm (**-ln** or **-log**) or base 10 logarithm (**-log10**) of each voxel in the last image on the stack.
-
-    c3d input.img -exp -o output.img
+    c3d binary.img -erode 255 3x3x3vox -o newimage.img
 
 #### -flip: Flip image around an axis    
 
@@ -415,14 +734,6 @@ Syntax: `-holefill intensity_value [0|1] `
 Apply the binary hole filling algorithm to a particular intensity value in the image. The input image is typically a binary image or a multi-label segmentation image. Holes (voxels not matching the specified intensity value that are completely contained by voxels matching this value) are filled. The second parameter specifies what type of topological connectivity is used to determine holes. The value 0 uses the default algorithm in ITK (face connectivity) and 1 uses the full connectivity variant (face, edge and vertex connectivity). For more details see the [ITK page for this algorithm][7]. 
 
     c3d segmentation.nii.gz -holefill 5 0 -type uchar -o filledlabel5.nii.gz 
-
-#### -info, -info-full: Display image information        
-
-Syntax: `-info` or `-info-full`
-
-Prints information about the last image on the stack. The first variant (**-info**) prints brief information on one line, the second variant (**-info-full**) prints extended information about the image, such as the metadata dictionary. For example, 
-
-    c3d image.hdr -info
 
 #### -lstat, -label-statistics: Display segmentation volumes and intensity statistics
 
@@ -482,23 +793,6 @@ Another example of smoothing a binary image that is useful for cleaning up manua
         -levelset-curvature 1.5 -levelset 100 -o levelset.img \
         -thresh -inf 0 1 0 -o smoothed_binary.img
 
-#### -max, -min: Voxel-wise maximum (minimum) of two images
-
-Syntax: `-max` or `-min`
-
-Computes the voxel-wise maximum (or minimum) of two images. Can be used with the **-accum** command to compute maximum of all images. 
-
-    c3d i1.nii i2.nii -max -o max12.nii
-    c3d i1.nii i2.nii i3.nii i4.nii -accum -max -endaccum -o max1234.nii
-
-#### -mean: Mean of all images on the stack    
-
-Syntax: `-mean `
-
-Computes the mean of all the images on the stack. All images on the stack are replaced with the mean image.
-
-    c3d image_*.nii -mean -o mean.nii
-
 #### -merge: Merge images from previous split command   
 
 Syntax: `-merge`
@@ -543,89 +837,6 @@ Compute the normalized mutual information metric between the last two images on 
 Syntax: `-ncor [movtransform.mat] [reftransform.mat]`
 
     :   Compute the normalized correlation metric between the last two images on the stack. See documentation for **-msq***.
-
-#### -multiply, -times: Multiply two images
-
-Syntax: `-multiply`
-
-Multiply two images voxel-by-voxel. The operation is applied to the last two images on the stack. 
-
-    # Compute x = a * b
-    c3d a.img b.img -multiply -o x.img
-
-    # Compute x = a * (b + c) using -add and -multiply
-    c3d a.img b.img c.img -multiply -add -o x.img
-
-#### -o: Output (write) last image on the stack to image file    
-
-Syntax: `-o filename`
-
-Write image, overriding an existing image. Without the **-o** option, **convert3d** will write an image only if it does not exist. The **-o** options protects input images from being accidentally deleted. Here we copy an image, changing format:
-
-    c3d image1.mha -o image2.nii
-
-The **-o** option can also be used to save an intermediate image in the stack: 
-
-    c3d image1.img -threshold 1 10 1 0 -o thresh.img -resample 50% -o final.img
-
-
-#### -omc, -output-multicomponent: Output multiple images to single file
-
-Syntax: `-omc [number] filename`
-
-Write multiple images on the **Convert3d** stack as a single multi-component image file. If the optional number *n* is specified, only the last *n* images on the stack will be used. Not all file formats support multi-component output. NIFTI is the safest bet.
-
-    c3d red.nii green.nii blue.nii -omc rgb.mha
-
-For 2D images, this command can be used to generate color PNG files:
-
-    c3d image.nii -slice z 50% -colormap jet -type uchar -omc colorslice.png
-
-#### -oo: Output multiple images to multiple files 
-
-Syntax: `-oo image_list` or `-oo image_spec`
-
-Write all images on the **convert3d** stack as multiple files. There are two ways to use this command. The first is to supply a list of file names, separated by spaces: 
-
-    c3d labelimage.nii -split -oo labelA.nii labelB.nii labelC.nii
-
-In the above example, the image at the end of the stack will be saved as *labelC.nii*, the image next to the end of the stack will be saved as *labelB.nii* and so on. 
-
-The second way to use the **-oo** command is to supply a pattern for the output filenames. In this case, all the images on the stack will be written. The format for the pattern is the same as for the [C++ printf command][8]. For example, the following command 
-
-    c3d labelimage.nii -split -oo label%02d.nii
-
-will generate images *label00.nii*, *label01.nii*, *label02.nii* and so on. The image at the end of the stack will have the highest number, and the image at the beginning of the stack will have number 00. 
-
-#### -orient: Change image orientation
-
-Syntax: `-orient CODE`
-
-Set the orientation of the image using one of 48 canonical orientations. The orientation describes the mapping from the voxel coordinate system (i,j,k) to the physical coordinate system (x,y,z). In the voxel coordinate system, i runs along columns of voxels, j runs along rows of voxels, and k runs along slices of voxels. It is assumed (by the NIFTI convention) that the axes of the physical coordinate system run as follows: x from (L)eft to (R)ight, y from (P)osterior to (A)nterior, z from (I)nferior to (S)uperior. 
-
-The CODE passed in is a three-letter code consisting of letters RLAPSI. Each letter describes the anatomical direction corresponding to the voxel coordinates (i,j,k). For example, code RAI means that i runs from Right to Left, j from Anterior to Posterior, and k from Inferior to Superior. 
-
-    c3d input.img -orient RAI -o output.img
-    c3d input.img -orient SAL -o output.img
-
-This command has the same behavior as the 'Reorient Image' menu option in ITK-SNAP. 
-
-#### -origin: Set image origin
-
-Syntax: `-origin vector `
-
-Set the origin of the image. The origin is the world coordinate (in NIfTI coordinate space) of the center of the voxel (0,0,0) in the image. The origin should be specified in millimeters. 
-
-    c3d input.img -origin 100x100x100mm -o output.img
-
-#### -origin-voxel: Assign image origin to a voxel
-
-Syntax: `-origin-voxel vector `
-
-Set the origin of the image by specifying the voxel coordinates of the center of the patient (RAS) coordinate system. The vector should be specified in voxel units. 
-
-    c3d input.img -origin-voxel 60x70x35 -o output.img
-    c3d input.img -origin-voxel 50% -o output.img        # image centered around origin
 
 #### -oli, -overlay-label-image: Overlay segmentation image on grayscale image
 
@@ -710,14 +921,6 @@ This command takes N images as the input (all the images on the stack are used).
 
     c3d img1.img img2.img ... imgN.img -rank -oo rank%d.img
 
-#### -reciprocal: Image voxelwise reciprocal 
-
-Syntax: `-reciprocal `
-
-Computes the reciprocal of an image. For instance to compute B = 1 / A, use the command 
-
-    c3d A.img -reciprocal -o B.img
-
 #### -region: Extract region from image
 
 Syntax: `-region vOrigin vSize `
@@ -726,15 +929,6 @@ Extract a rectangular region from the image. The first parameter is the position
 
     c3d img1.img -region 20x20x20vox 50x60x70vox -o img2.img
     c3d img1.img -region 25% 50% -o img3.img
-
-
-#### -replace: Replace intensities in image
-
-Syntax: `-replace I1 J1 I2 J2 ... `
-
-Replace intensity I1 by J1, I2 by J2 and so on. Allowed values of intensity include **nan**, **inf** and **-inf**. 
-
-    c3d img1.img -replace 1 128 nan 0.0 -o img2.img
 
 #### -resample: Resample image to new dimensions
 
@@ -755,11 +949,11 @@ Resamples the image as in **-resample**, but the user specifies the new voxel si
 
     c3d img1.img -resample-mm 1.0x1.5x1.5mm -o img2.img
 
-#### -reslice-matrix, -reslice-itk: Resample image using affine transform
+#### -reslice-matrix: Resample image using affine transform
 
-Syntax: `reslice-matrix <transform_file>` or `-reslice-itk <transform_file> `
+Syntax: `reslice-matrix <transform_file>`
 
-Applies affine (or other) transform to an image. The first image on the command line is the reference image. The output image will have same dimensions and voxel-to-space transform as the reference image. The second parameter is the moving image, i.e., the image to be resliced. The transform file is either an ITK-format transform file (e.g., those generated by ANTS) or a 4x4 matrix that gives a transform *from the physical space of the reference image to the physical space of the moving image*. To generate a transform file, you must use some sort of registration algorithm, which is not part of **convert3d** (at least not yet).
+Applies affine transform to an image. The first image on the command line is the reference image. The output image will have same dimensions and voxel-to-space transform as the reference image. The second parameter is the moving image, i.e., the image to be resliced. The transform file is a 4x4 matrix that gives a transform *from the physical space of the reference image to the physical space of the moving image*. To generate a transform file, you must use some sort of registration algorithm, which is not part of **convert3d** (at least not yet).
 
     c3d reference_image.nii moving_image.nii -reslice-itk transform_file.txt -o output_image.nii
 
@@ -775,6 +969,14 @@ Then to reslice using **convert3d**, run
 
     c3d reference.nii moving.nii -reslice-matrix ref2mov.txt -o resliced.nii
 
+The related command **-reslice-itk** can be used to use affine transforms computed by ANTs software.
+
+#### -reslice-itk: Resample image using affine transform
+
+Syntax: `-reslice-itk <transform_file> `
+
+Applies affine (or other) transform in ITK (ANTs) format to an image. See notes to **-reslice-matrix** for usage.
+
 #### -reslice-identity: Resample image using identity transform 
 
 Syntax: `-reslice-identity `
@@ -782,34 +984,6 @@ Syntax: `-reslice-identity `
 Applies the **-reslice-matrix** command with the identity transform. This is useful when you have two scans of the same subject with different coordinate transformations to patient space and you want to resample one scan in the space of another scan. For example, if you have T1 and T2 images in different coordinate frames, and want to reslice the T2 image into the space of the T1 
 
     c3d t1.nii t2.nii -reslice-identity -o t2_in_t1_space.nii
-
-#### -rms: Voxelwise vector norm
-
-Syntax: `-rms `
-
-Computes RMS (root mean square) of all images on the stack. The command takes the square of each image on the stack, adds all the squared images and takes the square root of the result. This is very useful for statistical operations. Images must have the same size! 
-
-    c3d img1.img img2.img img3.img img4.img -rms -o rms.img
-
-The equivalent of this command is
-
-    c3d img1.img img2.img img3.img img4.img -foreach -dup -times -endfor \
-        -accum -add -endaccum -sqrt -o rms.img
-
-#### -scale, -shift: Scale or shift image intensity by constant factor
-
-Syntax: `-scale <factor>` and `-shift <constant>`
-
-The **-scale** command multiplies the intensity of each voxel in the last image on the stack by the given factor. The **-shift** command adds the given constant to every voxel. These commands are often used together.
-
-    c3d img1.img -scale 0.5 -o img2.img
-    c3d img1.img -shift 100 -o img2.img
-
-#### -set-sform: Set the transform to physical space
-
-Syntax: `-set-sform <sform.mat> `
-
-Sets the Nifti sform of the last image on the stack to the 4x4 matrix provided. 
 
 #### -sdt, -signed-distance-transform: Signed distance transform of a binary image
 
@@ -843,14 +1017,6 @@ Applies Gaussian smoothing to the image. The parameter vector specifies the stan
 
     c3d img1.img -smooth 2x1x1vox -o out.img
 
-#### -spacing: Set voxel spacing
-
-Syntax: `-spacing <vector> `
-
-Sets the voxel spacing of the image. This should always be a vector with positive components. For example, to set the spacing of the image to 1mm isotropic, use the command below. This command only changes the header of the image, not its contents. 
-
-    c3d img.nii -spacing 1x1x1mm -o out.img
-
 #### -split: Split multi-label image into binary images
 
 Syntax: `-split`
@@ -861,15 +1027,6 @@ This command takes a multilabel image (one with a small number of discrete inten
 
 Also of note is that the **-split** command will disregard infinite intensity values. So if you want to apply voting to a subset of the labels, you can replace labels you do not care about with *inf*, for example, using the **-thresh** command. 
 
-#### -sqrt: Take square root of image
-
-Syntax: `-sqrt `
-
-Computes square root of each voxel in the image.
-
-    c3d input.img -sqrt -o output.img
-
-
 #### -staple: STAPLE algorithm to combine segmentations
 
 Syntax: `-staple <intensity_value> `
@@ -878,14 +1035,6 @@ Runs the ITK implementation of the STAPLE algorithm ([See Paper][11]). STAPLE ge
 
     c3d -verbose rater1.img rater2.img rater3.img -staple 1 -o probmap.img
     c3d -verbose rater*.img -staple 1 -threshold 0.5 inf 1 0 -o bin_segm.img
-
-#### -stretch: Stretch image intensities linearly
-
-Syntax: `-stretch <u1 u2 v1 v2> `
-
-Stretches the intensities in the image linearly, such that u1 maps to v1 and u2 maps to v2. The linear transformation is applied to all intensities in the image, whether inside the range or not. For example, to map a floating point image with intensities in interval (0,1) to the full range of an unsigned short image, use 
-
-    c3d input.img -stretch 0.0 1.0 0 65535 -type ushort -o output.img
 
 #### -test-image, -test-probe: Test condition
 
@@ -913,17 +1062,6 @@ And to arrange the same 2D slices into a 2D montage of 4 images per row, we woul
 
     c2d slices*.png -tile 4x0 -type uchar -o montage.png
 
-
-#### -thresh, -threshold: Binary thresholding
-
-Syntax: `-thresh <u1 u2 vIn vOut> `
-
-Thresholds the image, setting voxels whose intensity is in the range [u1,u2] to vIn and all other voxels to vOut. Values *u1* and *u2* are intensity specifications (see below). This means that you can supply values **inf** and **-inf** for u1 and u2 to construct a one-sided threshold. You can also specify *u1* and *u2* as percentiles. 
-    c3d in.img -threshold -inf 128 1 0 -o out.img
-    c3d in.img -threshold 64 128 1 0 -o out.img
-    c3d in.img -threshold 20% 40% 1 0 -o out.img
-
-
 #### -trim: Trim background region of image
 
 Syntax: `-trim <margin_vector>`
@@ -940,7 +1078,6 @@ Like **-trim**, this command trims the background in an image. However, instead 
 
     c3d in.img -trim-to-size 64x64x128vox -o out.img
 
-
 #### -vote: Vote among images on the stack
 
 Syntax: `-vote `
@@ -950,21 +1087,6 @@ This command takes all images on the stack as arguments and at each voxel *(i,j,
     c3d prob1.img prob2.img prob3.img -vote -type uchar -o label.img
 
 The value assigned to each image is based on its position from the bottom of the stack, with zero indicating bottom-most image. In the example above, the output image has values 0 for voxels where prob1.img is highest, 1 for prob2.img and 2 for prob3.img. Also see the related commands **-split** and **-merge**. 
-
-
-#### -voxel-sum, -voxel-integral: Print sum (volume integral) of all voxel intensities
-
-Syntax: `-voxel-sum ` or `-voxel-integral`
-
-Command **-voxel-sum** prints the sum of all voxels in the image. 
-
-    $ c3d image.img -voxel-sum 
-    Voxel Sum: 200923123
-
-Command **-voxel-integral** is similar, but multiplies the result by voxel spacing. This is useful for computing volumes of objects represented by binary images. The result is in 'ml'. 
-
-    $ c3d image.img -voxel-integral 
-    Voxel Integral: 2341
 
 #### -voxreg, -voxelwise-regression: Regression between two images
 
@@ -980,30 +1102,6 @@ Perform regression between corresponding voxels in two images. This command take
     REGCOEFF[0] = 0
     REGCOEFF[1] = 1
 
-#### -wsum, -weighted-sum: Weighed sum of images with constant weights
-
-Syntax: `-wsum weight1 weight2 ... weightN `
-
-Computes weighted sum of the last N images on the stack. 
-
-    c3d image1.nii image2.nii image3.nii -wsum 0.2 0.7 0.1 -o wsum.nii
-
-This command is particularly useful for combining components in a multicomponent image. For example, for an RGB image, we can convert it to grayscale (using [ImageMagick][13] formula) as follows: 
-
-    c3d -mcs rgb.nii -wsum 0.29900 0.58700 0.11400 -o gray.nii
-
-#### -wsv, -weighed-sum-voxelwise: Weighed sum of images with spatially varying weights
-
-Syntax: `-wsv `
-
-Computes weighted sum of N weight images and N scalar images. The images must be interleaved on the stack. All images on the stack are used.
-
-    c3d weight1.nii image1.nii weight2.nii image2.nii weight3.nii image3.nii -wsv -o mysum.nii.gz
-
-The **-reorder** command can simplify loading the images:
-
-    c3d weight*.nii image*.nii -reorder 0.5 -wsv -o mysum.nii.gz
-
 #### -wrap: Wrap (rotate) image 
 
 Syntax: `-wrap <vector> `
@@ -1015,7 +1113,7 @@ Wrap image around one or more voxel dimensions. Wrapping is typically used to co
 will wrap the image in the second voxel dimension by 20 voxels (i.e., voxel at 10x40x20 will me moved to the position 10x20x20). 
 
 
-### Options
+### Options and Parameters
 
 Options change the behavior of commands that *appear later on the command line*. This is very important. Specifying options after the command will have no effect.
 
@@ -1034,26 +1132,6 @@ Specifies the interpolation used with **-resample** and other commands. Default 
 Shorthand 0 can be used for *NearestNeighbor*, 1 for *Linear* and 3 for *Cubic*. For example:
 
     c3d -int 3 test.nii -resample 200x200x200% -o cubic_supersample.nii
-
-#### -mcs, -multicomponent-split: Enable splitting of multi-component images on read
-
-Syntax: `-mcs`
-
-Enable reading of multi-component images. By default, when a multi-component image is encountered, the components are combined into a single image. Setting the **-mcs** flag changes this behavior, and each of the components is loaded sequentially. See the section below on multi-component image support. 
-
-    $ c3d -mcs rgb.mha -foreach -probe 110x110x80mm -endfor
-    Interpolated image value at 110 110 80 is 1
-    Interpolated image value at 110 110 80 is 66
-    Interpolated image value at 110 110 80 is 29
-
-    $ c3d rgb.mha -foreach -probe 110x110x80mm -endfor
-    Interpolated image value at 110 110 80 is 49.5198
-
-#### -nomcs, -no-multicomponent-split: Disable splitting of multi-component images on read
-
-Syntax: `-nomcs`
-
-Used to reverse the effect of previous **-mcs** command.
 
 
 #### -noround, -round: Floating point rounding behavior

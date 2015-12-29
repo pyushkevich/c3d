@@ -183,10 +183,36 @@ MainWindow::MainWindow(QWidget *parent) :
   dock2->setWidget(m_History);
   dock2->setWindowTitle("Command History");
 
-
   // Settings
   m_Settings = new SettingsDialog(this);
 
+  // Build the commands list
+  const std::vector<Documentation::Category> &cat = m_Documentation->GetCategories();
+  for(int i = 0; i < cat.size(); i++)
+    {
+    // Create a submenu for these commands
+    QString title = QString("Category: ") + QString::fromStdString(cat[i].Title);
+    QMenu *mCat = new QMenu(title, this);
+
+    // Add all commands to this submenu
+    QList<QAction *> actions;
+
+    for(int j = 0; j < cat[i].Commands.size(); j++)
+      {
+      const Documentation::CommandDoc &cd = cat[i].Commands[j];
+      QString mainAlias = QString::fromStdString(cd.Aliases.front());
+
+      QAction *action = new QAction(this);
+      action->setData(mainAlias);
+      action->setText(QString::fromStdString(cd.Title));
+      action->setToolTip(QString::fromStdString(cd.ShortDesc));
+      connect(action, SIGNAL(triggered()), this, SLOT(onCommandActionTriggered()));
+      actions.push_back(action);
+      }
+
+    mCat->addActions(actions);
+    ui->menuCommands->addMenu(mCat);
+    }
 }
 
 #include <QFileSystemModel>
@@ -252,6 +278,18 @@ void MainWindow::onImageViewRequested(QString filename)
   QStringList args;
   args.push_back(filename);
   myProcess->start(fiViewer.absoluteFilePath(), args);
+}
+
+void MainWindow::onCommandActionTriggered()
+{
+  QAction *action = (QAction *) this->sender();
+  QString command = action->data().toString();
+
+  QTextCursor tc = ui->teCommand->textCursor();
+  tc.insertText(command);
+  if(!ui->teCommand->document()->characterAt(tc.position()+1).isSpace())
+    tc.insertText(" ");
+  ui->teCommand->setFocus();
 }
 
 void MainWindow::on_btnRun_clicked()

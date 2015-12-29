@@ -167,7 +167,13 @@
     </property>
     <addaction name="actionC3D_Manual"/>
    </widget>
+   <widget class="QMenu" name="menuCommands">
+    <property name="title">
+     <string>Commands</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuCommands"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

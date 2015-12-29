@@ -66,13 +66,9 @@ Documentation::Documentation(unsigned char *rawdoc)
 : m_Text((const char *) rawdoc)
 {
   // Headings
+  std::string relevant_category_heading = "### Commands:";
   m_CategoryHeading = "### ";
   m_CommandHeading = "#### ";
-
-  // Configure command categories
-  m_Categories.push_back(Category("Image Processing"));
-  m_Categories.push_back(Category("Stack Manipulation"));
-  m_Categories.push_back(Category("Options"));
 
   // Parse the file
   std::istringstream iss(m_Text);
@@ -89,14 +85,13 @@ Documentation::Documentation(unsigned char *rawdoc)
       {
       // This is a category - find out which one
       current_cat = -1;
-      for(int i = 0; i < m_Categories.size(); i++)
+
+      if(line.find(relevant_category_heading) == 0)
         {
-        if(line.find(m_Categories[i].Title) != line.npos)
-          {
-          current_cat = i;
-          current_command = "";
-          break;
-          }
+        std::string title = line.substr(relevant_category_heading.length());
+        m_Categories.push_back(Category(trim(title)));
+        current_cat = m_Categories.size() - 1;
+        current_command = "";
         }
       }
 

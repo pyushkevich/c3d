@@ -55,6 +55,7 @@ public slots:
 
   void onCommandReceive(QString command);
   void onImageViewRequested(QString filename);
+  void onCommandActionTriggered();
 
 private slots:
   void on_btnChangeDir_clicked();
