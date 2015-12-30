@@ -708,6 +708,14 @@ Applies erosion [mathematical morphology][5] operation to a binary image. The fi
 
     c3d binary.img -erode 255 3x3x3vox -o newimage.img
 
+#### -fft: Fast Fourier transform
+
+Syntax `-fft`
+
+Computes the Fourier transform of a real-valued image at the end of the stack. The image is replaced by the real and imaginary components of the FFT. This command is only available if **convert3d** is compiled with the FFTW library support. 
+
+    c3d image.nii -fft -oo real.nii imag.nii
+
 #### -flip: Flip image around an axis    
 
 Syntax: `-flip axes`
@@ -728,6 +736,19 @@ Applies voxel-wise general linear model to a set of images. More precisely, the 
       echo "1 83.00" >> design_mat.txt
       echo "0 1" >> contrast_vec.txt
       c3d time1.img time2.img time3.img time4.img -glm design_mat.txt contrast_vec.txt -o regress.img
+
+#### -hessobj, -hessian-objectness: Hessian objectness filter
+
+Syntax: `-hessobj <dimension> <min_scale> <max_scale>`
+
+Also known as the Frangi vesselness filter, this filter can be used to highlight tube-like, sheet-like and blob-like objects in the image. For details, see documentation to the [corresponging ITK class][HTOMIF]. 
+
+Parameter `dimension` is an integer that determines the kind of features that are highlighed. Use 0 for blobs, 1 for tubes, 2 for pancakes, etc. The min and max scale parameters are floating point values, giving the scale of the features highlighted, in physical units. Typically, just one scale is used.
+
+    # Detect vessel-like structures at scale 0.5mm
+    c3d image.nii.gz -hessobj 1 0.5 0.5
+
+ [HTOMIF] http://www.itk.org/Doxygen/html/classitk_1_1HessianToObjectnessMeasureImageFilter.html
 
 #### -holefill: Fill holes in binary image
 
