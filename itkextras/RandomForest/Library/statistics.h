@@ -207,6 +207,7 @@ public:
     size_t binSize = 0;
     readBasicType(is, binSize);
     bins_.resize(binSize);
+    prob_.resize(binSize);
     sampleNum_ = 0;
     for (size_t i = 0; i < binSize; ++i)
       {

@@ -923,6 +923,41 @@ This command takes N images as the input (all the images on the stack are used).
 
     c3d img1.img img2.img ... imgN.img -rank -oo rank%d.img
 
+#### -rf-train: Train Random Forest classifier
+
+Syntax: `-rf-train <classifier_file>`
+
+This command trains a classifier using an implementation of the [Breyman et al. Random Forest Algorithm][Br2001], with modifications proposed by [Criminisi and Shotton][Cr2004]. The stack must contain one or more images of features (e.g., grayscale images), followed by a multi-label image. The latter must have at least two non-zero labels corresponding to different classes. The classifier is trained on a voxel by voxel basis. All voxels with label *L* are treated as the examples of class *L*. The classifier is output to a binary file that can later be used by the **-rf-apply** command. Multiple parameters can be specified with the **-rf-param-xxx** options before calling **-rf-train**. The stack is not modified by this command.
+
+    # Training with two MRI modalities as features and default parameters
+    c3d t1_mri.nii t2_mri.nii segmentation.nii -rf-train myforest1.rf
+
+    # Training with patches as features (see docs for -rf-param-patch)
+    c3d ultrasound.nii seg.nii -rf-param-patch 2x2x2 -rf-train myforest2.rf
+
+    # Applying the classifier
+    c3d ultrasound.nii -rf-apply myforest2.rf -omc class_prob.nii.gz
+
+The commands are meant to replicate the "classification" pre-segmentation mode in ITK-SNAP, i.e., extending a rough example segmentation to the entire image domain. It is possible to also use the commands to train classifiers jointly on data from multiple subjects, each with its own segmentation, as long as the images from the different subjects occupy the same image space and can be stacked into a 4-dimensional image. For example:
+
+    # Train using MRI and segmentations from N subjects
+    c4d mri_subj*.nii -stack w -popas ALLMRI \
+        seg_subj*.nii -stach w -popas ALLSEG \
+        -rf-param-patch 2x2x2x0 \
+        -push ALLMRI -push ALLSEG -rf-train myforest.rf
+
+    # Apply using single MRI
+    c4d mri_new.nii -rf-apply myforest.rf -omc classprob.nii
+
+ [Br2001] Breiman, L. (2001). Random forests. Machine learning, 45(1), 5-32.
+ [Cr2004] Criminisi, A., & Shotton, J. (2013). Decision forests for computer vision and medical image analysis. Springer Science & Business Media
+
+#### -rf-apply: Apply Random Forest classifier 
+
+Syntax: `-rf-apply <classifier_file>`
+
+This command applies a classifier trained previously by **-rf-train**. The stack must contain the same number of feature images as when training. The images will be removed from the stack and replaced with a set of K probability images, where K is the number of classes during training. See examples under **-rf-train** for usage.
+
 #### -region: Extract region from image
 
 Syntax: `-region vOrigin vSize `
@@ -1115,7 +1150,7 @@ Wrap image around one or more voxel dimensions. Wrapping is typically used to co
 will wrap the image in the second voxel dimension by 20 voxels (i.e., voxel at 10x40x20 will me moved to the position 10x20x20). 
 
 
-### Options and Parameters
+### Commands: Options and Parameters
 
 Options change the behavior of commands that *appear later on the command line*. This is very important. Specifying options after the command will have no effect.
 
@@ -1160,6 +1195,33 @@ This options changes how the percent sign (%) is interpreted when specifying int
     $ c3d comp01.png -verbose -pim Range -verbose -threshold 75% inf 1 0 
     Intensity range spec 0.75 maps to 191.25
 
+#### -rf-param-patch: Random Forest training patch size
+
+Syntax: `-rf-param-patch <size_spec>`
+
+Set the radius of the patch used to generate features for the RF classifier. By default this is zero, which means that just the intensity of each voxel is used as a feature. Setting this to non-zero values will result in neighboring intensities also being used as features, and can improve classification in presence of complex image texture. The patch size in each dimension is (2 * radius + 1). See **-rf-train** command for details.
+
+    # Set patch size to 5x5x5 
+    c3d ... -rf-param-patch 2x2x2 ... -rf-train myforest.rf
+
+#### -rf-param-usexyz: Random Forest coordinate features
+
+Syntax: `-rf-param-usexyz`
+
+Use the coordinates of voxels as additional features. This allows some geometric relations between different labels to be learned. Equivalent to the corresponding ITK-SNAP option.
+
+#### -rf-param-treedepth: Random Forest tree depth
+
+Syntax: `-rf-param-treedepth <integer>`
+
+Sets the depth of the trees in the classifier. Default value is 30. Deeper trees can learn on more complex data but require more time. 
+
+#### -rf-param-ntrees: Random Forest forest size
+
+Syntax: `-rf-param-ntrees <integer>`
+
+Sets the number of trees in the forest. Default value is 50. Larger forests are more robust but more time to train and apply. 
+
 #### -spm, -nospm: SPM compatibility in Analyze output
 
 Syntax: `-spm` or `-nospm `
@@ -1179,9 +1241,9 @@ Specifies the pixel type for the output image. By default, images are written in
 
 Some images require data in certain types. For example, to save PNG images, uchar or ushort type must be specified.
 
-#### -verbose, -noverbose: Enable verbose output of commands
+#### -verbose: Enable verbose output of commands
 
-Syntax: `-verbose` or `-noverbose`
+Syntax: `-verbose`
 
 Commands entered after the **-verbose** command will print debugging information. This can be turned off with **-noverbose**.
 

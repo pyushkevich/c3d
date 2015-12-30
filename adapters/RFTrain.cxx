@@ -41,7 +41,7 @@ RFTrain<TPixel, VDim>
     throw ConvertException("At least two images (data/label) required to train RF classifier");
 
   // Get the label image
-  ImagePointer imgLabel = c->m_ImageStack.back(); c->m_ImageStack.pop_back();
+  ImagePointer imgLabel = c->m_ImageStack.back();
 
   // Iterator for grouping images into a multi-component image
   typedef itk::VectorImage<TPixel, VDim> VectorImageType;
@@ -67,11 +67,8 @@ RFTrain<TPixel, VDim>
   cit.SetRadius(param.patch_radius);
 
   // Add all the anatomical images to this iterator
-  for(int i = 0; i < c->m_ImageStack.size(); i++)
+  for(int i = 0; i < c->m_ImageStack.size() - 1; i++)
     cit.AddImage(c->m_ImageStack[i]);
-
-  // Clear the stack 
-  c->m_ImageStack.clear();
 
   // Get the number of components
   int nComp = cit.GetTotalComponents();
@@ -169,16 +166,8 @@ RFTrain<TPixel, VDim>
 
   // Dump the classifier to a file
   ofstream out_file(train_file);
-  classifier->GetForest()->Write(out_file);
+  classifier->Write(out_file);
   out_file.close();
-  
-
-  // Do some processing ...
-  // ImagePointer result = ...;
-  
-  // Put result on stack
-  // c->m_ImageStack.pop_back();
-  // c->m_ImageStack.push_back(result);
 }
 
 // Invocations

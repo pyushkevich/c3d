@@ -90,6 +90,71 @@ public:
     return m_ClassToLabelMapping.size() >= 2 && m_Forest->GetForestSize() > 0;
     }
 
+  /** Write classifier to binary file */
+  void Write(std::ostream &os)
+    {
+    // Write the forest
+    for(int d = 0; d < VDim; d++)
+      writeBasicType(os, m_PatchRadius[d]);
+    writeBasicType(os, m_UseCoordinateFeatures);
+    writeBasicType(os, m_BiasParameter);
+
+    writeBasicType(os, (int) m_ClassToLabelMapping.size());
+    for(typename MappingType::iterator it = m_ClassToLabelMapping.begin();
+        it != m_ClassToLabelMapping.end(); ++it)
+        {
+        writeBasicType(os, it->first);
+        writeBasicType(os, it->second);
+        }
+
+    writeBasicType(os, (int) m_ClassWeights.size());
+    for(typename WeightArray::iterator it = m_ClassWeights.begin();
+        it != m_ClassWeights.end(); ++it)
+        {
+        writeBasicType(os, *it);
+        }
+
+    writeBasicType(os, m_ValidLabel);
+
+    m_Forest->Write(os);
+    }
+
+  /** Read classifier from binary file */
+  void Read(std::istream &is)
+    {
+    this->Reset();
+
+    // Read the forest
+    for(int d = 0; d < VDim; d++)
+      readBasicType(is,m_PatchRadius[d]);
+    readBasicType(is,m_UseCoordinateFeatures);
+    readBasicType(is,m_BiasParameter);
+
+    int sz_map, i;
+    readBasicType(is,sz_map);
+    for(i = 0; i < sz_map; i++)
+      {
+      size_t x; LabelType y;
+      readBasicType(is,x);
+      readBasicType(is,y);
+      m_ClassToLabelMapping[x] = y;
+      }
+
+    int sz_wgt, j;
+    readBasicType(is,sz_wgt);
+    for(j = 0; j < sz_wgt; j++)
+      {
+      double x;
+      readBasicType(is,x);
+      m_ClassWeights.push_back(x);
+      }
+
+    readBasicType(is,m_ValidLabel);
+
+    m_Forest->Read(is);
+
+    }
+
 protected:
 
   RandomForestClassifier()

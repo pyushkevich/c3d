@@ -74,6 +74,7 @@
 #include "ReplaceIntensities.h"
 #include "ResampleImage.h"
 #include "ResliceImage.h"
+#include "RFApply.h"
 #include "RFTrain.h"
 #include "SampleImage.h"
 #include "ScalarToRGB.h"
@@ -237,6 +238,7 @@ std::string str_to_lower(const char *input)
     out << "    -reslice-matrix" << endl;
     out << "    -reslice-identity" << endl;
     ***  out << "    -rf-train" << endl;
+    ***  out << "    -rf-apply" << endl;
     out << "    -rms" << endl;
     out << "    -round" << endl;
     out << "    -scale" << endl;
@@ -1358,6 +1360,18 @@ ImageConverter<TPixel, VDim>
 
     }
 
+  else if (cmd == "-rf-apply")
+    {
+    // Get the filename for the training output
+    std::string rf_file = argv[1];
+
+    // Get the current parameters
+    RFApply<TPixel, VDim> adapter(this);
+    adapter(rf_file.c_str());
+
+    return 1;
+    }
+
   else if (cmd == "-rf-train")
     {
     // Get the filename for the training output
@@ -1367,6 +1381,37 @@ ImageConverter<TPixel, VDim>
     RFTrain<TPixel, VDim> adapter(this);
     adapter(rf_file.c_str(), m_Param->m_RandomForest);
 
+    return 1;
+    }
+
+  else if (cmd == "-rf-param-patch")
+    {
+    SizeType patch_radius = ReadSizeVector(argv[1]);
+    m_Param->m_RandomForest.patch_radius = patch_radius;
+    return 1;
+    }
+
+  else if (cmd == "-rf-param-usexyz")
+    {
+    m_Param->m_RandomForest.use_coordinate_features = true;
+    return 0;
+    }
+
+  else if (cmd == "-rf-param-nousexyz")
+    {
+    m_Param->m_RandomForest.use_coordinate_features = false;
+    return 0;
+    }
+
+  else if (cmd == "-rf-param-ntrees")
+    {
+    m_Param->m_RandomForest.forest_size = atoi(argv[1]);
+    return 1;
+    }
+
+  else if (cmd == "-rf-param-treedepth")
+    {
+    m_Param->m_RandomForest.tree_depth = atoi(argv[1]);
     return 1;
     }
 
