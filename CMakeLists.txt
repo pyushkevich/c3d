@@ -87,6 +87,7 @@ SET(SOURCES
   adapters/LevelSetSegmentation.cxx
   adapters/MathematicalMorphology.cxx
   adapters/MeanFilter.cxx
+  adapters/MedianFilter.cxx
   adapters/MixtureModel.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx

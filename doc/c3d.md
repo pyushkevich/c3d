@@ -816,6 +816,14 @@ Another example of smoothing a binary image that is useful for cleaning up manua
         -levelset-curvature 1.5 -levelset 100 -o levelset.img \
         -thresh -inf 0 1 0 -o smoothed_binary.img
 
+#### -mf, -mean-filter: Mean filter
+
+Syntax: `-mf <radius_vector>`
+
+Applies the mean filter: the intensity of each voxel is replaced by the mean of the intensities in the neighborhood of size specified by the radius parameter. For example, the following code will apply the mean filter with the 5x5x5 neighborhood. 
+
+    c3d in.nii -mf 2x2x2 -o filtered.nii
+
 #### -median, -median-filter: Median filter
 
 Syntax: `-median <radius_vector>`
