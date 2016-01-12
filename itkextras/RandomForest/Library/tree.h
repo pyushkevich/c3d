@@ -245,7 +245,7 @@ public:
 
   void BreathFirstFullTree()
   {
-    breadthFirstFullTree_.resize(pow(2, depth_)-1);
+    breadthFirstFullTree_.resize(::pow(2, depth_)-1);
     for (int i = 0; i < breadthFirstFullTree_.size(); ++i)
       {
         breadthFirstFullTree_[i] = 0;
@@ -390,7 +390,7 @@ public:
 
             std::ios_base::fmtflags original_flags = std::cout.flags();
             int index = 0;
-            int interval = pow(2, depth_) - 1;
+            int interval = ::pow(2, depth_) - 1;
             int start = (interval - 1) / 2;
 
             int nodeNum = 0;

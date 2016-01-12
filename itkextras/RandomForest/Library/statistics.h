@@ -370,7 +370,7 @@ public:
           {
             CalculateCov();
           }
-        return (0.5 * log(pow(2*M_PI*M_E, featureDim_)
+        return (0.5 * log(::pow(2*M_PI*M_E, featureDim_)
                           * spddeterminant(L_, true)));
       }
   }
@@ -393,7 +393,7 @@ public:
       {
         X[i] -= mean_[i];
       }
-    return (sqrt(1.0 / (pow(2 * M_PI, featureDim_) * spddeterminant(L_, true)))
+    return (sqrt(1.0 / (::pow(2 * M_PI, featureDim_) * spddeterminant(L_, true)))
             * exp(-0.5 * multiplyXTspdAinvX(X, L_, true)));
   }
 
