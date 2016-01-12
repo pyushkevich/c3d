@@ -816,6 +816,14 @@ Another example of smoothing a binary image that is useful for cleaning up manua
         -levelset-curvature 1.5 -levelset 100 -o levelset.img \
         -thresh -inf 0 1 0 -o smoothed_binary.img
 
+#### -median, -median-filter: Median filter
+
+Syntax: `-median <radius_vector>`
+
+Applies the median filter: the intensity of each voxel is replaced by the median of the intensities in the neighborhood of size specified by the radius parameter. For example, the following code will apply the median filter with the 5x5x5 neighborhood. 
+
+    c3d in.nii -median 2x2x2 -o median.nii
+
 #### -merge: Merge images from previous split command   
 
 Syntax: `-merge`

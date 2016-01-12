@@ -58,6 +58,7 @@
 #include "LevelSetSegmentation.h"
 #include "MathematicalMorphology.h"
 #include "MeanFilter.h"
+#include "MedianFilter.h"
 #include "MixtureModel.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
@@ -895,6 +896,14 @@ ImageConverter<TPixel, VDim>
     ScaleShiftImage<TPixel, VDim> scaler(this);
     scaler(1.0 / n, 0.0);
     return 0;
+    }
+
+  else if(cmd == "-median" || cmd == "-median-filter")
+    {
+    MedianFilter<TPixel, VDim> adapter(this);
+    SizeType radius = this->ReadSizeVector(argv[1]);
+    adapter(radius);
+    return 1;
     }
 
   else if (cmd == "-merge")
