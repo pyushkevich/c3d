@@ -48,6 +48,10 @@ typedef itk::OrientedRASImage<double, 3> ImageType;
 typedef vnl_matrix_fixed<double, 4, 4> MatrixType;
 typedef std::vector<MatrixType> MatrixStack;
 
+typedef vnl_matrix_fixed<double, 3, 3> Mat3;
+typedef vnl_vector_fixed<double, 3> Vec3;
+
+
 int usage()
 {
   cout << 
@@ -71,6 +75,13 @@ int usage()
     "  -oirtk file   Export IRTK .dof format transform\n"
     "  -info         Print matrix\n"
     "  -info-full    Print matrix and more detail about the transform\n"
+    "  -rot theta vx vy vz:\n"
+    "                Generate rotation matrix corresponding to rotation theta\n"
+    "                (in degrees) around vector vx,vy,vz\n"
+    "  -trans vx vy vz:\n"
+    "                Generate matrix for translation by vx,vy,vz \n"
+    "  -scale sx sy sz:\n"
+    "                Generate matrix for scaling by sx,sy,sz\n"
     ;
   return -1;
 }
@@ -537,6 +548,56 @@ void ras_sqrt(MatrixStack &vmat)
   vmat.push_back(Y);
 }
 
+void make_rotation(MatrixStack &vmat, double theta, Vec3 v)
+{
+  // Normalize the vector by magnitude
+  v.normalize();
+
+  // Convert the angle to radians
+  double theta_rad = theta * vnl_math::pi / 180;
+
+  // Compute the skew-symmetric matrix
+  Mat3 S; S.fill(0.0);
+  S(0,1) = -v[2]; S(1,0) = v[2];
+  S(2,0) = -v[1]; S(0,2) = v[1];
+  S(1,2) = -v[0]; S(2,1) = v[0];
+
+  // Apply Rodriguez formula
+  Mat3 R; R.set_identity();
+  R += sin(theta_rad) * S;
+  R += (1 - cos(theta_rad)) * (S * S);
+
+  // Fill out the complete matrix
+  MatrixType A; A.set_identity();
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      A(i,j) = R(i,j);
+
+  vmat.push_back(A);
+}
+
+
+void make_translation(MatrixStack &vmat, Vec3 v)
+{
+  // Fill out the complete matrix
+  MatrixType A; A.set_identity();
+  for(int i = 0; i < 3; i++)
+    A(i,3) = v[i];
+
+  vmat.push_back(A);
+}
+
+void make_scaling(MatrixStack &vmat, Vec3 v)
+{
+  // Fill out the complete matrix
+  MatrixType A; A.set_identity();
+  for(int i = 0; i < 3; i++)
+    A(i,i) = v[i];
+
+  vmat.push_back(A);
+}
+
+
 void ras_det(MatrixStack &vmat)
 {
   MatrixType m = vmat.back();
@@ -677,6 +738,31 @@ int main(int argc, char *argv[])
       else if(arg == "-oirtk")
         {
         irtk_write(vmat, argv[++iarg]);
+        }
+      else if(arg == "-rot")
+        {
+        double theta = atof(argv[++iarg]);
+        Vec3 v;
+        v[0] = atof(argv[++iarg]);
+        v[1] = atof(argv[++iarg]);
+        v[2] = atof(argv[++iarg]);
+        make_rotation(vmat, theta, v);
+        }
+      else if(arg == "-tran")
+        {
+        Vec3 v;
+        v[0] = atof(argv[++iarg]);
+        v[1] = atof(argv[++iarg]);
+        v[2] = atof(argv[++iarg]);
+        make_translation(vmat, v);
+        }
+      else if(arg == "-scale")
+        {
+        Vec3 v;
+        v[0] = atof(argv[++iarg]);
+        v[1] = atof(argv[++iarg]);
+        v[2] = atof(argv[++iarg]);
+        make_scaling(vmat, v);
         }
       else if(arg[0] != '-')
         {
