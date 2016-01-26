@@ -44,6 +44,7 @@
 #include "CopyTransform.h"
 #include "CreateImage.h"
 #include "CreateInterpolator.h"
+#include "DicomSeriesList.h"
 #include "ExtractRegion.h"
 #include "ExtractSlice.h"
 #include "FlipImage.h"
@@ -577,6 +578,26 @@ ImageConverter<TPixel, VDim>
     RealVector voxel = ReadRealSize(argv[2]);
     CreateImage<TPixel, VDim> adapter(this);
     adapter(dims, voxel);
+    return 2;
+    }
+
+  else if (cmd == "-dicom-series-list")
+    {
+    DicomSeriesList<TPixel, VDim> adapter(this);
+    adapter(argv[1]);
+    return 1;
+    }
+
+  else if (cmd == "-dicom-series-read")
+    {
+    typedef ReadImage<TPixel, VDim> Adapter;
+    typename Adapter::ImageInfo info;
+
+    info.dicom_series_id = argv[2];
+
+    Adapter adapter(this);
+    adapter(argv[1], info);
+
     return 2;
     }
 

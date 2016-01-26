@@ -73,6 +73,7 @@ SET(SOURCES
   adapters/CopyTransform.cxx
   adapters/CreateImage.cxx
   adapters/CreateInterpolator.cxx
+  adapters/DicomSeriesList.cxx
   adapters/ExtractRegion.cxx
   adapters/ExtractSlice.cxx
   adapters/FlipImage.cxx

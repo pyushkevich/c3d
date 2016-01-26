@@ -119,6 +119,19 @@ Passing an image on the command line (without any switches) results in that imag
 
 will result in information printed for both images. At the end, `myimage.nii` will be in the first position on the stack and `another.nii` will be at the end of the stack.
 
+#### -dicom-series-list: List image series in a DICOM directory
+
+Syntax: `-dicom-series-list <directory>
+
+Prints out a table of DICOM series ids and corresponding image information to standard output.
+
+#### -dicom-series-read: Read a DICOM image series
+
+Syntax: `-dicom-series-read <directory> <series_id>`
+
+Imports a specific DICOM image series from a directory containing DICOM files. The **directory** parameter may also point to one of the DICOM files in the directory.
+The **seried_id** is a string identifier for the series that can be obtained by calling **-dicom-series-list**
+
 #### -info: Display brief image information        
 
 Syntax: `-info`

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   C3D: Command-line companion tool to ITK-SNAP
-  Module:    ReadImage.h
+  Module:    %fn%.h
   Language:  C++
   Website:   itksnap.org/c3d
   Copyright (c) 2014 Paul A. Yushkevich
@@ -23,31 +23,21 @@
 
 =========================================================================*/
 
-#ifndef __ReadImage_h_
-#define __ReadImage_h_
+#ifndef __DicomSeriesList_h_
+#define __DicomSeriesList_h_
 
 #include "ConvertAdapter.h"
 
 template<class TPixel, unsigned int VDim>
-class ReadImage : public ConvertAdapter<TPixel, VDim>
+class DicomSeriesList : public ConvertAdapter<TPixel, VDim>
 {
 public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
-  // Structure for additional information for reading images
-  struct ImageInfo
-  {
-    char *dicom_series_id;
-    ImageInfo() : dicom_series_id(NULL) {}
-  };
+  DicomSeriesList(Converter *c) : c(c) {}
 
-  ReadImage(Converter *c) : c(c) {}
-
-  /**
-   * Second parameter is extra information for special IO needs, like DICOM
-   */
-  void operator() (const char *file, const ImageInfo &info = ImageInfo());
+  void operator() (const char *dicom_dir);
 
 private:
   Converter *c;
