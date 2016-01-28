@@ -27,6 +27,7 @@
 #include <iomanip>
 #include <sstream>
 #include <itksys/RegularExpression.hxx>
+#include <algorithm>
 
 // Helper function: trim whitespace
 // from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
