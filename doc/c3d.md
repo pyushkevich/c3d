@@ -890,6 +890,14 @@ Syntax: `-ncor [movtransform.mat] [reftransform.mat]`
 
     :   Compute the normalized correlation metric between the last two images on the stack. See documentation for **-msq***.
 
+#### -nlw, -normalize-local-window: Standardize image intensity using local neighborhood
+
+Syntax: `-nlw <radius>`
+
+This command takes as inputs an image and a mask image. At each voxel, the mean of the local neighborhood is subtracted, and the result is divided by the standard deviation of the neighborhood. The mean and standard deviation are computed only over the masked region. You might also want to multiply by the mask.
+
+    c3d gray.nii.gz mask.nii.gz -nlw 10x10x10 -o residual.nii.gz
+
 #### -oli, -overlay-label-image: Overlay segmentation image on grayscale image
 
 Syntax: `-oli lookup_table_file opacity`

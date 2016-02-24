@@ -24,12 +24,57 @@
 =========================================================================*/
 
 #include "NormalizeLocalWindow.h"
-#include "itkImageKernelOperator.h"
-#include "itkNeighborhoodOperatorImageFilter.h"
-#include "itkMultiplyImageFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkDivideImageFilter.h"
-#include "itkSqrtImageFilter.h"
+#include "OneDimensionalInPlaceAccumulateFilter.h"
+#include "itkBinaryFunctorImageFilter.h"
+#include "itkVectorImage.h"
+#include "VectorImageTools.h"
+
+template <class TInputPixel, class TOutputPixel>
+class NormalizeLocalWindowImageToStatsFunctor
+{
+public:
+  // The first parameter is the image, and the second parameter is the mask
+  TOutputPixel operator() (const TInputPixel &x, const TInputPixel &m)
+    {
+    TOutputPixel c;
+    c[0] = m;
+    c[1] = x * m;
+    c[2] = x * x * m;
+    return c;
+    }
+
+  bool operator != (const NormalizeLocalWindowImageToStatsFunctor<TInputPixel, TOutputPixel> &other)
+    { return false; }
+};
+
+template <class TInputPixel1, class TInputPixel2, class TOutputPixel>
+class NormalizedLocalWindowStatsToResultFunctor
+{
+public:
+  typedef NormalizedLocalWindowStatsToResultFunctor<TInputPixel1, TInputPixel2, TOutputPixel> Self;
+
+  TOutputPixel operator() (const TInputPixel1 &c, const TInputPixel2 &x)
+    {
+    // Get the raw data
+    double sum_m = c[0];
+    double sum_mx = c[1];
+    double sum_mxx = c[2];
+
+    // If no mask, return 0
+    if(sum_m == 0)
+      return 0;
+
+    // Compute the standard deviation
+    double var_xx = (sum_mxx - sum_mx * sum_mx / sum_m) / sum_m;
+
+    // Compute the difference
+    return (x - sum_mx / sum_m) / sqrt(var_xx);
+    }
+
+  bool operator != (const Self &other)
+    { return false; }
+};
+
 
 template <class TPixel, unsigned int VDim>
 void
@@ -39,79 +84,42 @@ NormalizeLocalWindow<TPixel, VDim>
   // This filter replaces the intensity g(x) at each voxel by (g-mu)/sigma, where mu and sigma
   // are the mean and standard deviation of intensity in a neighborhood. To compute the filter,
   // we need to compute these sliding window statistics
-  
-  // Create the mean image kernel
-  ImagePointer kernel = ImageType::New();
-  RegionType kregion;
-  for(int i = 0; i < VDim; i++)
-    {
-    kregion.SetIndex(i, 0);
-    kregion.SetSize(i, radius[i]*2+1);
-    }
-  kernel->SetRegions(kregion);
-  kernel->Allocate();
-  kernel->FillBuffer(1.0 / kregion.GetNumberOfPixels());
+  //
+  // The first input is the image and the second input is a mask to which the computation of the
+  // statistics is restricted. The statistics are only computed inside of the mask
+  // Get two images from stack
+  ImagePointer image = c->m_ImageStack[c->m_ImageStack.size()-2];
+  ImagePointer mask = c->m_ImageStack[c->m_ImageStack.size()-1];
 
-  // Apply kernel
-  typedef itk::ImageKernelOperator<TPixel, VDim> OperatorType;
-  OperatorType op;
-  op.SetImageKernel(kernel);
-  op.CreateToRadius(radius);
+  // Alternative approach
+  typedef itk::Vector<TPixel, 3> StatsVector;
+  typedef itk::Image<StatsVector, VDim> StatsImage;
+  typedef NormalizeLocalWindowImageToStatsFunctor<TPixel,StatsVector> StatsFunctor;
+  typedef itk::BinaryFunctorImageFilter<ImageType, ImageType, StatsImage, StatsFunctor> StatsFilter;
+  typename StatsFilter::Pointer fltStats = StatsFilter::New();
+  fltStats->SetInput1(image);
+  fltStats->SetInput2(mask);
+  fltStats->Update();
 
-  // Create a mean filter
-  ImagePointer img = c->m_ImageStack.back();
-  typedef itk::NeighborhoodOperatorImageFilter<ImageType, ImageType> MeanFilter;
-  typename MeanFilter::Pointer fmean = MeanFilter::New();
-  fmean->SetInput(img);
-  fmean->SetOperator(op);
+  // Masquerade as a vector image
+  typedef itk::VectorImage<TPixel, VDim> VecImageType;
+  typename VecImageType::Pointer vecImage = WrapImageOfVectorAsVectorImage(fltStats->GetOutput());
 
-  // Square the input image
-  typedef itk::MultiplyImageFilter<ImageType, ImageType> MultFilter;
-  typename MultFilter::Pointer fltMult = MultFilter::New();
-  fltMult->SetInput1(img);
-  fltMult->SetInput2(img);
+  // Perform the accumulation
+  typename VecImageType::Pointer imgAccum = AccumulateNeighborhoodSumsInPlace(vecImage.GetPointer(), radius);
+    
+  typedef NormalizedLocalWindowStatsToResultFunctor<typename VecImageType::PixelType, TPixel, TPixel> NormalizeFunctor;
+  typedef itk::BinaryFunctorImageFilter<VecImageType, ImageType, ImageType, NormalizeFunctor> NormalizeFilter;
+  typename NormalizeFilter::Pointer fltNorm = NormalizeFilter::New();
 
-  // Create the mean filter for the squared image
-  typename MeanFilter::Pointer fmeansq = MeanFilter::New();
-  fmeansq->SetInput(fltMult->GetOutput());
-  fmeansq->SetOperator(op);
+  fltNorm->SetInput1(imgAccum);
+  fltNorm->SetInput2(image);
+  fltNorm->Update();
 
-  // Compute the standard deviation
-  typedef itk::SubtractImageFilter<ImageType, ImageType> SubtractFilter;
-  typedef itk::SqrtImageFilter<ImageType, ImageType> SqrtFilter;
-  typename SubtractFilter::Pointer fltSub = SubtractFilter::New();
-  typename SqrtFilter::Pointer fltSqrt = SqrtFilter::New();
-  typename MultFilter::Pointer fltSqMean = MultFilter::New();
-
-  // Square the mean
-  fltSqMean->SetInput1(fmean->GetOutput());
-  fltSqMean->SetInput2(fmean->GetOutput());
-
-  // Subtract squared mean from sum of squares
-  fltSub->SetInput1(fmeansq->GetOutput());
-  fltSub->SetInput2(fltSqMean->GetOutput());
-
-  // Take square root - for standard deviation
-  fltSqrt->SetInput(fltSub->GetOutput());
-
-  // Subtract the mean from the data
-  typename SubtractFilter::Pointer fltMeanSub = SubtractFilter::New();
-  fltMeanSub->SetInput1(img);
-  fltMeanSub->SetInput2(fmean->GetOutput());
-
-  // Divide by the standard deviation
-  typedef itk::DivideImageFilter<ImageType, ImageType, ImageType> DivideFilter;
-  typename DivideFilter::Pointer fltDivide = DivideFilter::New();
-  fltDivide->SetInput1(fltMeanSub->GetOutput());
-  fltDivide->SetInput2(fltSqrt->GetOutput());
-  fltDivide->Update();
-
-  // Do some processing ...
-  ImagePointer result = fltDivide->GetOutput();
-  
   // Put result on stack
   c->m_ImageStack.pop_back();
-  c->m_ImageStack.push_back(result);
+  c->m_ImageStack.pop_back();
+  c->m_ImageStack.push_back(fltNorm->GetOutput());
 }
 
 // Invocations
