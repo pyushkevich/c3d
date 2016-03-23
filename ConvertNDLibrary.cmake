@@ -127,7 +127,7 @@ CONFIGURE_FILE(
   ${CONVERT3D_BINARY_DIR}/ConvertImageVersion.cxx @ONLY IMMEDIATE)
 
 # Get the extra stuff compiled
-SUBDIRS(itkextras)
+SUBDIRS(${CONVERT3D_SOURCE_DIR}/itkextras)
 
 ADD_LIBRARY(cnd_adapters ${SOURCES})
 
