@@ -21,21 +21,21 @@ ENDIF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 # Include the library file
 INCLUDE(${CONVERT3D_SOURCE_DIR}/ConvertNDLibrary.cmake)
 
-# Command-line executables
-ADD_EXECUTABLE(c3d Convert3DMain.cxx)
-TARGET_LINK_LIBRARIES(c3d ${C3D_LINK_LIBRARIES})
-
-ADD_EXECUTABLE(c2d Convert2DMain.cxx)
-TARGET_LINK_LIBRARIES(c2d ${C3D_LINK_LIBRARIES})
-
-ADD_EXECUTABLE(c4d Convert4DMain.cxx)
-TARGET_LINK_LIBRARIES(c4d ${C3D_LINK_LIBRARIES})
-
-ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
-TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
-
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   
+  # Command-line executables
+  ADD_EXECUTABLE(c3d Convert3DMain.cxx)
+  TARGET_LINK_LIBRARIES(c3d ${C3D_LINK_LIBRARIES})
+
+  ADD_EXECUTABLE(c2d Convert2DMain.cxx)
+  TARGET_LINK_LIBRARIES(c2d ${C3D_LINK_LIBRARIES})
+
+  ADD_EXECUTABLE(c4d Convert4DMain.cxx)
+  TARGET_LINK_LIBRARIES(c4d ${C3D_LINK_LIBRARIES})
+
+  ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
+  TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
+
   SET(CMDLINE_TARGETS c2d c3d c4d c3d_affine_tool)
 
 

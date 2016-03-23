@@ -30,7 +30,7 @@
 #include "itkDivideImageFilter.h"
 #include "itkExpImageFilter.h"
 #include "itkExtractImageFilter.h"
-#include "itkN4MRIBiasFieldCorrectionImageFilter.h"
+#include "itkN4BiasFieldCorrectionImageFilter.h"
 #include "itkOtsuThresholdImageFilter.h"
 #include "itkShrinkImageFilter.h"
 
@@ -45,7 +45,7 @@ BiasFieldCorrectionN4<TPixel, VDim>
   c->m_ImageStack.pop_back();
 
   // Bias filter
-  typedef itk::N4MRIBiasFieldCorrectionImageFilter<ImageType, ImageType, ImageType> CorrecterType;
+  typedef itk::N4BiasFieldCorrectionImageFilter<ImageType, ImageType, ImageType> CorrecterType;
   typename CorrecterType::Pointer correcter = CorrecterType::New();
 
   // distance (in mm) of the mesh resolution at the base level
@@ -127,7 +127,7 @@ BiasFieldCorrectionN4<TPixel, VDim>
   correcter->SetNumberOfHistogramBins( 200 );
   correcter->SetBiasFieldFullWidthAtHalfMaximum( 0.15 );
   correcter->SetConvergenceThreshold( 0.001 );
-  correcter->SetWeinerFilterNoise( 0.01 );
+  correcter->SetWienerFilterNoise( 0.01 );
   correcter->SetBiasFieldFullWidthAtHalfMaximum( 0.15 );
 
   // You will probably want to have an option for the maximum number of

@@ -14,7 +14,6 @@ INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/adapters)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/VoxBoIO)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/PovRayIO)
-INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/N3ITK)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/RandomForest)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/utilities/doc)
 INCLUDE_DIRECTORIES(${CONVERT3D_BINARY_DIR})
@@ -48,7 +47,6 @@ SET(SOURCES
   adapters/AntiAliasImage.cxx
   adapters/ApplyMetric.cxx
   adapters/BinaryHoleFill.cxx
-  adapters/BiasFieldCorrection.cxx
   adapters/BiasFieldCorrectionN4.cxx
   adapters/BinaryImageCentroid.cxx
   adapters/BinaryMathOperation.cxx

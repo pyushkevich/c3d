@@ -29,7 +29,6 @@
 #include "AlignByLandmarks.h"
 #include "AntiAliasImage.h"
 #include "ApplyMetric.h"
-#include "BiasFieldCorrection.h"
 #include "BiasFieldCorrectionN4.h"
 #include "BinaryHoleFill.h"
 #include "BinaryImageCentroid.h"
@@ -486,14 +485,7 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
-  else if (cmd == "-biascorr")
-    {
-    BiasFieldCorrection<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
-    }
-
-  else if (cmd == "-n4" || cmd == "-n4-bias-correction" )
+  else if (cmd == "-biascorr" || cmd == "-n4" || cmd == "-n4-bias-correction" )
     {
     BiasFieldCorrectionN4<TPixel, VDim> adapter(this);
     adapter();
