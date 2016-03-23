@@ -144,6 +144,17 @@ std::string str_to_lower(const char *input)
   return s;
 }
 
+// Check whether value is a valid float (no leading spaces allowed)
+bool is_double(const char *input)
+{
+  std::istringstream iss(input);
+  double f;
+  iss >> std::noskipws >> f; // noskipws considers leading whitespace invalid
+
+  // Check the entire string was consumed and if either failbit or badbit is set
+  return iss.eof() && !iss.fail();
+}
+
 
 
     /*
@@ -1859,7 +1870,7 @@ ImageConverter<TPixel, VDim>
     {
     std::vector<double> weights;
     for(int i = 1; i < argc; i++)
-      if (argv[i][0] != '-')
+      if (is_double(argv[i]))
         weights.push_back(atof(argv[i]));
       else break;
     WeightedSum<TPixel,VDim> adapter(this);
