@@ -191,7 +191,7 @@ protected:
   double m_BiasParameter;
 
   // Let the engine handle our data
-  friend class RFClassificationEngine;
+  // friend class RFClassificationEngine;
 };
 
 #endif // RANDOMFORESTCLASSIFIER_H
