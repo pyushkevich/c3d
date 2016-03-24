@@ -133,6 +133,8 @@ ADD_LIBRARY(cnd_driver
   ConvertImageND.cxx
   utilities/doc/Documentation.cxx)
 
+ADD_LIBRARY(cnd_api api/ConvertAPI.cxx)
+
 ADD_DEPENDENCIES(cnd_driver markdown_docs)
 
 SET(C3D_LINK_LIBRARIES

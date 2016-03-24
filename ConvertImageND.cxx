@@ -2529,6 +2529,25 @@ ImageConverter<TPixel, VDim>
   return true;
 }
 
+template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::SetVariable(std::string name, ImagePointer image)
+{
+  m_ImageVars[name] = image;
+}
+
+template<class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel, VDim>::ImageType *
+ImageConverter<TPixel, VDim>
+::GetVariable(std::string name)
+{
+  if(m_ImageVars.find(name) != m_ImageVars.end())
+    return m_ImageVars[name];
+  else
+    return NULL;
+}
+
 template class ImageConverter<double, 2>;
 template class ImageConverter<double, 3>;
 template class ImageConverter<double, 4>;

@@ -120,6 +120,12 @@ public:
   void PrintCommandListing(std::ostream &out);
   void PrintCommandHelp(std::ostream &out, const char *command);
 
+  // Add variable
+  void SetVariable(std::string name, ImagePointer image);
+
+  // Get variable
+  ImageType *GetVariable(std::string name);
+
 private:
 
   // Internal functions
