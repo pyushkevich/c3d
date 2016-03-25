@@ -192,7 +192,7 @@ ConvertAPI<TPixel,VDim>
   try 
     {
     int rc = m_Converter->ProcessCommandLine(argc, argv);
-    if(!rc)
+    if(rc)
       {
       m_Error = "Convert3D returned a non-zero return code. Check output for errors";
       return false;
