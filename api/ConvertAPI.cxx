@@ -160,8 +160,11 @@ void
 ConvertAPI<TPixel,VDim>
 ::AddImage(const char *varname, ImageType *image)
 {
-  typename ImageType::Pointer iptr = image;
-  m_Converter->SetVariable(varname, iptr);
+  typedef typename ConverterType::ImageType InternalImage;
+  typename InternalImage::Pointer img_ras = InternalImage::New();
+  img_ras->Graft(image);
+
+  m_Converter->SetVariable(varname, img_ras);
 }
 
 template <class TPixel, unsigned int VDim>
@@ -211,3 +214,6 @@ ConvertAPI<TPixel,VDim>
     }
 }
 
+template class ConvertAPI<double, 2>;
+template class ConvertAPI<double, 3>;
+template class ConvertAPI<double, 4>;
