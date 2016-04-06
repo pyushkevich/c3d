@@ -1216,7 +1216,16 @@ Options change the behavior of commands that *appear later on the command line*.
 
 Syntax: `-background <value> `
 
-Sets the background intensity for interpolation and other operations where some default background value is needed. Default is 0.0. 
+Sets the background intensity for interpolation and other operations where some default background value is needed. Default is 0.
+
+#### -compress, -no-compress: Enable/disable compression for some image files
+
+Syntax: `-compress` or `-no-compress`
+
+Turns on compressing for image file formats that support it. For some file formats, like NIFTI (.nii), compression is enabled automatically when the filename includes the **.gz** extension. For other formats, like MetaImage, you need to specify **-compress** to enable compression. The following two commands save the image as compressed NIFTI and MetaImage files:
+
+    c3d input.nii -o output.nii.gz
+    c3d input.nii -compress -o output.mha
 
 #### -interpolation: Set interpolation mode
 

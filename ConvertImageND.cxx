@@ -321,6 +321,7 @@ ImageConverter<TPixel,VDim>
   m_Background = 0.0;
   m_RoundFactor = 0.5;
   m_FlagSPM = false;
+  m_UseCompression = false;
   m_MultiComponentSplit = false;
   m_Iterations = 0;
   m_LoopType = LOOP_NONE;
@@ -546,6 +547,18 @@ ImageConverter<TPixel, VDim>
     std::string cmname = argv[1];
     ScalarToRGB<TPixel, VDim>(this)(cmname);
     return 1;
+    }
+
+  else if (cmd == "-compress")
+    {
+    m_UseCompression = true;
+    return 0;
+    }
+
+  else if (cmd == "-no-compress")
+    {
+    m_UseCompression = false;
+    return 0;
     }
 
   else if (cmd == "-coordinate-map-voxel" || cmd == "-cmv")

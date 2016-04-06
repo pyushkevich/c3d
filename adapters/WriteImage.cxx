@@ -77,6 +77,7 @@ WriteImage<TPixel, VDim>
   typename WriterType::Pointer writer = WriterType::New();
   writer->SetInput(output);
   writer->SetFileName(file);
+  writer->SetUseCompression(c->m_UseCompression);
   try { writer->Update(); }
   catch (itk::ExceptionObject &exc) {
     cerr << "Error writing image to " << file << endl;
@@ -167,6 +168,7 @@ WriteImage<TPixel, VDim>
   typename WriterType::Pointer writer = WriterType::New();
   writer->SetInput(output);
   writer->SetFileName(file);
+  writer->SetUseCompression(c->m_UseCompression);
   try { writer->Update(); }
   catch (itk::ExceptionObject &exc) 
     {

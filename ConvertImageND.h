@@ -175,6 +175,9 @@ public:
   // Whether SPM extensions are used
   bool m_FlagSPM;
 
+  // Whether compression is used by default
+  bool m_UseCompression;
+
   // Whether multicomponent images are split on read
   bool m_MultiComponentSplit;
 
