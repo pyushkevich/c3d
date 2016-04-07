@@ -25,34 +25,60 @@
 
 #include "SmoothImage.h"
 #include "itkDiscreteGaussianImageFilter.h"
+#include "itkSmoothingRecursiveGaussianImageFilter.h"
 
 template <class TPixel, unsigned int VDim>
 void
 SmoothImage<TPixel, VDim>
-::operator() (RealVector &stdev)
+::operator() (RealVector &stdev, bool do_recursive)
 {
   // Get the input image
   ImagePointer input = c->m_ImageStack.back();
-  
-  // Describe what we are doing
-  *c->verbose << "Smoothing #" << c->m_ImageStack.size() << " with std.dev. " << stdev << endl;
 
-  // Create a smoothing kernel and use it
-  typedef itk::DiscreteGaussianImageFilter<ImageType,ImageType> FilterType;
-  typename FilterType::Pointer filter = FilterType::New();
-  typename FilterType::ArrayType variance;
+  // Which filter to use 
+  if(do_recursive)
+    {
+    // Describe what we are doing
+    *c->verbose << "Fast recursive smoothing #" << c->m_ImageStack.size() << " with std.dev. " << stdev << endl;
 
-  for(size_t i = 0; i < VDim; i++)
-    variance[i] = stdev[i] * stdev[i];
-  
-  filter->SetInput(input);
-  filter->SetVariance(variance);
-  filter->SetUseImageSpacingOn();
-  filter->Update();
+    // Create a smoothing filter
+    typedef itk::SmoothingRecursiveGaussianImageFilter<ImageType, ImageType> FilterType;
+    typename FilterType::Pointer fltSmooth = FilterType::New();
+    typename FilterType::SigmaArrayType sarray;
 
-  // Save the output
-  c->m_ImageStack.pop_back();
-  c->m_ImageStack.push_back(filter->GetOutput());
+    for(int i = 0; i < VDim; i++)
+      sarray[i] = stdev[i];
+
+    fltSmooth->SetInput(input);
+    fltSmooth->SetSigmaArray(sarray);
+    fltSmooth->Update();
+
+    // Save the output
+    c->m_ImageStack.pop_back();
+    c->m_ImageStack.push_back(fltSmooth->GetOutput());
+    }
+  else
+    {
+    // Describe what we are doing
+    *c->verbose << "Smoothing #" << c->m_ImageStack.size() << " with std.dev. " << stdev << endl;
+
+    // Create a smoothing kernel and use it
+    typedef itk::DiscreteGaussianImageFilter<ImageType,ImageType> FilterType;
+    typename FilterType::Pointer filter = FilterType::New();
+    typename FilterType::ArrayType variance;
+
+    for(size_t i = 0; i < VDim; i++)
+      variance[i] = stdev[i] * stdev[i];
+    
+    filter->SetInput(input);
+    filter->SetVariance(variance);
+    filter->SetUseImageSpacingOn();
+    filter->Update();
+
+    // Save the output
+    c->m_ImageStack.pop_back();
+    c->m_ImageStack.push_back(filter->GetOutput());
+    }
 }
 
 // Invocations

@@ -1609,7 +1609,15 @@ ImageConverter<TPixel, VDim>
     {
     RealVector stdev = ReadRealSize(argv[1]);
     SmoothImage<TPixel, VDim> adapter(this);
-    adapter(stdev);
+    adapter(stdev, false);
+    return 1;
+    }
+
+  else if (cmd == "-smooth-fast")
+    {
+    RealVector stdev = ReadRealSize(argv[1]);
+    SmoothImage<TPixel, VDim> adapter(this);
+    adapter(stdev, true);
     return 1;
     }
 

@@ -113,7 +113,7 @@ WarpLabelImage<TPixel, VDim>
 
     // Smooth the image
     SmoothImage<TPixel, VDim> smooth(c);
-    smooth(stdev);
+    smooth(stdev, true);
 
     // Apply the warp to the smoothed image
     fltWarp->SetInput(c->m_ImageStack.back());

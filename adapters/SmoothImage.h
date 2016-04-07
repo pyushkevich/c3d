@@ -37,7 +37,7 @@ public:
 
   SmoothImage(Converter *c) : c(c) {}
 
-  void operator() (RealVector &stdev);
+  void operator() (RealVector &stdev, bool do_recursive);
 
 private:
   Converter *c;

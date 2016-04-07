@@ -24,6 +24,7 @@
 =========================================================================*/
 
 #include "LandmarksToSpheres.h"
+#include <cstdio>
 
 template <class TPixel, unsigned int VDim>
 void
@@ -43,19 +44,53 @@ LandmarksToSpheres<TPixel, VDim>
   typedef std::pair<PointType, double> Landmark;
   std::list<Landmark> lms;
 
+  // Line buffer
+  size_t n_buffer = 1024, n_read;
+  char *buffer = new char[n_buffer], *sub_buffer = new char[n_buffer];
+
   // Read each landmark in turn
-  while(!feof(f))
+  while((n_read = getline(&buffer, &n_buffer, f)) != -1)
     {
     PointType x; double label = 0; int rc;
+
+    // Allow old format x y z label 
     if(VDim == 2)
-      rc = fscanf(f, "%lf %lf %lf\n", &x[0], &x[1], &label);
-    else
-      rc = fscanf(f, "%lf %lf %lf %lf\n", &x[0], &x[1], &x[2], &label);
-    if (rc != VDim + 1)
-      throw ConvertException("Error reading line %d in file %s", lms.size(), fnland);
-    lms.push_back(make_pair(x, label));
+      rc = sscanf(buffer, "%lf %lf %lf", &x[0], &x[1], &label);
+    else if(VDim == 3)
+      rc = sscanf(buffer, "%lf %lf %lf %lf", &x[0], &x[1], &x[2], &label);
+    else if(VDim == 4)
+      rc = sscanf(buffer, "%lf %lf %lf %lf %lf", &x[0], &x[1], &x[2], &x[3], &label);
+
+    // Successfully read the line
+    if (rc == VDim + 1)
+      {
+      lms.push_back(make_pair(x, label));
+      continue;
+      }
+
+    // Split the line into a vector and a label
+    rc = sscanf(buffer, "%s %lf", sub_buffer, &label);
+    if(rc == 2)
+      {
+      // Try reading a real vector from buffer
+      try 
+        {
+        RealVector vec = c->ReadRealVector(sub_buffer, true);
+        *(c->verbose) << vec << std::endl;
+        for(int i = 0; i < VDim; i++)
+          x[i] = vec[i];
+        lms.push_back(make_pair(x, label));
+        continue;
+        }
+      catch(...) {}
+      }
+
+    throw ConvertException("Error reading line %d in file %s", lms.size(), fnland);
     }
+
   fclose(f);
+  delete buffer;
+  delete sub_buffer;
 
   // How many landmarks?
   if(lms.size() == 0)

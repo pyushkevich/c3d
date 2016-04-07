@@ -794,6 +794,15 @@ Reads a list of landmarks from a file and for each landmark draws a sphere with 
     ...
     c3d image.img -scale 0 -lms landmarks.txt 3 -o landspheres.img
 
+The command also supports an alternative format for the landmarks that allows specification in voxel
+units and percent
+
+    echo 50%x50%x50% 1 > landmarks.txt
+    echo 25x25x30vox 1 >> landmarks.txt
+    echo 10x10x45mm 2 >> landmarks.txt 
+    ...
+    c3d image.img -scale 0 -lms landmarks.txt 3 -o landspheres.img
+
 #### -laplacian, -laplace: Laplacian filter
 
 Syntax: `-laplacian`
@@ -1111,6 +1120,14 @@ Syntax: `-smooth <sigma_vector> `
 Applies Gaussian smoothing to the image. The parameter vector specifies the standard deviation of the Gaussian kernel. Also see [Vector Format Specification][10] below. 
 
     c3d img1.img -smooth 2x1x1vox -o out.img
+
+#### -smooth-fast: Fast approximate Gaussian smoothing
+
+Syntax: `-smooth-fast <sigma_vector> `
+
+Applies Gaussian smoothing to the image using the fast [Deriche recursive smoothing algorithm][15].  The parameter vector specifies the standard deviation of the Gaussian kernel. Also see [Vector Format Specification][10] below. 
+
+    c3d img1.img -smooth-fast 20x10x10vox -o out.img
 
 #### -split: Split multi-label image into binary images
 
@@ -1449,3 +1466,4 @@ To summarize, here is a checklist for adding a new command
  [12]: http://picsl.upenn.edu/ANTS/index.php
  [13]: http://www.imagemagick.org/script/command-line-options.php#colorspace
  [14]: http://www.itk.org/Doxygen/html/classitk_1_1CannyEdgeDetectionImageFilter.html
+ [15]: http://www.itk.org/Doxygen/html/classitk_1_1RecursiveGaussianImageFilter.html
