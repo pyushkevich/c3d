@@ -53,6 +53,7 @@ SET(SOURCES
   adapters/Canny.cxx
   adapters/ClipImageIntensity.cxx
   adapters/ComputeFFT.cxx
+  adapters/ComputeMoments.cxx
   adapters/ComputeOverlaps.cxx
   adapters/ConnectedComponents.cxx
   adapters/CoordinateMap.cxx

@@ -36,6 +36,7 @@
 #include "Canny.h"
 #include "ClipImageIntensity.h"
 #include "ComputeFFT.h"
+#include "ComputeMoments.h"
 #include "ComputeOverlaps.h"
 #include "ConnectedComponents.h"
 #include "ConvertAdapter.h"
@@ -1291,7 +1292,14 @@ ImageConverter<TPixel, VDim>
     return 3;
     }
 
-  if (cmd == "-percent-intensity-mode" || cmd == "-pim")
+  else if (cmd == "-pca")
+    {
+    ComputeMoments<TPixel, VDim> adapter(this);
+    adapter();
+    return 0; 
+    }
+
+  else if (cmd == "-percent-intensity-mode" || cmd == "-pim")
     {
     // What does % mean when specifying intensities
     string pim = str_to_lower(argv[1]);

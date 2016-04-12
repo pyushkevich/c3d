@@ -972,6 +972,16 @@ Normally you will want to pad with zeros, but you can pad with any constant valu
 Adds 10% to all sides of the image, and fills the new voxels with the value 1. 
 
 
+#### -pca: Principal components analysis of foreground voxels
+
+Syntax: `-pca`
+
+Similar to the *-centroid* command, computes the centroid and prinicipal components of the foregrond voxels in the image. For example if the image is a binary image of an ellipsoid, this will report the center and the principal axes of the ellipsoid, in physical NIFTI coordinates.
+
+    c3d binaryimage.img -pca                              // centroid of all non-0 voxels
+    c3d labelimage.img -thresh 5 5 1 0 -pca               // centroid of all voxels with label 5
+    c3d labelimage.img -split -foreach -pca -endfor       // centroids of all labels (including 0)
+
 #### -probe: Report image intensity at a voxel
 
 Syntax: `-probe <point_spec>`
