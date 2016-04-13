@@ -29,6 +29,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shellapi.h>
 #else
 #include <wordexp.h>
 #endif
@@ -87,7 +88,7 @@ fail:
     wchar_t *cmdlinew = NULL;
     size_t len = strlen(cmdline) + 1;
 
-    if (!(cmdlinew = calloc(len, sizeof(wchar_t))))
+    if (!(cmdlinew = (wchar_t *) calloc(len, sizeof(wchar_t))))
       goto fail;
 
     if (!MultiByteToWideChar(CP_ACP, 0, cmdline, -1, cmdlinew, len))
@@ -96,7 +97,7 @@ fail:
     if (!(wargs = CommandLineToArgvW(cmdlinew, argc)))
       goto fail;
 
-    if (!(argv = calloc(*argc, sizeof(char *))))
+    if (!(argv = (char **) calloc(*argc, sizeof(char *))))
       goto fail;
 
     // Convert from wchar_t * to ANSI char *
@@ -107,7 +108,7 @@ fail:
       needed = WideCharToMultiByte(CP_ACP, 0, wargs[i], -1,
         NULL, 0, NULL, NULL);
 
-      if (!(argv[i] = malloc(needed)))
+      if (!(argv[i] = (char *) malloc(needed)))
         goto fail;
 
       // Do the conversion.

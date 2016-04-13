@@ -1947,7 +1947,7 @@ ImageConverter<TPixel, VDim>
       }
     return 0;
     }
-  catch (StackAccessException &sae)
+  catch (StackAccessException &)
     {
     cerr << "Not enough images on the stack for the requested command." << endl;
     cerr << "  Requested command: " << lastCommand << endl;
@@ -2192,7 +2192,7 @@ ImageConverter<TPixel, VDim>
 ::ReadSizeVector(const char *vec_in)
 {
   // Create a copy of the input string
-  char *vec = new char[strlen(vec_in)];
+  char *vec = new char[strlen(vec_in) + 1];
   strcpy(vec, vec_in);
 
   size_t i;
