@@ -1559,7 +1559,8 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-round")
     { m_RoundFactor = 0.5; return 0; }
 
-  else if (cmd == "-scale")
+  // No else if here because of a windows compiler error (blocks nested too deeply)
+  if (cmd == "-scale")
     {
     double factor = atof(argv[1]);
     ScaleShiftImage<TPixel, VDim> adapter(this);
