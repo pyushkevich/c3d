@@ -28,6 +28,8 @@
 #include <sstream>
 #include <itksys/RegularExpression.hxx>
 #include <algorithm>
+#include <functional>
+#include <cctype>
 
 // Helper function: trim whitespace
 // from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
@@ -91,7 +93,7 @@ Documentation::Documentation(unsigned char *rawdoc)
         {
         std::string title = line.substr(relevant_category_heading.length());
         m_Categories.push_back(Category(trim(title)));
-        current_cat = m_Categories.size() - 1;
+        current_cat = ((int) m_Categories.size()) - 1;
         current_command = "";
         }
       }
