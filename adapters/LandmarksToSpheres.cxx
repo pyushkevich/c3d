@@ -25,6 +25,7 @@
 
 #include "LandmarksToSpheres.h"
 #include <cstdio>
+#include <fstream>
 
 template <class TPixel, unsigned int VDim>
 void
