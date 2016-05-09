@@ -41,6 +41,12 @@
 
 #include "hexdump.h"
 
+#ifdef _WIN32
+#define MY_SNPRINTF _snprintf
+#else
+#define MY_SNPRINTF snprintf
+#endif
+
 
 #define SAY_(fmt, ...) fprintf(stderr, fmt "%s", __FILE__, __LINE__, __func__, __VA_ARGS__);
 #define SAY(...) SAY_("@@ %s:%d:%s: " __VA_ARGS__, "\n");
@@ -185,7 +191,7 @@ static const char *toshort(char buf[3], unsigned char chr) {
 } /* toshort() */
 
 
-static inline _Bool hxd_isspace(unsigned char chr, _Bool nlok) {
+static _Bool hxd_isspace(unsigned char chr, _Bool nlok) {
 	static const unsigned char space[] = {
 		['\t'] = 1, ['\n'] = 1, ['\v'] = 1, ['\r'] = 1, ['\f'] = 1, [' '] = 1,
 	};
@@ -194,7 +200,7 @@ static inline _Bool hxd_isspace(unsigned char chr, _Bool nlok) {
 } /* hxd_isspace() */
 
 
-static inline unsigned char skipws(const unsigned char **fmt, _Bool nlok) {
+static unsigned char skipws(const unsigned char **fmt, _Bool nlok) {
 	while (hxd_isspace(**fmt, nlok))
 		++*fmt;
 
@@ -202,7 +208,7 @@ static inline unsigned char skipws(const unsigned char **fmt, _Bool nlok) {
 } /* skipws() */
 
 
-static inline int getint(const unsigned char **fmt) {
+static int getint(const unsigned char **fmt) {
 	static const int limit = ((INT_MAX - (INT_MAX % 10) - 1) / 10);
 	int i = -1;
 
@@ -230,7 +236,7 @@ static inline int getint(const unsigned char **fmt) {
 #define FC1(x) (0xff & (x))
 #define FC(...) XPASTE(FC, NARG(__VA_ARGS__))(__VA_ARGS__)
 
-static inline int getcnv(int *flags, int *width, int *prec, int *bytes, const unsigned char **fmt) {
+static int getcnv(int *flags, int *width, int *prec, int *bytes, const unsigned char **fmt) {
 	int ch;
 
 	*flags = 0;
@@ -281,13 +287,13 @@ width:
 		case 'a':
 			switch (*++*fmt) {
 			case 'd':
-				ch = FC('_', 'd');
+				ch = FC2('_', 'd');
 				break;
 			case 'o':
-				ch = FC('_', 'o');
+				ch = FC2('_', 'o');
 				break;
 			case 'x':
-				ch = FC('_', 'x');
+				ch = FC2('_', 'x');
 				break;
 			default:
 				return 0;
@@ -297,13 +303,13 @@ width:
 		case 'A':
 			switch (*++*fmt) {
 			case 'd':
-				ch = FC('_', 'D');
+				ch = FC2('_', 'D');
 				break;
 			case 'o':
-				ch = FC('_', 'O');
+				ch = FC2('_', 'O');
 				break;
 			case 'x':
-				ch = FC('_', 'X');
+				ch = FC2('_', 'X');
 				break;
 			default:
 				return 0;
@@ -315,15 +321,15 @@ width:
 
 			break;
 		case 'c':
-			ch = FC('_', 'c');
+			ch = FC2('_', 'c');
 			*bytes = 1;
 			break;
 		case 'p':
-			ch = FC('_', 'p');
+			ch = FC2('_', 'p');
 			*bytes = 1;
 			break;
 		case 'u':
-			ch = FC('_', 'u');
+			ch = FC2('_', 'u');
 			*bytes = 1;
 			break;
 		default:
@@ -554,7 +560,7 @@ NORETURN static void vm_throw(struct vm_state *M, int error) {
 } /* vm_throw() */
 
 
-static inline unsigned char vm_getc(struct vm_state *M) {
+static unsigned char vm_getc(struct vm_state *M) {
 	return (M->i.p < M->i.pe)? *M->i.p++ : 0;
 } /* vm_getc() */
 
@@ -590,7 +596,7 @@ static void vm_putx(struct vm_state *M, unsigned char ch) {
 } /* vm_putx() */
 
 
-static inline size_t vm_address(struct vm_state *M) {
+static size_t vm_address(struct vm_state *M) {
 	return M->i.address + (M->i.p - M->i.base);
 } /* vm_address() */
 
@@ -616,59 +622,59 @@ static void vm_conv(struct vm_state *M, int flags, int width, int prec, int fc, 
 	int i, len;
 
 	switch (fc) {
-	case FC('_', 'c'):
-		s = tooctal(label, word);
+	case FC2('_', 'c'):
+		s = tooctal(label, (unsigned char) word);
 		prec = (prec > 0)? MIN(prec, 3) : 3;
 		fc = 's';
 
 		break;
-	case FC('_', 'p'):
-		word = toprint(word);
+	case FC2('_', 'p'):
+		word = toprint((unsigned char) word);
 		fc = 'c';
 
 		break;
-	case FC('_', 'u'):
-		s = toshort(label, word);
+	case FC2('_', 'u'):
+		s = toshort(label, (unsigned char) word);
 		prec = (prec > 0)? MIN(prec, 3) : 3;
 		fc = 's';
 
 		break;
-	case FC('_', 'd'):
+	case FC2('_', 'd'):
 		word = M->i.address + (M->i.p - M->i.base);
 		fc = 'd';
 
 		break;
-	case FC('_', 'o'):
+	case FC2('_', 'o'):
 		word = M->i.address + (M->i.p - M->i.base);
 		fc = 'o';
 
 		break;
-	case FC('_', 'x'):
+	case FC2('_', 'x'):
 		word = M->i.address + (M->i.p - M->i.base);
 		fc = 'x';
 
 		break;
-	case FC('_', 'D'):
+	case FC2('_', 'D'):
 		/* FALL THROUGH */
-	case FC('_', 'O'):
+	case FC2('_', 'O'):
 		/* FALL THROUGH */
-	case FC('_', 'X'):
+	case FC2('_', 'X'):
 		fc = 'x';
 
 		vm_throw(M, HXD_ENOTSUPP);
 
 		break;
-	case FC('s'):
+	case FC1('s'):
 		s = (const char *)M->i.p;
 
 		if (prec <= 0 || prec > M->i.pe - M->i.p)
-			prec = M->i.pe - M->i.p;
+			prec = (int) (M->i.pe - M->i.p);
 
 		break;
-	case FC('c'):
+	case FC1('c'):
 		/* FALL THROUGH */
-	case FC('d'): case FC('i'): case FC('o'):
-	case FC('u'): case FC('X'): case FC('x'):
+	case FC1('d'): case FC1('i'): case FC1('o'):
+	case FC1('u'): case FC1('X'): case FC1('x'):
 		break;
 	default:
 		vm_throw(M, HXD_ENOTSUPP);
@@ -697,15 +703,15 @@ static void vm_conv(struct vm_state *M, int flags, int width, int prec, int fc, 
 
 	switch (fc) {
 	case 's':
-		len = snprintf(buf, sizeof buf, fmt, MAX(width, 0), MAX(prec, 0), s);
+		len = MY_SNPRINTF(buf, sizeof buf, fmt, MAX(width, 0), MAX(prec, 0), s);
 
 		break;
 	case 'u':
-		len = snprintf(buf, sizeof buf, fmt, MAX(width, 0), prec, (unsigned)word);
+		len = MY_SNPRINTF(buf, sizeof buf, fmt, MAX(width, 0), prec, (unsigned)word);
 
 		break;
 	default:
-		len = snprintf(buf, sizeof buf, fmt, MAX(width, 0), prec, (int)word);
+		len = MY_SNPRINTF(buf, sizeof buf, fmt, MAX(width, 0), prec, (int)word);
 
 		break;
 	}
@@ -895,10 +901,10 @@ static void vm_exec(struct vm_state *M) {
 		NEXT;
 	}
 	CASE(CONV): {
-		int fc = vm_pop(M);
-		int prec = vm_pop(M);
-		int width = vm_pop(M);
-		int flags = vm_pop(M);
+		int fc = (int) vm_pop(M);
+		int prec = (int) vm_pop(M);
+		int width = (int) vm_pop(M);
+		int flags = (int) vm_pop(M);
 		int64_t word = vm_pop(M);
 
 		vm_conv(M, flags, width, prec, fc, word);
@@ -950,18 +956,18 @@ static void vm_exec(struct vm_state *M) {
 	CASE(7XADDR): {
 		size_t addr = vm_address(M);
 		vm_putc(M, "0123456789abcdef"[0x0f & (addr >> 24)]);
-		vm_putx(M, (addr >> 16));
-		vm_putx(M, (addr >> 8));
-		vm_putx(M, (addr >> 0));
+		vm_putx(M, (unsigned char) (addr >> 16));
+		vm_putx(M, (unsigned char) (addr >> 8));
+		vm_putx(M, (unsigned char) (addr >> 0));
 
 		NEXT;
 	}
 	CASE(8XADDR): {
 		size_t addr = vm_address(M);
-		vm_putx(M, (addr >> 24));
-		vm_putx(M, (addr >> 16));
-		vm_putx(M, (addr >> 8));
-		vm_putx(M, (addr >> 0));
+		vm_putx(M, (unsigned char) (addr >> 24));
+		vm_putx(M, (unsigned char) (addr >> 16));
+		vm_putx(M, (unsigned char) (addr >> 8));
+		vm_putx(M, (unsigned char) (addr >> 0));
 
 		NEXT;
 	}
@@ -1100,7 +1106,6 @@ static void emit_unit(struct vm_state *M, int loop, int limit, int flags, size_t
 		switch (ch) {
 		case '%': {
 			int fc, flags, width, prec, bytes;
-			int from;
 
 			if (escaped)
 				goto copyout;
@@ -1147,11 +1152,11 @@ static void emit_unit(struct vm_state *M, int loop, int limit, int flags, size_t
 
 				if (fc == 'x' && OK_2XBYTE(flags, width, prec)) {
 					emit_op(M, OP_2XBYTE);
-				} else if (fc == FC('_', 'p') && OK_PBYTE(flags, width, prec)) {
+				} else if (fc == FC2('_', 'p') && OK_PBYTE(flags, width, prec)) {
 					emit_op(M, OP_PBYTE);
-				} else if (fc == FC('_', 'x') && OK_7XADDR(flags, width, prec)) {
+				} else if (fc == FC2('_', 'x') && OK_7XADDR(flags, width, prec)) {
 					emit_op(M, OP_7XADDR);
-				} else if (fc == FC('_', 'x') && OK_8XADDR(flags, width, prec)) {
+				} else if (fc == FC2('_', 'x') && OK_8XADDR(flags, width, prec)) {
 					emit_op(M, OP_8XADDR);
 				} else {
 					emit_int(M, (fc == 's')? 0 : bytes);
@@ -1859,9 +1864,9 @@ int luaopen_hexdump() {
 
 #include <string.h> /* strcmp(3) */
 
-#include <unistd.h> /* getopt(3) */
 
 #ifndef _WIN32
+#include <unistd.h> /* getopt(3) */
 #include <err.h>    /* err(3) errx(3) */
 #else
 #include <stdarg.h>
@@ -1911,6 +1916,42 @@ static void run(struct hexdump *X, FILE *fp, _Bool flush) {
 	}
 } /* run() */
 
+
+#ifdef _WIN32
+
+int main(int argc, char **argv)
+{
+	int flags = 0;
+	struct hexdump *X;
+	char *fmt = HEXDUMP_i;
+	int error;
+
+	if (strcmp(argv[1], "-i") != 0 || argc < 3)
+	{
+		err(EXIT_FAILURE, "Error: must call with parameters -i input_file, you called with %s", argv[1]);
+	}
+
+	if (!(X = hxd_open(&error)))
+		errx(EXIT_FAILURE, "open: %s", hxd_strerror(error));
+
+	if ((error = hxd_compile(X, fmt, flags)))
+		errx(EXIT_FAILURE, "%s: %s", fmt, hxd_strerror(error));
+
+	FILE *fp;
+
+	if (!(fp = fopen(argv[2], "rb")))
+		err(EXIT_FAILURE, "%s", argv[2]);
+
+	run(X, fp, 1);
+
+	fclose(fp);
+
+	hxd_close(X);
+
+	return 0;
+}
+
+#else
 
 int main(int argc, char **argv) {
 	extern char *optarg;
@@ -2041,9 +2082,6 @@ int main(int argc, char **argv) {
 	}
 
 	if (!argc) {
-#ifdef _WIN32
-		_setmode(_fileno(stdin), _O_BINARY);
-#endif
 		run(X, stdin, 1);
 	} else {
 		int i;
@@ -2064,5 +2102,6 @@ exit:
 
 	return 0;
 } /* main() */
+#endif //_WIN32
 
 #endif /* HEXDUMP_MAIN */

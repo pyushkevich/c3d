@@ -25,6 +25,7 @@
 
 #include "LandmarksToSpheres.h"
 #include <cstdio>
+#include <fstream>
 
 template <class TPixel, unsigned int VDim>
 void
@@ -35,8 +36,8 @@ LandmarksToSpheres<TPixel, VDim>
   ImagePointer img = c->m_ImageStack.back();
 
   // Open the landmarks file
-  FILE *f = fopen(fnland, "rt");
-  if(!f)
+  ifstream fin(fnland);
+  if(!fin.is_open())
     throw ConvertException("Unable to read file %s", fnland);
 
   // Define a landmark
@@ -45,21 +46,21 @@ LandmarksToSpheres<TPixel, VDim>
   std::list<Landmark> lms;
 
   // Line buffer
-  size_t n_buffer = 1024, n_read;
-  char *buffer = new char[n_buffer], *sub_buffer = new char[n_buffer];
+  std::string line;
+  char *sub_buffer = new char[1024];
 
   // Read each landmark in turn
-  while((n_read = getline(&buffer, &n_buffer, f)) != -1)
+  while(std::getline(fin, line))
     {
     PointType x; double label = 0; int rc;
 
     // Allow old format x y z label 
     if(VDim == 2)
-      rc = sscanf(buffer, "%lf %lf %lf", &x[0], &x[1], &label);
+      rc = sscanf(line.c_str(), "%lf %lf %lf", &x[0], &x[1], &label);
     else if(VDim == 3)
-      rc = sscanf(buffer, "%lf %lf %lf %lf", &x[0], &x[1], &x[2], &label);
+      rc = sscanf(line.c_str(), "%lf %lf %lf %lf", &x[0], &x[1], &x[2], &label);
     else if(VDim == 4)
-      rc = sscanf(buffer, "%lf %lf %lf %lf %lf", &x[0], &x[1], &x[2], &x[3], &label);
+      rc = sscanf(line.c_str(), "%lf %lf %lf %lf %lf", &x[0], &x[1], &x[2], &x[3], &label);
 
     // Successfully read the line
     if (rc == VDim + 1)
@@ -69,7 +70,7 @@ LandmarksToSpheres<TPixel, VDim>
       }
 
     // Split the line into a vector and a label
-    rc = sscanf(buffer, "%s %lf", sub_buffer, &label);
+    rc = sscanf(line.c_str(), "%s %lf", sub_buffer, &label);
     if(rc == 2)
       {
       // Try reading a real vector from buffer
@@ -88,8 +89,7 @@ LandmarksToSpheres<TPixel, VDim>
     throw ConvertException("Error reading line %d in file %s", lms.size(), fnland);
     }
 
-  fclose(f);
-  delete buffer;
+  fin.close();
   delete sub_buffer;
 
   // How many landmarks?
