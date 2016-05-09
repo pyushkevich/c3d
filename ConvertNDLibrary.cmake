@@ -67,6 +67,7 @@ SET(SOURCES
   adapters/HessianObjectness.cxx
   adapters/HistogramMatch.cxx
   adapters/ImageERF.cxx
+  adapters/ImageGradient.cxx
   adapters/ImageLaplacian.cxx
   adapters/GeneralLinearModel.cxx
   adapters/LabelOverlapMeasures.cxx

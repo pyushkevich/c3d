@@ -750,6 +750,14 @@ Applies voxel-wise general linear model to a set of images. More precisely, the 
       echo "0 1" >> contrast_vec.txt
       c3d time1.img time2.img time3.img time4.img -glm design_mat.txt contrast_vec.txt -o regress.img
 
+#### -grad, -gradient: Image gradient
+
+Syntax `-grad`
+
+Computes the gradient of the image. Each component of the gradient is placed on the stack in order (x,y,z). The gradient is computed in physical RAS coordinates, taking into account image spacing and orientation. In other words, the gradient is the vector in physical space orthogonal to the isocontours of the image. No smoothing is performed, so it is a good idea to smooth the image first before computing the gradient.
+
+    c3d myimage.nii -smooth 1.2vox -grad -oo grad_comp_%02d.nii
+
 #### -hessobj, -hessian-objectness: Hessian objectness filter
 
 Syntax: `-hessobj <dimension> <min_scale> <max_scale>`

@@ -52,6 +52,7 @@
 #include "HessianObjectness.h"
 #include "HistogramMatch.h"
 #include "ImageERF.h"
+#include "ImageGradient.h"
 #include "ImageLaplacian.h"
 #include "LabelOverlapMeasures.h"
 #include "LabelStatistics.h"
@@ -709,6 +710,13 @@ ImageConverter<TPixel, VDim>
     GeneralLinearModel<TPixel, VDim> adapter(this);
     adapter(mat, con);
     return 2;
+    }
+
+  else if (cmd == "-grad" || cmd == "-gradient")
+    {
+    ImageGradient<TPixel,VDim> adapter(this);
+    adapter();
+    return 0;
     }
 
   else if (cmd == "-h" || cmd == "-help" || cmd == "--help")
