@@ -57,6 +57,7 @@
 #include "LabelOverlapMeasures.h"
 #include "LabelStatistics.h"
 #include "LandmarksToSpheres.h"
+#include "LaplacianSharpening.h"
 #include "LevelSetSegmentation.h"
 #include "MathematicalMorphology.h"
 #include "MeanFilter.h"
@@ -1604,6 +1605,14 @@ ImageConverter<TPixel, VDim>
     adapter(axis, pos);
 
     return 2;
+    }
+
+  else if (cmd == "-sharpen")
+    {
+    LaplacianSharpening<TPixel,VDim> adapter(this);
+    adapter();
+
+    return 0;
     }
 
   else if (cmd == "-shift")

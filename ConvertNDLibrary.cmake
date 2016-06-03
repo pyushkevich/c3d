@@ -73,6 +73,7 @@ SET(SOURCES
   adapters/LabelOverlapMeasures.cxx
   adapters/LabelStatistics.cxx
   adapters/LandmarksToSpheres.cxx
+  adapters/LaplacianSharpening.cxx
   adapters/LevelSetSegmentation.cxx
   adapters/MathematicalMorphology.cxx
   adapters/MeanFilter.cxx

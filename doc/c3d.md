@@ -1115,6 +1115,14 @@ Computes the signed distance transform of a binary image. Voxels where the binar
 
     c3d binary.img -sdt -o dist.img 
 
+#### -sharpen: Sharpen edges in the image
+
+Syntax: `-sharpen`
+
+Applies the Laplacian sharpening filter from ITK, which accentuates the edges in the image.
+
+    c3d input.nii.gz -sharpen -o output.nii.gz
+
 #### -slice: Extract slices from an image
 
 Syntax: `-slice axis position_spec`
