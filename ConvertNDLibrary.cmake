@@ -112,6 +112,7 @@ SET(SOURCES
   adapters/UnaryMathOperation.cxx
   adapters/UpdateMetadataKey.cxx
   adapters/Vote.cxx
+  adapters/VoxelwiseComponentFunction.cxx
   adapters/VoxelwiseRegression.cxx
   adapters/WarpImage.cxx
   adapters/WarpLabelImage.cxx

@@ -445,6 +445,14 @@ Replace intensity I1 by J1, I2 by J2 and so on. Allowed values of intensity incl
 
     c3d img1.img -replace 1 128 nan 0.0 -o img2.img
 
+#### -rgb2hsv: Convert RGB image to HSV image
+
+Syntax `-rgb2hsv`
+
+Takes the last three images on the stack and treats them as red, green, and blue channels. Outputs three images corresponding to hue, saturation, value. To read color images you need the ***-msc*** command.
+
+    c3d -mcs color.png -rgb2hsv -omc hsv.png
+
 #### -rms: Voxelwise vector norm
 
 Syntax: `-rms`

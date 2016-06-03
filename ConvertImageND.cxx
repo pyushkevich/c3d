@@ -96,6 +96,7 @@
 #include "UnaryMathOperation.h"
 #include "UpdateMetadataKey.h"
 #include "Vote.h"
+#include "VoxelwiseComponentFunction.h"
 #include "VoxelwiseRegression.h"
 #include "WarpImage.h"
 #include "WarpLabelImage.h"
@@ -1558,6 +1559,13 @@ ImageConverter<TPixel, VDim>
     {
     ResliceImage<TPixel, VDim> adapter(this);
     adapter("identity", "");
+    return 0;
+    }
+
+  else if (cmd == "-rgb2hsv")
+    {
+    VoxelwiseComponentFunction<TPixel, VDim> adapter(this);
+    adapter("rgb2hsv");
     return 0;
     }
 
