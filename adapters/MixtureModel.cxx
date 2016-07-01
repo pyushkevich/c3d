@@ -50,9 +50,9 @@ MixtureModel<TPixel, VDim>
   castFilter->SetInput(img);
   castFilter->Update() ;
   
-  typedef ImageToListSampleAdaptor<ImageType> DataSampleType;
+  typedef ImageToListSampleAdaptor<ArrayPixelImageType> DataSampleType;
   typename DataSampleType::Pointer sample = DataSampleType::New();
-  sample->SetImage(img);
+  sample->SetImage(castFilter->GetOutput());
 
   // Component definition
   typedef GaussianMixtureModelComponent<DataSampleType> ComponentType;
@@ -85,14 +85,19 @@ MixtureModel<TPixel, VDim>
       "mu = " << mu[i] << "; " <<
       "sigma = " << sigma[i] << "; " <<
       "alpha = " << initprop[i] << "; " << endl;
+
     }
 
   typedef ExpectationMaximizationMixtureModelEstimator<DataSampleType> EstimatorType;
   typename EstimatorType::Pointer estimator = EstimatorType::New();
 
+  estimator->SetSample(sample);
+  estimator->SetMaximumIteration(100);
   estimator->SetInitialProportions(initprop);
   for(size_t i = 0; i < mu.size(); i++)
     estimator->AddComponent(comps[i]);
+
+
   estimator->Update();
 
   *c->verbose << "  Estimated Parameters : " << endl;
