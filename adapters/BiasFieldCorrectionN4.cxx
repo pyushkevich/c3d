@@ -60,8 +60,8 @@ BiasFieldCorrectionN4<TPixel, VDim>
 
   typename ImageType::PointType newOrigin = mri->GetOrigin();
 
-  unsigned long lowerBound[VDim];
-  unsigned long upperBound[VDim];
+  itk::SizeValueType lowerBound[VDim];
+  itk::SizeValueType upperBound[VDim];
 
   for( unsigned int d = 0; d < VDim; d++ )
     {

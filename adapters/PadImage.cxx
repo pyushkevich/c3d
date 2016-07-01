@@ -38,8 +38,8 @@ PadImage<TPixel, VDim>
   typename ConstantPad::Pointer padFilter = ConstantPad::New();
 
   // Pad first three dimensions only
-  unsigned long lowerBound[VDim];
-  unsigned long upperBound[VDim];
+  itk::SizeValueType lowerBound[VDim];
+  itk::SizeValueType upperBound[VDim];
 
   for (int i = 0; i < 3 && i < VDim; i++) {
     lowerBound[i] = padExtentLower[i];
