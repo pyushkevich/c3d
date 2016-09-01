@@ -1931,11 +1931,13 @@ int main(int argc, char **argv)
 		err(EXIT_FAILURE, "Error: must call with parameters -i input_file, you called with %s", argv[1]);
 	}
 
-	if (!(X = hxd_open(&error)))
+	if (!(X = hxd_open(&error))){
 		errx(EXIT_FAILURE, "open: %s", hxd_strerror(error));
+	}
 
-	if ((error = hxd_compile(X, fmt, flags)))
+	if ((error = hxd_compile(X, fmt, flags))){
 		errx(EXIT_FAILURE, "%s: %s", fmt, hxd_strerror(error));
+	}
 
 	FILE *fp;
 
