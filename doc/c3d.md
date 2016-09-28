@@ -903,6 +903,12 @@ Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
 
 Compute the Mattes mutual information metric between the last two images on the stack. See documentation for **-msq**.
 
+#### -ncc, -normalized-cross-correlation: Compute normalized cross-correlation image
+
+Syntax: `-ncc <radius_vector>`
+
+Computes normalized cross-correlation between two images that occupy the same physical space. Each voxel in the resulting image is the cross-correlation of patches of given radius surrounding the voxel in the two input images. This is different from **-ncor**, which computes a global cross-correlation metric value. 
+
 #### -nmi, -normalized-mutual-info: Compute mutual informaiton metric
 
 Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
