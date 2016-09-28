@@ -88,10 +88,17 @@ BiasFieldCorrectionN4<TPixel, VDim>
   padder->SetConstant( 0 );
   padder->Update();
 
+  typename PadderType::Pointer padder2 = PadderType::New();
+  padder2->SetInput( padder->GetOutput() );
+  padder2->SetPadLowerBound( lowerBound );
+  padder2->SetPadUpperBound( upperBound );
+  padder2->SetConstant( 0 );
+  padder2->Update();
+
   // Set up a filter to shrink image by a factor
   typedef itk::ShrinkImageFilter<ImageType, ImageType> ShrinkerType;
   typename ShrinkerType::Pointer shrinker = ShrinkerType::New();
-  shrinker->SetInput( padder->GetOutput() );
+  shrinker->SetInput( padder2->GetOutput() );
   shrinker->SetShrinkFactors( 4 );
   shrinker->Update();
 
