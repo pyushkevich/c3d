@@ -390,15 +390,6 @@ void MainWindow::onProcessFinished(int rc)
 
   ui->teCommand->document()->documentLayout()->setPaintDevice(old);
 
-  // QPixmap screen = ui->teCommand->grab(QRect(QPoint(1,1), docsize));
-  /*
-  QRgb whitey = QColor(Qt::white).rgba();
-  for(int i = 0; i < image.width(); i++)
-    for(int j = 0; j < image.height(); j++)
-      if(image.pixel(i,j) == whitey)
-        image.setPixel(i, j, qRgba(0,0,0,0));
-        */
-
   m_History->addHistoryEntry(image, wd, command);
 
   // Disable the execute button
