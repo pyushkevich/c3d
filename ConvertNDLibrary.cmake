@@ -75,6 +75,7 @@ SET(SOURCES
   adapters/LandmarksToSpheres.cxx
   adapters/LaplacianSharpening.cxx
   adapters/LevelSetSegmentation.cxx
+  adapters/MatchBoundingBoxes.cxx
   adapters/MathematicalMorphology.cxx
   adapters/MeanFilter.cxx
   adapters/MedianFilter.cxx

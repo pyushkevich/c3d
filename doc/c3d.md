@@ -561,9 +561,17 @@ The **-reorder** command can simplify loading the images:
 
 Syntax: `-copy-transform`
 
-Copies the image header, specifically the image to physical space transform (origin, spacing, direction cosines), from the first image to the second image. This is best done with NIFTI images, which store this information well. In the example below, *out.nii* will have the same header as *first.nii* and the same intensities as *second.nii*.
+Copies the image header, specifically the image to physical space transform (origin, spacing, direction cosines), from the first image (reference) to the second image (target). This is best done with NIFTI images, which store this information well. In the example below, *out.nii* will have the same header as *first.nii* and the same intensities as *second.nii*.
 
     c3d first.nii second.nii -copy-transform -o out.nii
+
+#### -mbb, -match-bounding-box: Match bounding box of one image to another
+
+Syntax: `-mbb`
+
+Given two images on the stack (reference and target), sets the header of the target image so that the two images occupy the same physical space. The direction cosines of the target image are set to match the reference image.  This command is related to '-copy-transform' but supports images of different size.
+
+    c3d reference.nii target.nii -mbb -o out.nii
 
 #### -orient: Change image orientation
 

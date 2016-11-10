@@ -59,6 +59,7 @@
 #include "LandmarksToSpheres.h"
 #include "LaplacianSharpening.h"
 #include "LevelSetSegmentation.h"
+#include "MatchBoundingBoxes.h"
 #include "MathematicalMorphology.h"
 #include "MeanFilter.h"
 #include "MedianFilter.h"
@@ -918,6 +919,13 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-manual")
     {
     this->PrintManual(std::cout);
+    return 0;
+    }
+
+  else if (cmd == "-match-bounding-box" || cmd == "-mbb")
+    {
+    MatchBoundingBoxes<TPixel,VDim> adapter(this);
+    adapter();
     return 0;
     }
 
