@@ -682,6 +682,17 @@ Converts a scalar image to a color (RGB) image using a specified color map. The 
 
     c3d scalar.nii.gz -slice z 50% -flip y -color-map jet -type uchar -omc colorslice.png
 
+#### -conv: Convolution
+
+Syntax `-conv'
+
+Performs convolution between the last two images on the stack. The convolution is performed using the Fourier transform. The result is an image of the same dimensions as the first image. For more details, see ["FFT Based Convolution" by Gaetan Lehmann][Lehmann].
+
+    c3d image.nii kernel.nii -conv -o result.nii
+
+
+[Lehmann]: https://hdl.handle.net/10380/3154
+
 #### -comp, -connected-components: Compute connected components
 
 Syntax: `-comp`
@@ -773,6 +784,14 @@ Syntax `-grad`
 Computes the gradient of the image. Each component of the gradient is placed on the stack in order (x,y,z). The gradient is computed in physical RAS coordinates, taking into account image spacing and orientation. In other words, the gradient is the vector in physical space orthogonal to the isocontours of the image. No smoothing is performed, so it is a good idea to smooth the image first before computing the gradient.
 
     c3d myimage.nii -smooth 1.2vox -grad -oo grad_comp_%02d.nii
+
+#### -hesseig, -hessian-eigenvalues: Compute eigenvalues of the Hessian matrix
+
+Syntax `-hesseig <scale>`
+
+Computes the Hessian matrix at every pixel of an image and the eigenvalues of the Hessian. Images of the eigenvalues (sorted by value) are placed on the stack. These images are useful as texture features. See also the '''-steig''' command. The scale determines the amount of Gaussian smoothing applied for computing the partial derivatives in the Hessian, and is in physical (mm) units.
+
+    c3d myimage.nii -hesseig 2.0 -oo eig%02d.nii.gz
 
 #### -hessobj, -hessian-objectness: Hessian objectness filter
 
@@ -1195,6 +1214,14 @@ Runs the ITK implementation of the STAPLE algorithm ([See Paper][11]). STAPLE ge
 
     c3d -verbose rater1.img rater2.img rater3.img -staple 1 -o probmap.img
     c3d -verbose rater*.img -staple 1 -threshold 0.5 inf 1 0 -o bin_segm.img
+
+#### -steig, -structure-tensor-eigenvalues: Compute eigenvalues of the structure tensor
+
+Syntax `-steig <scale> <radius>`
+
+Computes the Hessian matrix at every pixel of an image and the eigenvalues of the Hessian. Images of the eigenvalues (sorted by value) are placed on the stack. These images are useful as texture features. See also the '''-steig''' command. The scale determines the amount of Gaussian smoothing applied for computing the partial derivatives in the Hessian, and is in physical (mm) units.
+
+    c3d myimage.nii -hesseig 2.0 -oo eig%02d.nii.gz
 
 #### -test-image, -test-probe: Test condition
 

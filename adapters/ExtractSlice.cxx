@@ -162,7 +162,7 @@ ExtractSlice<TPixel, VDim>
   int pos_first, pos_step = 1, pos_last;
   if(pos_list.size() == 1)
     {
-    pos_first = pos_step = pos_last = pos_list[0];
+    pos_first = pos_last = pos_list[0];
     }
   else if(pos_list.size() == 2)
     {

@@ -160,6 +160,15 @@ public:
   // Stack of images from the command line
   ImageStack<ImageType> m_ImageStack;
 
+  // Get the last image from the stack and pop it off
+  ImagePointer PopImage();
+
+  // Push a new image to the stack
+  void PushImage(ImageType *image);
+
+  // Get the size of the stack
+  int GetStackSize();
+
   // Typeid of the image to be saved
   string m_TypeId;
 

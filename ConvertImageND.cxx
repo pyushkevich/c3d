@@ -40,6 +40,7 @@
 #include "ComputeOverlaps.h"
 #include "ConnectedComponents.h"
 #include "ConvertAdapter.h"
+#include "Convolution.h"
 #include "CoordinateMap.h"
 #include "CopyTransform.h"
 #include "CreateImage.h"
@@ -48,7 +49,9 @@
 #include "ExtractRegion.h"
 #include "ExtractSlice.h"
 #include "FlipImage.h"
+#include "FillBackgroundWithNeighborhoodNoise.h"
 #include "GeneralLinearModel.h"
+#include "HessianEigenValues.h"
 #include "HessianObjectness.h"
 #include "HistogramMatch.h"
 #include "ImageERF.h"
@@ -64,6 +67,7 @@
 #include "MeanFilter.h"
 #include "MedianFilter.h"
 #include "MixtureModel.h"
+#include "MomentsFeatures.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
 #include "NormalizedCrossCorrelation.h"
@@ -91,6 +95,7 @@
 #include "SmoothImage.h"
 #include "SplitMultilabelImage.h"
 #include "StapleAlgorithm.h"
+#include "StructureTensorEigenValues.h"
 #include "TestImage.h"
 #include "ThresholdImage.h"
 #include "TileImages.h"
@@ -566,6 +571,12 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-conv")
+    {
+    Convolution<TPixel,VDim>(this)();
+    return 0;
+    }
+
   else if (cmd == "-coordinate-map-voxel" || cmd == "-cmv")
     {
     CoordinateMap<TPixel,VDim>(this)(false);
@@ -683,6 +694,15 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-fill-background-with-noise" || cmd == "-fbn")
+    {
+    FillBackgroundWithNeighborhoodNoise<TPixel, VDim> adapter(this);
+    SizeType radius = ReadSizeVector(argv[1]);
+    int steps = atoi(argv[2]);
+    adapter(radius, steps);
+    return 2;
+    }
+
   else if (cmd == "-fft")
     {
     ComputeFFT<TPixel, VDim> adapter(this);
@@ -745,6 +765,15 @@ ImageConverter<TPixel, VDim>
     adapter(foreground, full_conn);
 
     return 2;
+    }
+
+  else if (cmd == "-hesseig" || cmd == "-hessian-eigenvalues")
+    {
+    double scale = atof(argv[1]);
+    HessianEigenValues<TPixel,VDim> adapter(this);
+    adapter(scale);
+
+    return 1;
     }
 
   else if (cmd == "-hessobj" || cmd == "-hessian-objectness")
@@ -1021,6 +1050,13 @@ ImageConverter<TPixel, VDim>
     adapter(mu, sigma);
 
     return 1 + 2 * ncomp;
+    }
+
+  else if (cmd == "-moments")
+    {
+    SizeType radius = ReadSizeVector(argv[1]);
+    MomentsFeatures<TPixel, VDim>(this)(radius);
+    return 1;
     }
 
   else if (cmd == "-mmi" || cmd == "-mattes-mutual-info")
@@ -1691,6 +1727,16 @@ ImageConverter<TPixel, VDim>
     StapleAlgorithm<TPixel, VDim> adapter(this);
     adapter(ival);
     return 1;
+    }
+
+  else if (cmd == "-steig" || cmd == "-structure-tensor-eigenvalues")
+    {
+    double scale_grad = atof(argv[1]);
+    double scale_window = atof(argv[2]);
+    StructureTensorEigenValues<TPixel,VDim> adapter(this);
+    adapter(scale_grad, scale_window);
+
+    return 2;
     }
 
   // Enable SPM extensions
@@ -2609,6 +2655,37 @@ ImageConverter<TPixel, VDim>
     return m_ImageVars[name];
   else
     return NULL;
+}
+
+
+template<class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel, VDim>::ImagePointer
+ImageConverter<TPixel, VDim>
+::PopImage()
+{
+  if(m_ImageStack.size() == 0)
+    throw ConvertException("Attempted to pop an image from empty stack");
+
+  ImagePointer stack_end = m_ImageStack.back();
+  m_ImageStack.pop_back();
+
+  return stack_end;
+}
+
+template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::PushImage(ImageType *image)
+{
+  m_ImageStack.push_back(image);
+}
+
+template<class TPixel, unsigned int VDim>
+int
+ImageConverter<TPixel, VDim>
+::GetStackSize()
+{
+  return m_ImageStack.size();
 }
 
 template class ImageConverter<double, 2>;

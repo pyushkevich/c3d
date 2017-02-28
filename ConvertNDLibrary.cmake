@@ -56,6 +56,7 @@ SET(SOURCES
   adapters/ComputeMoments.cxx
   adapters/ComputeOverlaps.cxx
   adapters/ConnectedComponents.cxx
+  adapters/Convolution.cxx
   adapters/CoordinateMap.cxx
   adapters/CopyTransform.cxx
   adapters/CreateImage.cxx
@@ -63,7 +64,9 @@ SET(SOURCES
   adapters/DicomSeriesList.cxx
   adapters/ExtractRegion.cxx
   adapters/ExtractSlice.cxx
+  adapters/FillBackgroundWithNeighborhoodNoise.cxx
   adapters/FlipImage.cxx
+  adapters/HessianEigenValues.cxx
   adapters/HessianObjectness.cxx
   adapters/HistogramMatch.cxx
   adapters/ImageERF.cxx
@@ -80,6 +83,7 @@ SET(SOURCES
   adapters/MeanFilter.cxx
   adapters/MedianFilter.cxx
   adapters/MixtureModel.cxx
+  adapters/MomentsFeatures.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
   adapters/NormalizeLocalWindow.cxx
@@ -107,6 +111,7 @@ SET(SOURCES
   adapters/SmoothImage.cxx
   adapters/SplitMultilabelImage.cxx
   adapters/StapleAlgorithm.cxx
+  adapters/StructureTensorEigenValues.cxx
   adapters/TestImage.cxx
   adapters/ThresholdImage.cxx
   adapters/TileImages.cxx
