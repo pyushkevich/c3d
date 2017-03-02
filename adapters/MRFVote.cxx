@@ -163,6 +163,8 @@ MRFVote<TPixel, VDim>
         n_upd++;
         }
       }
+
+    *c->verbose << "  Iteration " << q << " ICM updates: " << n_upd << endl;
     if(n_upd == 0)
       {
       *c->verbose << "  Early convergence after " << q << " iterations" << endl;
