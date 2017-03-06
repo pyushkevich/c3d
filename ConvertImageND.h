@@ -169,6 +169,12 @@ public:
   // Get the size of the stack
   int GetStackSize();
 
+  // Print something to verbose output, but using printf syntax
+  void PrintF(const char *fmt, ...);
+
+  // Get Nth image on the stack without removing it
+  ImageType *PeekImage(int k);
+
   // Typeid of the image to be saved
   string m_TypeId;
 

@@ -35,9 +35,11 @@ public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
+  enum Mode { VOTES_AGAINST = 0, LOG_LIKELIHOOD };
+
   MRFVote(Converter *c) : c(c) {}
 
-  void operator() (double beta, size_t niter, bool flagUseSplitLabelSet);
+  void operator() (Mode mode, double beta);
 
 private:
   Converter *c;

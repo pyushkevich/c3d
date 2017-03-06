@@ -1893,10 +1893,20 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-vote-mrf")
     {
-    double beta = atof(argv[1]);
-    size_t iter = atoi(argv[2]);
-    MRFVote<TPixel, VDim> adapter(this);
-    adapter(beta, iter, false);
+    std::string mode_str = str_to_lower(argv[1]);
+    double beta = atof(argv[2]);
+
+    typedef MRFVote<TPixel, VDim> Adapter;
+    typename Adapter::Mode mode;
+    if(mode_str == "votes_against" || mode_str == "va")
+      mode = Adapter::VOTES_AGAINST;
+    else if(mode_str == "log_likelihood" || mode_str == "ll")
+      mode = Adapter::LOG_LIKELIHOOD;
+    else
+      throw ConvertException("Unknown mode parameter %s to -vote-mrf", mode_str.c_str());
+
+    Adapter adapter(this);
+    adapter(mode, beta);
     return 2;
     }
 
@@ -2681,11 +2691,35 @@ ImageConverter<TPixel, VDim>
 }
 
 template<class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel,VDim>::ImageType *
+ImageConverter<TPixel, VDim>
+::PeekImage(int k)
+{
+  if(m_ImageStack.size() <= k || k < 0)
+    throw ConvertException("Attempted to access image outside of stack range");
+  return m_ImageStack[k];
+}
+
+template<class TPixel, unsigned int VDim>
 int
 ImageConverter<TPixel, VDim>
 ::GetStackSize()
 {
   return m_ImageStack.size();
+}
+
+template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::PrintF(const char *fmt, ...)
+{
+  char buffer[4096];
+  va_list args;
+  va_start (args, fmt);
+  vsprintf (buffer, fmt, args);
+  va_end (args);
+
+  *this->verbose << buffer;
 }
 
 template class ImageConverter<double, 2>;

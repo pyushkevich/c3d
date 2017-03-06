@@ -11,6 +11,7 @@ SET(C3D_VERSION_FULL "${C3D_VERSION_MAJOR}.${C3D_VERSION_MINOR}.${C3D_VERSION_PA
 # Include directories
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/adapters)
+INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/external/GCv2p3)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/VoxBoIO)
 INCLUDE_DIRECTORIES(${CONVERT3D_SOURCE_DIR}/itkextras/PovRayIO)
@@ -139,6 +140,13 @@ SUBDIRS(${CONVERT3D_SOURCE_DIR}/itkextras)
 
 ADD_LIBRARY(cnd_adapters ${SOURCES})
 
+ADD_LIBRARY(cnd_maxflow 
+  external/GCv2p3/GCoptimization.cpp
+  external/GCv2p3/LinkedBlockList.cpp
+  external/GCv2p3/graph.cpp
+  external/GCv2p3/maxflow.cpp
+)
+
 ADD_LIBRARY(cnd_driver 
   ConvertImageND.cxx
   utilities/doc/Documentation.cxx)
@@ -148,4 +156,4 @@ ADD_LIBRARY(cnd_api api/ConvertAPI.cxx)
 ADD_DEPENDENCIES(cnd_driver markdown_docs)
 
 SET(C3D_LINK_LIBRARIES
-  cnd_driver cnd_adapters ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)
+  cnd_driver cnd_adapters cnd_maxflow ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)

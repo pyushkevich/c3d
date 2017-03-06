@@ -25,164 +25,242 @@
 
 #include "MRFVote.h"
 #include "itkImageRandomNonRepeatingIteratorWithIndex.h"
-#include "itkNeighborhoodIterator.h"
+#include "itkShapedNeighborhoodIterator.h"
+#include "itkNaryFunctorImageFilter.h"
+#include "itkImageRegionIterator.h"
 
+#include "GCoptimization.h"
+
+/**
+ * Functor for computing the mask
+ */
+template <class TPixel, class TMaskPixel = TPixel>
+class MRFVoteMaskFunctor
+{
+public:
+  typedef MRFVoteMaskFunctor<TPixel> Self;
+  inline TPixel operator() (const std::vector<TPixel> &x)
+    {
+    // Test validity of the posterior
+    for(int d = 0; d < x.size(); d++)
+      if(!(x[d] >= 0 && x[d] <= 1))
+        return 0;
+    return 1;
+    }
+
+  TMaskPixel operator == (const Self &) const { return true; }
+  TMaskPixel operator != (const Self &) const { return false; }
+};
+
+
+/**
+ * The voting approach is as follows:
+ *
+ * Each input image is a `posterior` map for a given label. More
+ * specifically, we consider each posterior to be the sum of votes
+ * for that label. The votes do not have to add up to one, allowing
+ * for missing data. Negative posterior values mean that the voxel
+ * should be excluded from the voting (i.e. a way to supply a mask).
+ */
 
 template <class TPixel, unsigned int VDim>
 void
 MRFVote<TPixel, VDim>
-::operator() (double beta, size_t niter, bool flagUseSplitLabelSet)
+::operator() (Mode mode, double beta)
 {
-  // Create a maximum image
-  ImagePointer i0 = c->m_ImageStack[0];
-
   // Number of imaged voted over
-  size_t nl = c->m_ImageStack.size();
+  int nl = c->GetStackSize();
 
-  // If this is in response to a split command, retrieve the label set
-  typename Converter::LabelSet lset;
-  if(flagUseSplitLabelSet)
+  // The first image
+  ImagePointer iFirst  = c->PeekImage(0);
+
+  // The mask computation filter
+  typedef itk::Image<int, VDim> MaskImageType;
+  typedef MRFVoteMaskFunctor<TPixel, int> MaskFunctor;
+  typedef itk::NaryFunctorImageFilter<ImageType, MaskImageType, MaskFunctor> MaskFilter;
+  typename MaskFilter::Pointer maskFilter = MaskFilter::New();
+  for(int i = 0; i < nl; i++)
+    maskFilter->SetInput(i, c->PeekImage(i));
+  maskFilter->Update();
+  typename MaskImageType::Pointer mask = maskFilter->GetOutput();
+
+  // Create an image for looking up nodes
+  typename MaskImageType::Pointer nodeImage = MaskImageType::New();
+  nodeImage->CopyInformation(mask);
+  nodeImage->SetRegions(mask->GetBufferedRegion());
+  nodeImage->Allocate();
+
+  // Fill the node index image
+  typedef itk::ImageRegionIterator<MaskImageType> MaskIter;
+  MaskIter itMask(mask, mask->GetBufferedRegion());
+  MaskIter itNode(nodeImage, mask->GetBufferedRegion());
+
+  int N = 0;
+  while(!itNode.IsAtEnd())
     {
-    if(nl != c->GetSplitLabelSet().size())
-      throw ConvertException(
-        "Merge failed: number of images on the stack (%i) different "
-        "from the number of split labels (%i)", 
-        nl, c->GetSplitLabelSet().size());
-    lset = c->GetSplitLabelSet();
+    if(itMask.Value() > 0)
+      itNode.Set(++N);
+    else
+      itNode.Set(0);
+    ++itNode; 
+    ++itMask;
     }
 
-  // Otherwise, the label mapping is identity
-  else
+  // Start reporting
+  *c->verbose << "Performing MRF regularized voting using Graph Cuts" << std::endl;
+  *c->verbose << "  Vertices: " << N << std::endl;
+  *c->verbose << "  Labels:   " << nl << std::endl;
+
+  // Must have some nodes!
+  if(N == 0)
+    throw ConvertException("No nodes for the MRF graph in -vote-mrf");
+
+  // Iterator for enumerating all edges in the image (without duplication)
+  itk::Size<VDim> radius; radius.Fill(1);
+  typedef itk::ShapedNeighborhoodIterator<MaskImageType> ShapeIter;
+  ShapeIter itShaped(radius, nodeImage, nodeImage->GetBufferedRegion());
+  itShaped.ClearActiveList();
+
+  // Set the allowed offsets for looking up neighbors. We only add offsets in one direction
+  // to avoid duplicate edges in the graph.
+  for(int d = 0; d < VDim; d++)
     {
-    for(size_t i = 0; i < nl; i++)
-      lset.push_back((double) i);
+    itk::Offset<VDim> offset;
+    offset.Fill(0);
+    offset[d] = -1;
+    itShaped.ActivateOffset(offset);
+
+    // Both direction edges?
+    offset.Fill(0);
+    offset[d] = 1;
+    itShaped.ActivateOffset(offset);
     }
 
-  // Create a vote image (short for now)
-  ImagePointer ilabel = ImageType::New();
-  ilabel->SetRegions(i0->GetBufferedRegion());
-  ilabel->SetOrigin(i0->GetOrigin());
-  ilabel->SetSpacing(i0->GetSpacing());
-  ilabel->SetDirection(i0->GetDirection());
-  ilabel->Allocate();
-  ilabel->FillBuffer(lset[0]);
+  // Create iterators for the lihelihood images
+  std::vector<Iterator> lit;
+  for(int i = 0; i < nl; i++)
+    lit.push_back(Iterator(c->PeekImage(i), mask->GetBufferedRegion()));
 
-  // Say something
-  *c->verbose << "Collapsing " << c->m_ImageStack.size() << 
-    " images into a multi-label image via maximum voting" << endl;
+  // Create the graph
+  GCoptimizationGeneralGraph graph(N, nl);
 
-  // For each of the images, update the vote
-  for(size_t j = 1; j < nl; j++)
+  // Temporary storage
+  double *pvec = new double[nl];
+
+  // Iterate over the mask region, creating a graph
+  int n_edges = 0;
+  while(!itShaped.IsAtEnd())
     {
-    // Get the next image pointer
-    ImagePointer ij = c->m_ImageStack[j];
-
-    // Check the image dimensions
-    if(ij->GetBufferedRegion() != ilabel->GetBufferedRegion())
-      throw ConvertException("All voting images must have same dimensions");
-
-    // Pairwise voting
-    size_t n = ilabel->GetBufferedRegion().GetNumberOfPixels();
-    for(size_t k = 0; k < n; k++)
+    // The central pixel must be non-zero in the mask
+    int node_id = itShaped.GetCenterPixel();
+    if(node_id > 0)
       {
-      double ibest = i0->GetBufferPointer()[k];
-      if(ij->GetBufferPointer()[k] > ibest)
+      // Check nodes in the neighborhood
+      for(typename ShapeIter::Iterator itn = itShaped.Begin(); !itn.IsAtEnd(); ++itn)
         {
-        ibest = ij->GetBufferPointer()[k];
-        ilabel->GetBufferPointer()[k] = j;
-        }
-      }
-    }
-
-  // The result of the voting gives us the initial guess. Now perform
-  // ICM (Besag 1986, http://www.stat.duke.edu/~scs/Courses/Stat376/Papers/GibbsFieldEst/BesagDirtyPicsJRSSB1986.pdf)
-  
-  // Define an inner region (no boundary voxels)
-  RegionType r_inner = ilabel->GetBufferedRegion();
-  for(size_t d = 0; d < VDim; d++)
-    {
-    r_inner.SetIndex(d, r_inner.GetIndex(d)+1);
-    r_inner.SetSize(d, r_inner.GetSize(d)-2);
-    }
-
-  // Allocate array for neighborhood histogram
-  double *nhist = new double[nl];
-
-  // Create neighborhood iterator
-  typedef itk::NeighborhoodIterator<ImageType> NeighborIterType;
-  typename NeighborIterType::RadiusType radius;
-  radius.Fill(1);
-  NeighborIterType nit(radius, ilabel, r_inner);
-  nit.SetNeedToUseBoundaryCondition(false);
-
-  // Do some iterations
-  for(size_t q = 0; q < niter; q++)
-    {
-    // Keep track of number of updates
-    size_t n_upd = 0;
-    
-    // Iterate over the inner region
-    typedef itk::ImageRandomNonRepeatingIteratorWithIndex<ImageType> RandIterType;
-    RandIterType rit(ilabel, r_inner);
-    rit.SetNumberOfSamples(r_inner.GetNumberOfPixels());
-    for(; !rit.IsAtEnd(); ++rit)
-      {
-      // Current pixel value
-      TPixel x_i = rit.Value();
-
-      // Clear the neighborhood histogram
-      for(size_t j = 0; j < nl; j++)
-        nhist[j] = 0.0;
-
-      // Make up for the fact that the current voxel will be counted
-      nhist[(int)x_i] = -1;
-      
-      // Iterate the neighborhood
-      nit.SetLocation(rit.GetIndex()); // Slow , change later
-      for(size_t k = 0; k < nit.Size(); k++)
-        nhist[(int)nit.GetPixel(k)]++;
-
-      // For each candidate label value, compute conditional posterior
-      int j_best = x_i;
-      double post_best = 1e100;
-      for(int j = 0; j < nl; j++)
-        {
-        double p = c->m_ImageStack[j]->GetPixel(rit.GetIndex());
-        if(p > 0)
+        bool in_bounds;
+        int nbr_id = itShaped.GetPixel(itn.GetNeighborhoodIndex(), in_bounds);
+        if(in_bounds && nbr_id > 0)
           {
-          double likelihood = -log(p);
-          double prior = - beta * nhist[j];
-          double post = likelihood + prior;
-          if(post_best > post)
-            { post_best = post; j_best=j; }
+          // We use zero-based indexing for the graph class, 1-based in the image
+          graph.setNeighbors(node_id - 1, nbr_id - 1);
+          n_edges++;
           }
         }
-      if(x_i != j_best)
+
+      // Compute the energy term 
+      double psum = 0.0;
+      for(int i = 0; i < nl; i++)
         {
-        rit.Set(j_best);
-        n_upd++;
+        pvec[i] = lit[i].Value();
+        psum += pvec[i];
+        }
+
+      // Assign the energy terms using (psum - pvec[i]) formula. This assigns the
+      // cost based on the number of 'votes against'
+      for(int i = 0; i < nl; i++)
+        {
+        if(mode == VOTES_AGAINST)
+          {
+          graph.setDataCost(node_id - 1, i, psum - pvec[i]);
+          }
+        else
+          {
+          graph.setDataCost(node_id - 1, i, -log(pvec[i]));
+          }
         }
       }
 
-    *c->verbose << "  Iteration " << q << " ICM updates: " << n_upd << endl;
-    if(n_upd == 0)
-      {
-      *c->verbose << "  Early convergence after " << q << " iterations" << endl;
-      break;
-      }
+    ++itShaped;
+    for(int i = 0; i < nl; i++)
+      ++lit[i];
     }
 
-  // Relabel the image using /split labels
-  if(flagUseSplitLabelSet)
-    for(size_t k = 0; k < ilabel->GetBufferedRegion().GetNumberOfPixels(); k++)
-      ilabel->GetBufferPointer()[k] = lset[(int) ilabel->GetBufferPointer()[k]];
-  
+  // Set the label costs
+  for(int i = 0; i < nl; i++)
+    for(int j = 0; j < nl; j++)
+      graph.setSmoothCost(i, j, (i == j) ? 0.0 : beta);
+
+  // Print the number of edges
+  *c->verbose << "  Edges:    " << n_edges << std::endl;
+
+  // Random order seems to make the most sense
+  graph.setLabelOrder(true);
+
+  // Run the alpha-expansion - with some verbose reporting
+  double e_last = graph.compute_energy();
+  c->PrintF("  Initial Energy:    Data = %9.4f   Smooth = %9.4f   Total = %9.4f\n",
+    graph.giveDataEnergy(), graph.giveSmoothEnergy(), e_last);
+
+  // List of labels in the graph
+  std::vector<int> labels;
+  for(int i = 0; i < nl; i++)
+    labels.push_back(i);
+ 
+  for(int iter = 0; iter < 20; iter++)
+    {
+    // Perform expansion in random order
+    std::random_shuffle(labels.begin(), labels.end());
+
+    // Perform alpha-expansion for each label
+    for(int i = 0; i < labels.size(); i++)
+      {
+      graph.alpha_expansion(labels[i]);
+      } 
+
+    double e_now = graph.compute_energy();
+    c->PrintF("  Iteration %4d:    Data = %9.4f   Smooth = %9.4f   Total = %9.4f\n",
+      iter, graph.giveDataEnergy(), graph.giveSmoothEnergy(), e_now);
+
+    if(e_now == e_last)
+      break;
+
+    e_last = e_now;
+    }
+
+  // Collect the final labeling
+  ImagePointer result = ImageType::New();
+  result->CopyInformation(mask);
+  result->SetRegions(nodeImage->GetBufferedRegion());
+  result->Allocate();
+  result->FillBuffer(0.0);
+
+  itk::ImageRegionConstIterator<MaskImageType> itPost(nodeImage, nodeImage->GetBufferedRegion());
+  Iterator itResult(result, result->GetBufferedRegion());
+  while(!itResult.IsAtEnd())
+    {
+    int node_id = itPost.Value();
+    if(node_id > 0)
+      itResult.Set(graph.whatLabel(node_id - 1) + 1);
+    ++itPost; ++itResult;
+    }
+
   // Clear histogram
-  delete[] nhist;
+  delete[] pvec;
 
   // Put result on stack
   c->m_ImageStack.clear();
-  c->m_ImageStack.push_back(ilabel);
+  c->PushImage(result);
 }
 
 // Invocations

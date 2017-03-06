@@ -1275,6 +1275,38 @@ This command takes all images on the stack as arguments and at each voxel *(i,j,
 
 The value assigned to each image is based on its position from the bottom of the stack, with zero indicating bottom-most image. In the example above, the output image has values 0 for voxels where prob1.img is highest, 1 for prob2.img and 2 for prob3.img. Also see the related commands **-split** and **-merge**. 
 
+#### -vote-mrf: Vote with Markov Random Field regularlization
+
+Syntax: `-vote-mrf <mode> <lambda>`
+
+This command is similar to **-vote** but it performs regularlization using the Markov Random Field (MRF). This form of regularization penalizes the total surface area of the segments in the output. It results in more contiguous segments. 
+
+The command takes all the images on the stack and assumes that they are likelihood images corresponding to labels 1, 2, ... N. This means that voxel **x** in image **k** holds the probability that voxel **x** has label **k**. Likelihood images must be between 0 and 1. Any values outside of the range are interpreted as the voxel being excluded from the voting. These voxels will be assigned label 0 in the output.
+
+The problem is encoded in the form of energy minimization, consisting of a data term and a regularization term. The data term encodes the cost (penalty) associated with assigning the voxel **x** the label **k**. The parameter **mode** describes how likelihood images are mapped to the cost. 
+
+* `VOTES_AGAINST` or `VA`. This mode is useful when the command is being used to combine several multi-label segmentations into a single one. Each likelihood image is assumed to be the proportion of segmentations that assign label *k* to voxel *x*. The data term equals to the error associated to assining the voxel *k* label *x*. This error is calculated as the sum of the likelihoods for all labels at *x* minus the likelihood for *k* at *x*. Note that the likelihoods do not have to add up to one, which may be interpreted as missing data for some voxels. 
+
+* `LOG_LIKELIHOOD` or `LL`. The cost for label *k* at voxel *x* is the logarithm of the k-th likelihood image at *x*. This will assign infinite cost when the likelihood is zero. 
+
+The regularlization term is encoded as **lambda** times the total number of neighboring voxels inside the mask (non-excluded region of the image) that have different labels. 
+
+The optmization problem is solved using the Alpha-Expansion graph cut algorithm. Users of this functionality should cite the following papers. 
+
+1. Yuri Boykov, Olga Veksler, Ramin Zabih, *Efficient Approximate Energy Minimization via Graph Cuts*, IEEE transactions on PAMI, vol. 20, no. 12, p. 1222-1239, 2001. 
+
+2. Vladimir Kolmogorov and Ramin Zabih, *What Energy Functions can be Minimized via Graph Cuts?*, IEEE transactions on PAMI, vol. 26, no. 2, p. 147-159, 2004.
+
+3. Yuri Boykov and Vladimir Kolmogorov, *An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision*, IEEE transactions on PAMI, vol. 26, no. 9, p. 1124-1137, 2004. 
+
+As noted in the open source implementation of the graph cuts algorithms distributed under the General Public License, "This software can be used only for research purposes, you should cite the aforementioned paper in any resulting publication.  If you wish to use this software (or the algorithms described in the aforementioned paper) for commercial purposes, you should be aware that there is a US patent: R. Zabih, Y. Boykov, O. Veksler, *System and method for fast approximate energy minimization via graph cuts*, United Stated Patent 6,744,923, June 1, 2004.
+
+The example below illustrates applying **-vote-mrf** with a user-specified mask. Voxels outside of the mask are first remapped to NaN (not a number) and thus excluded from the MRF optimization and given 0 label.
+
+    c3d lhood01.nii lhood02.nii lhood03.nii mask.nii -popas M \
+        -foreach -push M -replace 0 NaN -times -endfor \
+        -vote-mrf VA 0.2 -o result.nii
+
 #### -voxreg, -voxelwise-regression: Regression between two images
 
 Syntax: `-voxreg regression_order `
