@@ -121,6 +121,9 @@
 // Support for regular expressions via KWSYS in ITK
 #include <itksys/RegularExpression.hxx>
 
+// Image to image filter - for some global tolerance code
+#include <itkImageToImageFilter.h>
+
 // Documentation manual
 #include "Documentation.h"
 
@@ -346,6 +349,11 @@ ImageConverter<TPixel,VDim>
   // Create an interpolator
   m_Interpolation = "linear";
   CreateInterpolator<TPixel, VDim>(this).CreateLinear();
+
+  // Set orientation and coordinate tolerances to something more
+  // reasonable than the ITK defaults
+  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(1.0e-4);
+  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(1.0e-4);
 }
 
 
