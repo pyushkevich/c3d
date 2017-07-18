@@ -267,7 +267,8 @@ public:
       {
         for(index_t i = 0; i < indices.size(); ++i)
           {
-            indices[i] = random_.RandD(0, trainingData_.Size());
+          // Must be a number between 0 and size-1
+          indices[i] = random_.RandD(0, trainingData_.Size() - 1);
           }
       }
 
