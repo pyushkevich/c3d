@@ -1552,6 +1552,26 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  else if (cmd == "-resample-iso")
+    {
+    typename ImageType::SpacingType spc =  this->PeekImage(0)->GetSpacing();
+    std::string mode = argv[1];
+    double isospc = 0.0;
+    if(mode == "min" || mode == "MIN")
+      isospc = spc.GetVnlVector().min_value();
+    else if(mode == "max" || mode == "MAX")
+      isospc = spc.GetVnlVector().max_value();
+    else
+      throw ConvertException("Unsupported mode '%s' for command %s", argv[1], cmd.c_str());
+
+    SizeType sz = this->PeekImage(0)->GetBufferedRegion().GetSize();
+    for(size_t i = 0; i < VDim; i++)
+      sz[i] = static_cast<size_t>((0.5 + sz[i] * spc[i] / isospc));
+    ResampleImage<TPixel, VDim> adapter(this);
+    adapter(sz);
+    return 1;
+    }
+
   else if (cmd == "-resample-mm")
     {
     RealVector vox = ReadRealSize(argv[1]);

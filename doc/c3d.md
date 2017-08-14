@@ -1117,6 +1117,15 @@ Resamples the image, keeping the bounding box the same, but changing the number 
     c3d img1.img -resample 100x100x200% -o img2.img 
     c3d img1.img -background 4.0 -interpolation Cubic -resample 123x142x200 -o img2.img
 
+#### -resample-iso: Resample image to (approximately) isotropic resolution
+
+Syntax: `-resample-iso <min|max>`
+
+Resamples the image to have approximately isotropic resolution, either based on the smallest voxel dimension ('min' mode) or largest voxel dimension ('max' mode). This command calls **-resample** with appropriately calculated new image dimensions. The bounding box of the image in physical space is preserved. Therefore, since the image dimensions must be integer, the actual voxel dimensions after resampling may not be precisely isotropic. 
+
+    c3d img1.img -resample-iso min -o img2.img
+
+
 #### -resample-mm: Resample image to new resolution
 
 Syntax: `-resample-mm <voxel_size> `
