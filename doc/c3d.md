@@ -213,7 +213,7 @@ The second way to use the **-oo** command is to supply a pattern for the output 
 
 will generate images *label00.nii*, *label01.nii*, *label02.nii* and so on. The image at the end of the stack will have the highest number, and the image at the beginning of the stack will have number 00. 
 
-#### --oomc: Output multiple multi-component images to multiple files
+#### -oomc: Output multiple multi-component images to multiple files
 
 Syntax: `-oomc n_comp image_list` or `-oomc n_comp image_spec`
 
