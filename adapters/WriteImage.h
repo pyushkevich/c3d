@@ -39,7 +39,7 @@ public:
 
   void operator() (const char *file, bool force, int pos=-1);
 
-  void WriteMultiComponent(const char *file, int ncomp);
+  void WriteMultiComponent(const char *file, int ncomp, int pos=-1);
 
 private:
   Converter *c;
@@ -48,7 +48,7 @@ private:
     void TemplatedWriteImage(const char *file, double xRoundFactor, int pos);
 
   template <class TOutPixel> 
-    void TemplatedWriteMultiComponentImage(const char *file, double xRoundFactor, int pstart);
+    void TemplatedWriteMultiComponentImage(const char *file, double xRoundFactor, int pstart, int ncomp);
 
   void MakeSPMOriginFix(itk::ImageBase<VDim> *input, itk::ImageBase<VDim> *output);
 

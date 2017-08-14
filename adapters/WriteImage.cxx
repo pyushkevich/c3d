@@ -120,9 +120,8 @@ template<class TPixel, unsigned int VDim>
 template<class TOutPixel>
 void 
 WriteImage<TPixel, VDim>
-::TemplatedWriteMultiComponentImage(const char *file, double xRoundFactor, int pstart)
+::TemplatedWriteMultiComponentImage(const char *file, double xRoundFactor, int pstart, int ncomp)
 {
-  size_t ncomp = c->m_ImageStack.size() - pstart;
   if(ncomp <= 0)
     throw ConvertException("No data has been generated! Can't write to %s", file);
 
@@ -179,30 +178,31 @@ WriteImage<TPixel, VDim>
 template <class TPixel, unsigned int VDim>
 void
 WriteImage<TPixel, VDim>
-::WriteMultiComponent(const char *file, int ncomp)
+::WriteMultiComponent(const char *file, int ncomp, int pos)
 {
   // Get the position of the first image to include
-  int pos = c->m_ImageStack.size() - ncomp;
+  if(pos < 0)
+    pos = c->m_ImageStack.size() - ncomp;
 
   if(c->m_TypeId == "char" || c->m_TypeId == "byte")
-    TemplatedWriteMultiComponentImage<char>(file, c->m_RoundFactor, pos);
+    TemplatedWriteMultiComponentImage<char>(file, c->m_RoundFactor, pos, ncomp);
   if(c->m_TypeId == "uchar" || c->m_TypeId == "ubyte")
-    TemplatedWriteMultiComponentImage<unsigned char>(file, c->m_RoundFactor, pos);
+    TemplatedWriteMultiComponentImage<unsigned char>(file, c->m_RoundFactor, pos, ncomp);
   
   if(c->m_TypeId == "short") 
-    TemplatedWriteMultiComponentImage<short>(file, c->m_RoundFactor, pos);
+    TemplatedWriteMultiComponentImage<short>(file, c->m_RoundFactor, pos, ncomp);
   if(c->m_TypeId == "ushort")
-    TemplatedWriteMultiComponentImage<unsigned short>(file, c->m_RoundFactor, pos);
+    TemplatedWriteMultiComponentImage<unsigned short>(file, c->m_RoundFactor, pos, ncomp);
 
   if(c->m_TypeId == "int") 
-    TemplatedWriteMultiComponentImage<int>(file, c->m_RoundFactor, pos);
+    TemplatedWriteMultiComponentImage<int>(file, c->m_RoundFactor, pos, ncomp);
   if(c->m_TypeId == "uint")
-    TemplatedWriteMultiComponentImage<unsigned int>(file, c->m_RoundFactor, pos);
+    TemplatedWriteMultiComponentImage<unsigned int>(file, c->m_RoundFactor, pos, ncomp);
 
   if(c->m_TypeId == "float") 
-    TemplatedWriteMultiComponentImage<float>(file, 0.0, pos);
+    TemplatedWriteMultiComponentImage<float>(file, 0.0, pos, ncomp);
   if(c->m_TypeId == "double")
-    TemplatedWriteMultiComponentImage<double>(file, 0.0, pos);
+    TemplatedWriteMultiComponentImage<double>(file, 0.0, pos, ncomp);
 }
 
 

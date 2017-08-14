@@ -105,15 +105,18 @@ ExtractSlice<TPixel, VDim>
 template <class TPixel, unsigned int VDim>
 void
 ExtractSlice<TPixel, VDim>
-::operator() (string axis, char* position)
+::operator() (string axis, char* position, unsigned int n_comp)
 {
   // Check input availability
-  if(c->m_ImageStack.size() < 1)
-    throw ConvertException("No images on stack");
+  if(c->m_ImageStack.size() < n_comp)
+    throw ConvertException("At least %d images are required on the stack for the -slice command", n_comp);
 
-  // Get the image
-  ImagePointer image = c->m_ImageStack.back();
-  SizeType size = image->GetBufferedRegion().GetSize();
+  // Check that the images are the same size
+  if(n_comp > 1 && !c->CheckStackSameDimensions(n_comp))
+    throw ConvertException("All images must be the same size for the -mslice command");
+
+  // Get the last image for the size command considerations
+  SizeType size = c->PeekImage(0)->GetBufferedRegion().GetSize();
 
   // Process the first parameter
   unsigned int slicedir;
@@ -201,12 +204,13 @@ ExtractSlice<TPixel, VDim>
       "Wrong slice list specification %d:%d:%d for -slice command! Step should be negative.",
       pos_first, pos_step, pos_last);
 
-  // Remove the image from stack
-  c->m_ImageStack.pop_back();
+  // Take the last n_comp images on the stack
+  std::vector<ImagePointer> comp_ptr = c->PopNImages(n_comp);
 
   // Now extract each slice
   for(int i = pos_first; i <= pos_last; i+=pos_step)
-    this->ExtractOneSlice(image, slicedir, i);
+    for(int k = 0; k < n_comp; k++)
+      this->ExtractOneSlice(comp_ptr[k], slicedir, i);
 }
 
 // Invocations

@@ -1235,6 +1235,15 @@ ImageConverter<TPixel, VDim>
     adapter.WriteMultiComponent(argv[np], nc);
     return np;
     }
+
+  else if (cmd == "-oomc" || cmd == "-output-multiple-multicomponent")
+    {
+    // The number of components must be specified
+    int nc = atoi(argv[1]);
+
+    // Write the rest
+    return 1 + this->WriteMultiple(argc-1, argv+1, nc, cmd.c_str());
+    }
   
   else if (cmd == "-orient")
     {
@@ -1246,44 +1255,7 @@ ImageConverter<TPixel, VDim>
   // Write mulptiple images
   else if (cmd == "-oo" || cmd == "-output-multiple")
     {
-    // Check if the argument is a printf pattern
-    char buffer[1024];
-    sprintf(buffer, argv[1],0);
-    if (strcmp(buffer, argv[1]))
-      {
-      // A pattern is specified. For each image on the stack, use pattern
-      for(size_t i = 0; i < m_ImageStack.size(); i++)
-        {
-        sprintf(buffer, argv[1], i);
-        WriteImage<TPixel, VDim> adapter(this);
-        adapter(buffer, true, i);
-        }
-      return 1;
-      }
-    else
-      {
-      // Filenames are specified. Find out how many there are
-      size_t nfiles = 0;
-      for(int i = 1; i < argc; i++)
-        {
-        if (argv[i][0] != '-') nfiles++; else break;
-        }
-
-
-      if (nfiles == 0)
-        throw ConvertException("No files specified to -oo command");
-
-      if (nfiles > m_ImageStack.size())
-        throw ConvertException("Too many files specified to -oo command");
-
-      for(size_t j = 0; j < nfiles; j++)
-        {
-        WriteImage<TPixel, VDim> adapter(this);
-        adapter(argv[j+1], true, m_ImageStack.size() - nfiles + j);
-        }
-
-      return nfiles;
-      }
+    return this->WriteMultiple(argc, argv, 1, cmd.c_str());
     }
 
   else if (cmd == "-orient")
@@ -1663,10 +1635,22 @@ ImageConverter<TPixel, VDim>
     char * pos = argv[2];
 
     ExtractSlice<TPixel, VDim> adapter(this);
-    adapter(axis, pos);
+    adapter(axis, pos, 1);
 
     return 2;
     }
+
+  else if (cmd == "-slice-all")
+    {
+    string axis( argv[1] );
+    char * pos = argv[2];
+
+    ExtractSlice<TPixel, VDim> adapter(this);
+    adapter(axis, pos, this->GetStackSize());
+
+    return 2;
+    }
+
 
   else if (cmd == "-sharpen")
     {
@@ -2703,6 +2687,21 @@ ImageConverter<TPixel, VDim>
 }
 
 template<class TPixel, unsigned int VDim>
+std::vector<typename ImageConverter<TPixel, VDim>::ImagePointer>
+ImageConverter<TPixel, VDim>
+::PopNImages(unsigned int n)
+{
+  if(m_ImageStack.size() < n)
+    throw ConvertException("Attempted to pop %d images from a stack of %d images", n, m_ImageStack.size());
+
+  std::vector<typename ImageConverter<TPixel, VDim>::ImagePointer> retvec(n);
+  for(int i = n-1; i >= 0; i--)
+    retvec[i] = this->PopImage();
+
+  return retvec;
+}
+
+template<class TPixel, unsigned int VDim>
 void
 ImageConverter<TPixel, VDim>
 ::PushImage(ImageType *image)
@@ -2740,6 +2739,60 @@ ImageConverter<TPixel, VDim>
   va_end (args);
 
   *this->verbose << buffer;
+}
+
+template <class TPixel, unsigned int VDim>
+int
+ImageConverter<TPixel, VDim>
+::WriteMultiple(int argc, char *argv[], int n_comp, const char *command)
+{
+  // Check if the argument is a printf pattern
+  char buffer[1024];
+  sprintf(buffer, argv[1],0);
+  if (strcmp(buffer, argv[1]))
+    {
+    // A pattern is specified. For each image on the stack, use pattern
+    for(size_t i = 0; i < m_ImageStack.size(); i+= n_comp)
+      {
+      WriteImage<TPixel, VDim> adapter(this);
+      sprintf(buffer, argv[1], i);
+      if(n_comp == 1)
+        adapter(buffer, true, i);
+      else 
+        adapter.WriteMultiComponent(buffer, n_comp, i);
+      }
+    return 1;
+    }
+  else
+    {
+    // Filenames are specified. Find out how many there are
+    size_t nfiles = 0;
+    for(int i = 1; i < argc; i++)
+      {
+      if (argv[i][0] != '-') nfiles++; else break;
+      }
+
+    // There must be files
+    if (nfiles == 0)
+      throw ConvertException("No files specified to %s command", command);
+
+    if (nfiles * n_comp > m_ImageStack.size())
+      throw ConvertException("Too many files specified to %s command", command);
+
+    // Determine the starting position
+    int pstart = m_ImageStack.size() - nfiles * n_comp;
+
+    for(size_t j = pstart; j < m_ImageStack.size(); j+=n_comp)
+      {
+      WriteImage<TPixel, VDim> adapter(this);
+      if(n_comp == 1)
+        adapter(argv[j+1], true, j);
+      else
+        adapter.WriteMultiComponent(argv[j+1], n_comp, j);
+      }
+
+    return nfiles;
+    }
 }
 
 template class ImageConverter<double, 2>;

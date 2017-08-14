@@ -148,6 +148,9 @@ private:
   // Implementation of the 'accum' loop
   size_t AccumulateLoop(int argc, char *argv[]);
 
+  // Write multiple images (for -oo and --oomc commands)
+  int WriteMultiple(int argc, char *argv[], int n_comp, const char *command);
+
   // Type of loop we are in currently
   enum LoopType { LOOP_NONE = 0, LOOP_FOREACH, LOOP_ACCUM };
   LoopType m_LoopType;
@@ -162,6 +165,9 @@ public:
 
   // Get the last image from the stack and pop it off
   ImagePointer PopImage();
+
+  // Get the last K images from the stack and pop them off
+  std::vector<ImagePointer> PopNImages(unsigned int n);
 
   // Push a new image to the stack
   void PushImage(ImageType *image);

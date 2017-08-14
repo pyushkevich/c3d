@@ -213,6 +213,11 @@ The second way to use the **-oo** command is to supply a pattern for the output 
 
 will generate images *label00.nii*, *label01.nii*, *label02.nii* and so on. The image at the end of the stack will have the highest number, and the image at the beginning of the stack will have number 00. 
 
+#### --oomc: Output multiple multi-component images to multiple files
+
+Syntax: `-oomc n_comp image_list` or `-oomc n_comp image_spec`
+
+Write all images on the **convert3d** stack as multiple multi-component image files. The command is a mixture of the **-omc** and **-oo** commands. There must be a multiple of 'n_comp' images on the stack. Every consecutive 'n_comp' images on the stack will be written to a separate multi-component image.
 
 ### Commands: Stack Manipulation and Flow Control
 
@@ -1187,6 +1192,14 @@ Extracts a slice along the specified axis (x,y or z). The position specifier **p
 With the new command **c4d**, the **-slice** command can be used to extract volumes from a 4D image. This can be useful to reformat a 4D NIFTI image as a 3D multi-component NIFTI image, using the command 
 
     c4d input4d.nii.gz -slice w 0:-1 -omc output3d_multicomp.nii.gz
+
+#### -slice-all: Extract slices from all images on the stack
+
+Syntax `-slice-all axis position_spec`
+
+This command behaves identical to the **-slice** command, but all images on the stack are sliced, and the slices are interleaved. This is useful for slicing multi-component images. For example, if you read a four-component image 'test4.nii.gz', you can extract and save the slices as follows:
+
+    c3d test4.nii.gz -slice-all 20%:10%:80% -oomc 4 slice4_%03d.nii.gz
 
 #### -smooth: Gaussian smoothing
 

@@ -38,7 +38,7 @@ public:
 
   ExtractSlice(Converter *c) : c(c) {}
 
-  void operator() (string axis, char* pos);
+  void operator() (string axis, char* pos, unsigned int n_comp);
 
 private:
   Converter *c;
