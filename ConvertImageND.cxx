@@ -96,6 +96,7 @@
 #include "SplitMultilabelImage.h"
 #include "StapleAlgorithm.h"
 #include "StructureTensorEigenValues.h"
+#include "SwapDimensions.h"
 #include "TestImage.h"
 #include "ThresholdImage.h"
 #include "TileImages.h"
@@ -1779,6 +1780,17 @@ ImageConverter<TPixel, VDim>
     ScaleShiftImage<TPixel, VDim> adapter(this);
     adapter(a, b);
     return 4;
+    }
+
+  else if (cmd == "-swapdim") 
+    {
+    // For now we only support a single string
+    std::vector<std::string> code;
+    code.push_back(argv[1]);
+    SwapDimensions<TPixel, VDim> adapter(this);
+    adapter(code);
+
+    return 1;
     }
 
 

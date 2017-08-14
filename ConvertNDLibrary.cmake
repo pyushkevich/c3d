@@ -113,6 +113,7 @@ SET(SOURCES
   adapters/SplitMultilabelImage.cxx
   adapters/StapleAlgorithm.cxx
   adapters/StructureTensorEigenValues.cxx
+  adapters/SwapDimensions.cxx
   adapters/TestImage.cxx
   adapters/ThresholdImage.cxx
   adapters/TileImages.cxx

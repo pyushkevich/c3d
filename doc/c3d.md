@@ -617,6 +617,14 @@ Sets the voxel spacing of the image. This should always be a vector with positiv
 
     c3d img.nii -spacing 1x1x1mm -o out.img
 
+#### -swapdim: Reorder the coordinate axes of an image
+
+Syntax `-swapdim <code>`
+
+This command reorders the image axes (columns, rows, slices) to achieve a desired transformation between voxel space and physical space. The image remains exactly the same in physical space, but the encoding of the voxels in memory and on disk is changed to obtain the desired transformation. The transformation is specified as a three-letter 'RAI' code, as in the '''-orient''' command.
+
+    c3d img.nii -swapdim ASL -info -o out.nii
+
 
 ### Commands: Image Processing
 
