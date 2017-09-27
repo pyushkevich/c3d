@@ -9,6 +9,10 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     cmake_policy(SET CMP0003 NEW)
   endif(COMMAND cmake_policy)
 
+  # enable languages
+  ENABLE_LANGUAGE(C)
+  ENABLE_LANGUAGE(CXX)
+
   # Do we want to build the UI
   OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interfaace?" OFF)
 

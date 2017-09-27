@@ -90,7 +90,7 @@ LandmarksToSpheres<TPixel, VDim>
     }
 
   fin.close();
-  delete sub_buffer;
+  delete[] sub_buffer;
 
   // How many landmarks?
   if(lms.size() == 0)

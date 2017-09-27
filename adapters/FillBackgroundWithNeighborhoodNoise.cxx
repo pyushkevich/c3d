@@ -65,7 +65,7 @@ public:
 
   void ThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId)
+    itk::ThreadIdType threadId) ITK_OVERRIDE
     {
     StatisticsImageType *stats = 
       dynamic_cast<StatisticsImageType *>(itk::ProcessObject::GetInput("statistics"));

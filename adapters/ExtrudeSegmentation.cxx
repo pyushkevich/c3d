@@ -84,7 +84,7 @@ protected:
 
   void ThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId);
+    itk::ThreadIdType threadId) ITK_OVERRIDE;
 
 private:
   LineFunctorImageFilter(const Self &);         // purposely not implemented

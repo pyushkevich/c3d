@@ -73,17 +73,17 @@ public:
   itkGetMacro(Classifier, ClassifierType *);
 
   /** We need to override this method because of multiple input types */
-  void GenerateInputRequestedRegion();
+  void GenerateInputRequestedRegion() ITK_OVERRIDE;
 
 protected:
 
   RandomForestClassifyImageFilter();
   virtual ~RandomForestClassifyImageFilter();
 
-  void PrintSelf(std::ostream& os, itk::Indent indent) const;
+  void PrintSelf(std::ostream& os, itk::Indent indent) const ITK_OVERRIDE;
 
   void ThreadedGenerateData(const OutputImageRegionType &outputRegionForThread,
-                            itk::ThreadIdType threadId);
+                            itk::ThreadIdType threadId) ITK_OVERRIDE;
 
   void UpdateOutputs();
 

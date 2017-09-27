@@ -2307,7 +2307,7 @@ ImageConverter<TPixel, VDim>
       // Get the quantile
       size_t k = (size_t) (qtile * np);
       val = asort[k];
-      delete asort;
+      delete[] asort;
 
       if (m_PercentIntensityMode == PIM_QUANTILE)
         *verbose << "Quantile " << qtile << " maps to " << val << endl;
@@ -2387,7 +2387,7 @@ ImageConverter<TPixel, VDim>
       }
     }
 
-  delete vec;
+  delete[] vec;
   return sz;
 }
 
@@ -2438,7 +2438,7 @@ ImageConverter<TPixel, VDim>
       }
     }
 
-  delete vec;
+  delete[] vec;
   return idx;
 }
 

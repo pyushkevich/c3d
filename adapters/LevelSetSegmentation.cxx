@@ -48,7 +48,7 @@ public:
   itkNewMacro(Self);
 
   // Calculate speed image - just copy the feature image
-  virtual void CalculateSpeedImage() 
+  virtual void CalculateSpeedImage() ITK_OVERRIDE
     {
     itk::ImageAlgorithm::Copy( this->GetFeatureImage(),
       this->GetSpeedImage(),
@@ -61,7 +61,7 @@ protected:
   MyLevelSetFunction() {};
   ~MyLevelSetFunction() {};
 
-  virtual void PrintSelf(std::ostream &os, itk::Indent indent) const
+  virtual void PrintSelf(std::ostream &os, itk::Indent indent) const ITK_OVERRIDE
     { os << indent << "MyLevelSetFunction"; }
 
 private:
@@ -100,7 +100,7 @@ protected:
   MyLevelSetFilter() {};
   ~MyLevelSetFilter() {};
 
-  virtual void PrintSelf(std::ostream &os, itk::Indent indent) const
+  virtual void PrintSelf(std::ostream &os, itk::Indent indent) const ITK_OVERRIDE
     { os << indent << "MyLevelSetFilter"; }
 
 private:

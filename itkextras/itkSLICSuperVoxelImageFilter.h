@@ -53,11 +53,11 @@ protected:
   SLICSuperVoxelImageFilter();
   ~SLICSuperVoxelImageFilter() {}
 
-  void PrintSelf(std::ostream & os, Indent indent) const {};
+  void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE {};
 
-  void BeforeThreadedGenerateData(void);
+  void BeforeThreadedGenerateData(void) ITK_OVERRIDE;
 
-  void ThreadedGenerateData(const RegionType & outputRegionForThread, ThreadIdType threadId);
+  void ThreadedGenerateData(const RegionType & outputRegionForThread, ThreadIdType threadId) ITK_OVERRIDE;
 
 private:
   SLICSuperVoxelImageFilter(const Self &); //purposely not

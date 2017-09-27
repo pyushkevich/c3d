@@ -300,8 +300,8 @@ OneDimensionalInPlaceAccumulateFilterWorker<TPixel, TInputImage>
     }
 #endif
 
-  delete sum;
-  delete line;
+  delete[] sum;
+  delete[] line;
 }
 
 
