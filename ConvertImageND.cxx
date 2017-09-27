@@ -48,6 +48,7 @@
 #include "DicomSeriesList.h"
 #include "ExtractRegion.h"
 #include "ExtractSlice.h"
+#include "ExtrudeSegmentation.h"
 #include "FlipImage.h"
 #include "FillBackgroundWithNeighborhoodNoise.h"
 #include "GeneralLinearModel.h"
@@ -700,6 +701,13 @@ ImageConverter<TPixel, VDim>
     {
     UnaryMathOperation<TPixel, VDim> adapter(this);
     adapter(&vcl_exp);
+    return 0;
+    }
+
+  else if (cmd == "-extrude-seg") 
+    {
+    ExtrudeSegmentation<TPixel, VDim> adapter(this);
+    adapter();
     return 0;
     }
 

@@ -65,6 +65,7 @@ SET(SOURCES
   adapters/DicomSeriesList.cxx
   adapters/ExtractRegion.cxx
   adapters/ExtractSlice.cxx
+  adapters/ExtrudeSegmentation.cxx
   adapters/FillBackgroundWithNeighborhoodNoise.cxx
   adapters/FlipImage.cxx
   adapters/HessianEigenValues.cxx
