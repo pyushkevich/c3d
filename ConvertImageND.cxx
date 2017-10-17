@@ -446,6 +446,13 @@ ImageConverter<TPixel, VDim>
     return this->AccumulateLoop(argc, argv);
     }
 
+  else if (cmd == "-acos")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_acos);
+    return 0;
+    }
+
   else if (cmd == "-add")
     {
     BinaryMathOperation<TPixel, VDim> adapter(this);
@@ -490,6 +497,13 @@ ImageConverter<TPixel, VDim>
       throw ConvertException("No image to assign to variable %s", var.c_str());
     m_ImageVars[var] = m_ImageStack.back();
     return 1;
+    }
+
+  else if (cmd == "-asin")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_asin);
+    return 0;
     }
 
   else if (cmd == "-atan2")
@@ -1287,15 +1301,18 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-origin-voxel")
     {
+    // Read the physical RAS coordinate of the voxel that should be made the origin
     RealVector vec = ReadRealVector(argv[1], false);
-    cout << "VOX : " << vec << endl;
+
+    // This voxel should have the coordinate zero
+    for (int i = 0; i <  VDim; i++)
+      {
+      // Here we are making the RAS/LPS switch and inverting the coordinate
+      vec[i] = (i >= 2) ? -vec[i] : vec[i];
+      }
 
     // Get physical coordinate of this voxel
-    vnl_matrix_fixed<double, VDim+1, VDim+1> mat = 
-      m_ImageStack.back()->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix();
-    RealVector org = -vec;
-    m_ImageStack.back()->SetOrigin(org.data_block());
-    cout << "ORG : " << org << endl;
+    m_ImageStack.back()->SetOrigin(vec.data_block());
     return 1;
     }
 

@@ -187,6 +187,37 @@ protected:
   bool m_Activated;
 };
 
+
+template <class TPixel, unsigned int VDim>
+class MinimumIntensityProjectionFunctor
+{
+public:
+  MinimumIntensityProjectionFunctor() : m_LineMinimum(0) {}
+
+  TPixel operator() (const TPixel &value, int line_pos, int line_len)
+    {
+    if(line_pos == 0)
+      {
+      m_LineMinimum = value;
+      return value;
+      }
+
+    if(value < m_LineMinimum)
+      m_LineMinimum = value;
+
+    return m_LineMinimum;
+    }
+
+  bool operator != (const ExtrudeSegmentationLineFunctor<TPixel, VDim> &other)
+    {
+    return m_LineMinimum != other.m_LineMinimum;
+    }
+
+protected:
+  TPixel m_LineMinimum;
+};
+
+
 template <class TPixel, unsigned int VDim>
 void
 ExtrudeSegmentation<TPixel, VDim>
@@ -196,15 +227,17 @@ ExtrudeSegmentation<TPixel, VDim>
   ImagePointer image = c->PopImage();
 
   // Create the filter
-  typedef ExtrudeSegmentationLineFunctor<TPixel, VDim> FunctorType;
+  typedef MinimumIntensityProjectionFunctor<TPixel, VDim> FunctorType;
   typedef LineFunctorImageFilter<ImageType, ImageType, FunctorType> FilterType;
   typename FilterType::Pointer filter = FilterType::New();
   filter->SetInput(image);
   
   // Get the background
+  /*
   FunctorType functor;
   functor.SetBackground(c->m_Background);
   filter->SetFunctor(functor);
+  */
 
   // Run the filter
   filter->Update();
