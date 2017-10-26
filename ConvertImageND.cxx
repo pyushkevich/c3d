@@ -46,6 +46,7 @@
 #include "CreateImage.h"
 #include "CreateInterpolator.h"
 #include "DicomSeriesList.h"
+#include "ExportPatches.h"
 #include "ExtractRegion.h"
 #include "ExtractSlice.h"
 #include "ExtrudeSegmentation.h"
@@ -716,6 +717,16 @@ ImageConverter<TPixel, VDim>
     UnaryMathOperation<TPixel, VDim> adapter(this);
     adapter(&vcl_exp);
     return 0;
+    }
+
+  else if (cmd == "-export-patches")
+    {
+    ExportPatches<TPixel,VDim> adapter(this);
+    std::string fn = argv[1];
+    SizeType radius = this->ReadSizeVector(argv[2]);
+    double freq = atof(argv[3]);
+    adapter(fn.c_str(), radius, freq);
+    return 3;
     }
 
   else if (cmd == "-extrude-seg") 

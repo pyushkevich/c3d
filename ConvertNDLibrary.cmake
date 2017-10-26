@@ -63,6 +63,7 @@ SET(SOURCES
   adapters/CreateImage.cxx
   adapters/CreateInterpolator.cxx
   adapters/DicomSeriesList.cxx
+  adapters/ExportPatches.cxx
   adapters/ExtractRegion.cxx
   adapters/ExtractSlice.cxx
   adapters/ExtrudeSegmentation.cxx
