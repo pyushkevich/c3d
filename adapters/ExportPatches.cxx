@@ -48,7 +48,7 @@ ExportPatches<TPixel, VDim>
   int nb_size = itn[0]->Size();
 
   // Create the sample vector
-  std::vector<double> sample_vec(n_chan * nb_size);
+  float *sample_vec = new float[n_chan * nb_size];
 
   // Open a file for writing
   FILE *f = fopen(out_file, "wb");
@@ -68,18 +68,22 @@ ExportPatches<TPixel, VDim>
           {
           NIterType *it_curr = itn[k];
           for(int j = 0; j < nb_size; j++)
-            sample_vec[p++] = it_curr->GetPixel(j);
+            sample_vec[p++] = (float) it_curr->GetPixel(j);
           }
 
         // Write sample to file
-        for(int m = 0; m < sample_vec.size()-1; m++)
-          fprintf(f, "%f,",sample_vec[m]);
-        fprintf(f, "%f\n",sample_vec.back());
+        fwrite(sample_vec, sizeof(float), n_chan * nb_size, f);
         }
       }
     for(int k = 0; k < n_chan; k++)
       ++(*itn[k]);
     }
+
+  // Delete stuff
+  delete [] sample_vec;
+  for(int i = 0; i < n_chan; i++)
+    delete itn[i];
+  delete [] itn;
 
   // Restore the mask
   c->PushImage(mask);
