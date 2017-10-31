@@ -555,6 +555,14 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-centroid-mark")
+    {
+    double mark_value = atof(argv[1]);
+    BinaryImageCentroid<TPixel, VDim> adapter(this);
+    adapter(mark_value);
+    return 1;
+    }
+
   else if (cmd == "-connected-components" || cmd == "-connected" || cmd == "-comp")
     {
     ConnectedComponents<TPixel, VDim> adapter(this);
@@ -1361,6 +1369,29 @@ ImageConverter<TPixel, VDim>
     PadImage<TPixel, VDim> adapter(this);
     adapter(padExtentLower, padExtentUpper, padValue);
     return 3;
+    }
+
+  else if (cmd == "-padto" || cmd == "-pad-to")
+    {
+    // Specify the size to which the image should be padded
+    SizeType padNewSize = ReadSizeVector(argv[1]);
+    float padValue = atof(argv[2]);
+
+    // How much to add in each dimension
+    IndexType padExtentLower, padExtentUpper;
+    SizeType currentSize = this->PeekLastImage()->GetBufferedRegion().GetSize();
+    for(int i = 0; i < VDim; i++)
+      {
+      // Constraint: lower + upper = desired - current
+      long bilateral_pad = padNewSize[i] - currentSize[i];
+      padExtentLower[i] = bilateral_pad / 2;
+      padExtentUpper[i] = bilateral_pad - padExtentLower[i];
+      }
+
+    // Use the adapter
+    PadImage<TPixel, VDim> adapter(this);
+    adapter(padExtentLower, padExtentUpper, padValue);
+    return 2;
     }
 
   else if (cmd == "-pca")
@@ -2768,11 +2799,47 @@ ImageConverter<TPixel, VDim>
 template<class TPixel, unsigned int VDim>
 typename ImageConverter<TPixel,VDim>::ImageType *
 ImageConverter<TPixel, VDim>
+::PopAndPushCopy()
+{
+  // Pop the old image from the stack
+  ImagePointer img_old = this->PopImage();
+
+  // Create a new image that is a copy of the old
+  ImagePointer img_new = ImageType::New();
+  img_new->CopyInformation(img_old);
+  img_new->SetRegions(img_old->GetBufferedRegion());
+  img_new->Allocate();
+
+  // Copy the intensities
+  long nvox = img_new->GetPixelContainer()->Size();
+  TPixel *p_new = img_new->GetBufferPointer(), *p_old = img_old->GetBufferPointer();
+  for(long i = 0; i < nvox; i++)
+    p_new[i] = p_old[i];
+
+  // Push the copy on the stack
+  this->PushImage(img_new);
+
+  // Return the last image
+  return this->PeekLastImage();
+}
+
+
+template<class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel,VDim>::ImageType *
+ImageConverter<TPixel, VDim>
 ::PeekImage(int k)
 {
   if(m_ImageStack.size() <= k || k < 0)
     throw ConvertException("Attempted to access image outside of stack range");
   return m_ImageStack[k];
+}
+
+template<class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel,VDim>::ImageType *
+ImageConverter<TPixel, VDim>
+::PeekLastImage()
+{
+  return this->PeekImage(this->GetStackSize() - 1);
 }
 
 template<class TPixel, unsigned int VDim>

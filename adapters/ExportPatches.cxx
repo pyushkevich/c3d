@@ -55,6 +55,7 @@ ExportPatches<TPixel, VDim>
 
   // Iterate over the mask
   vnl_random rand;
+  IndexType last_idx = mask->GetBufferedRegion().GetIndex();
   for(Iterator iter(mask, mask->GetBufferedRegion()); !iter.IsAtEnd(); ++iter)
     {
     if(iter.Value() != c->m_Background)
@@ -62,21 +63,26 @@ ExportPatches<TPixel, VDim>
       double drand = rand.drand32(sample_frequency);
       if(drand <= 1.0)
         {
-        // Sample at this location
+        // Compute the offset from the last sampled index
+        typename IndexType::OffsetType offset = (iter.GetIndex() - last_idx);
+
         int p = 0;
         for(int k = 0; k < n_chan; k++)
           {
+          // Update the neighborhood iterators by the current offset
           NIterType *it_curr = itn[k];
+          (*it_curr) += offset;
           for(int j = 0; j < nb_size; j++)
             sample_vec[p++] = (float) it_curr->GetPixel(j);
           }
 
         // Write sample to file
         fwrite(sample_vec, sizeof(float), n_chan * nb_size, f);
+
+        // Save the current index
+        last_idx = iter.GetIndex();
         }
       }
-    for(int k = 0; k < n_chan; k++)
-      ++(*itn[k]);
     }
 
   // Delete stuff

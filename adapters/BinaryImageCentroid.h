@@ -39,7 +39,12 @@ public:
 
   void operator() ();
 
+  void operator() (TPixel paint_value);
+
 private:
+
+  itk::ContinuousIndex<double, VDim> GetCentroid();
+
   Converter *c;
 
 };

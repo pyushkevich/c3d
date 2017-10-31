@@ -181,6 +181,12 @@ public:
   // Get Nth image on the stack without removing it
   ImageType *PeekImage(int k);
 
+  // Get Nth image on the stack without removing it
+  ImageType *PeekLastImage();
+
+  // Replace an image at the end of the stack with its copy
+  ImageType *PopAndPushCopy();
+
   // Typeid of the image to be saved
   string m_TypeId;
 

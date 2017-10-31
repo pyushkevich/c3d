@@ -26,9 +26,9 @@
 #include "BinaryImageCentroid.h"
 
 template <class TPixel, unsigned int VDim>
-void
+itk::ContinuousIndex<double, VDim> 
 BinaryImageCentroid<TPixel, VDim>
-::operator() ()
+::GetCentroid()
 {
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
@@ -53,13 +53,49 @@ BinaryImageCentroid<TPixel, VDim>
   for(size_t d = 0; d < VDim; d++)
     center_idx[d] /= n;
 
+  return center_idx;
+}
+
+template <class TPixel, unsigned int VDim>
+void
+BinaryImageCentroid<TPixel, VDim>
+::operator() ()
+{
   // Find the centroid in Nifti units
+  itk::ContinuousIndex<double, VDim> center_idx = this->GetCentroid();
   itk::Point<double, VDim> center_pt;
-  img->TransformContinuousIndexToRASPhysicalPoint(center_idx, center_pt);
+  c->PeekLastImage()->TransformContinuousIndexToRASPhysicalPoint(center_idx, center_pt);
 
   // Print the resuts
   cout << "CENTROID_VOX " << center_idx << endl;
   cout << "CENTROID_MM " << center_pt << endl;
+}
+
+/**
+ * This version of the method marks the centroid
+ */
+template <class TPixel, unsigned int VDim>
+void
+BinaryImageCentroid<TPixel, VDim>
+::operator()(TPixel centroid_value)
+{
+  // Find the centroid
+  itk::ContinuousIndex<double, VDim> centroid = this->GetCentroid();
+
+  // Create a copy of the image on the stack - to safely work in-place
+  ImageType *image = c->PopAndPushCopy();
+
+  // Fill with zero
+  image->FillBuffer(0);
+
+  // Round the centroid to index location
+  IndexType idx;
+  for(int d = 0; d < VDim; d++)
+    idx[d] = (long)(centroid[d] + 0.5);
+
+  // Set the pixel
+  image->SetPixel(idx, centroid_value);
+  image->Modified();
 }
 
 // Invocations

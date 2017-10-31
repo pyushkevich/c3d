@@ -687,6 +687,17 @@ Reports the centroid, in physical coordinates, of all foreground voxels in the i
     c3d labelimage.img -thresh 5 5 1 0 -centroid          // centroid of all voxels with label 5
     c3d labelimage.img -split -foreach -centroid -endfor  // centroids of all labels (including 0)
 
+
+#### -centroid-mark: Mark the centroid of foreground voxels
+
+Syntax: `-centroid-mark <label>`
+
+Marks the centroid of the foreground voxels in an image. Unlike **-centroid**, this command does not print the centroid location, but marks the closest voxel in the image with the intensity **label**. The remaining voxels are assigned 0 intensity. Combined with -dilate, this can be used to mark centers of regions with spheres.
+
+    c3d binaryimage.nii -centroid-mark -dilate 1 3x3x3
+    c3d labelimage.nii -split -foreach -centroid-mark -endfor -merge -o centers.nii
+
+
 #### -color-map, -colormap: Convert scalar image to RGB using color map    
 
 Syntax: `-color-map ColormapName`
@@ -697,7 +708,7 @@ Converts a scalar image to a color (RGB) image using a specified color map. The 
 
 #### -conv: Convolution
 
-Syntax `-conv'
+Syntax `-conv`
 
 Performs convolution between the last two images on the stack. The convolution is performed using the Fourier transform. The result is an image of the same dimensions as the first image. For more details, see ["FFT Based Convolution" by Gaetan Lehmann][Lehmann].
 
@@ -760,6 +771,32 @@ Syntax: `-erode <label> <radius_vector>`
 Applies erosion [mathematical morphology][5] operation to a binary image. The first parameter is the intensity value of the object that is to be eroded. The second is the radius of the erosion structuring element in 3D. 
 
     c3d binary.img -erode 255 3x3x3vox -o newimage.img
+
+#### -export-patches: Patch sampling from masked regions
+
+Syntax: `-export-patches <outfile> <radius_vector> <frequency>`
+
+This command samples patches from a region of a ND image and stores them into a data file that can be read easily in other software, for example, NumPy. This is useful for generating training data for machine learning projects. Multiple "channels" can be sampled.
+
+    c3d chan1.nii chan2.nii chan3.nii mask.nii \
+        -export-patches samples.dat 4x4x4 100
+
+This command will sample the three images chan1, chan2, chan3 at foreground voxels in the mask. Voxels in the mask foreground region are sampled randomly, following a uniform distribution. The value of 100 means that every 100-th voxel, on average, is sampled. The radius 4x4x4 means that patches of size 9x9x9 will be generated. For each sampled voxel, the sampled intensity data is represented as a 3x9x9x9 array in this example.
+
+To read these samples in NumPy use the following code
+
+    dims = (9,9,9)                          # Patch dimensions
+    k = 3                                   # Number of channels
+    bps = (4 * k * reduce(mul, dims, 1))    # Bytes per sample
+    np = os.path.getsize(fname) // bps      # Number of samples
+    arr = numpy.memmap(fname,'float32','r',shape=(np,k) + dims)
+
+The command can also be used to extract entire structures. For example, if we have a binary segmentation of a lesion of an approximately known size in an MRI scan, we can extract a patch of given size centered on this lesion, as follows:
+
+    c3d mri.nii lesion_seg.nii -centroid-mark 1 \
+        -export-patches single_sample.dat 50x50x20 1
+
+In the above example, **-centroid-mark** transforms the lesion segmentation into a single-voxel mask, from which the sample from the MRI is taken.
 
 #### -fft: Fast Fourier transform
 
@@ -1032,6 +1069,14 @@ Normally you will want to pad with zeros, but you can pad with any constant valu
     c3d img1.nii -pad 10% 10% 1 -o padded.nii
 
 Adds 10% to all sides of the image, and fills the new voxels with the value 1. 
+
+#### -pad-to: Pad image to desired size with constant value
+
+Syntax: `-pad <target_size> <value> `
+
+Pads the image symmetrically with constant value to achieve a desired size.
+
+    c3d image1.nii -pad-to 60x60x100 0 -o padded.nii
 
 
 #### -pca: Principal components analysis of foreground voxels
