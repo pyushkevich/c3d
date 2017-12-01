@@ -995,7 +995,8 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
-  else if (cmd == "-manual")
+  // No else if here because of a windows compiler error (blocks nested too deeply)
+  if (cmd == "-manual")
     {
     this->PrintManual(std::cout);
     return 0;
