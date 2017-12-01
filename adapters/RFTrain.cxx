@@ -59,7 +59,7 @@ RFTrain<TPixel, VDim>
   // number of samples to allocate.
   unsigned long nSamples = 0;
   for(LabelIter lit(imgLabel, reg); !lit.IsAtEnd(); ++lit)
-    if(lit.Value())
+    if( (int) (0.5 + lit.Value()) > 0)
       nSamples++;
 
   // Create an iterator for going over all the anatomical image data
@@ -87,8 +87,8 @@ RFTrain<TPixel, VDim>
   int iSample = 0;
   for(LabelIter lit(imgLabel, reg); !lit.IsAtEnd(); ++lit, ++cit)
     {
-    TPixel label = lit.Value();
-    if(label)
+    int label = (int) (lit.Value() + 0.5);
+    if(label > 0)
       {
       // Fill in the data
       std::vector<TPixel> &column = sample->data[iSample];
@@ -104,7 +104,6 @@ RFTrain<TPixel, VDim>
 
       // Fill in the label
       sample->label[iSample] = label;
-
       ++iSample;
       }
     }
