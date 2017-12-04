@@ -450,6 +450,14 @@ Replace intensity I1 by J1, I2 by J2 and so on. Allowed values of intensity incl
 
     c3d img1.img -replace 1 128 nan 0.0 -o img2.img
 
+#### -retain-labels: Retain labels in a label image
+
+Syntax: `-retain-labels I1 I2 ... IN`
+
+Assuming that the input is a multi-label segmentation image, this command keeps all labels specifed in the list and replaces the remaining labels with the background value.
+
+    c3d seg.nii -retain-labels 2 3 4 8 -o subseg.nii
+
 #### -rgb2hsv: Convert RGB image to HSV image
 
 Syntax `-rgb2hsv`

@@ -102,6 +102,7 @@ SET(SOURCES
   adapters/ReplaceIntensities.cxx
   adapters/ResampleImage.cxx
   adapters/ResliceImage.cxx
+  adapters/RetainLabels.cxx
   adapters/RFApply.cxx
   adapters/RFTrain.cxx
   adapters/SampleImage.cxx

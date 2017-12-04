@@ -85,6 +85,7 @@
 #include "ReplaceIntensities.h"
 #include "ResampleImage.h"
 #include "ResliceImage.h"
+#include "RetainLabels.h"
 #include "RFApply.h"
 #include "RFTrain.h"
 #include "SampleImage.h"
@@ -148,6 +149,15 @@ double myatof(char *str)
   double d = strtod(str, &end);
   if (*end != 0)
     throw "strtod conversion failed";
+  return d;
+};
+
+long myatol(char *str)
+{
+  char *end = 0;
+  double d = strtol(str, &end, 10);
+  if (*end != 0)
+    throw "strtol conversion failed";
   return d;
 };
 
@@ -1515,6 +1525,25 @@ ImageConverter<TPixel, VDim>
 
     return 1;
 
+    }
+
+  else if (cmd == "-retain-labels")
+    {
+    // Parse the labels
+    std::vector<int> vRetain;
+    for(int i = 1; i < argc; i++)
+      {
+      try
+        { vRetain.push_back((int) myatol(argv[i])); }
+      catch(...)
+        { break; }
+      }
+
+    // Replace the intensities with values supplie
+    RetainLabels<TPixel, VDim> adapter(this);
+    adapter(vRetain);
+
+    return vRetain.size();
     }
 
   else if (cmd == "-rf-apply")
