@@ -780,14 +780,15 @@ Applies erosion [mathematical morphology][5] operation to a binary image. The fi
 
     c3d binary.img -erode 255 3x3x3vox -o newimage.img
 
-#### -export-patches: Patch sampling from masked regions
+#### -export-patches, -xp: Fixed size patch sampling from masked regions
 
 Syntax: `-export-patches <outfile> <radius_vector> <frequency>`
 
+See also: **-export-patches-aug (-xpa)** command, which provides data augmentation for deep learning.
+
 This command samples patches from a region of a ND image and stores them into a data file that can be read easily in other software, for example, NumPy. This is useful for generating training data for machine learning projects. Multiple "channels" can be sampled.
 
-    c3d chan1.nii chan2.nii chan3.nii mask.nii \
-        -export-patches samples.dat 4x4x4 100
+    c3d chan1.nii chan2.nii chan3.nii mask.nii -xp samples.dat 4x4x4 100
 
 This command will sample the three images chan1, chan2, chan3 at foreground voxels in the mask. Voxels in the mask foreground region are sampled randomly, following a uniform distribution. The value of 100 means that every 100-th voxel, on average, is sampled. The radius 4x4x4 means that patches of size 9x9x9 will be generated. For each sampled voxel, the sampled intensity data is represented as a 3x9x9x9 array in this example.
 
@@ -799,12 +800,21 @@ To read these samples in NumPy use the following code
     np = os.path.getsize(fname) // bps      # Number of samples
     arr = numpy.memmap(fname,'float32','r',shape=(np,k) + dims)
 
+It is also possible to visualize the extracted samples in ITK-SNAP by reading them as a raw image, with dimensions equal to the dimensions of the patch, and the z-dimension multiplied by the number of samples.
+
 The command can also be used to extract entire structures. For example, if we have a binary segmentation of a lesion of an approximately known size in an MRI scan, we can extract a patch of given size centered on this lesion, as follows:
 
-    c3d mri.nii lesion_seg.nii -centroid-mark 1 \
-        -export-patches single_sample.dat 50x50x20 1
+    c3d mri.nii lesion_seg.nii -centroid-mark 1 -xp single_sample.dat 50x50x20 1
 
 In the above example, **-centroid-mark** transforms the lesion segmentation into a single-voxel mask, from which the sample from the MRI is taken.
+
+#### -export-patches-aug, -xpa: data augmentation for deep learning
+
+Syntax `-export-patches-aug <N> <sigma_angle>`
+
+This command must precede the `-export-patches (-xp)` command and instructs this command to not only sample patches along the image axes but to also sample **N** randomly rotated patches. Rotation is around a uniformly distributed axis with a rotation angle distributed normally with teh standard deviation **sigma_angle**, specified in degrees. This kind of sampling is useful for data augmentation for machine learning algorithms.
+
+    c3d chan1.nii chan2.nii chan3.nii mask.nii -xpa 5 10 -xp samples.dat 4x4x4 100
 
 #### -fft: Fast Fourier transform
 

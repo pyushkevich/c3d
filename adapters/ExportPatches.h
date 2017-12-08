@@ -37,11 +37,15 @@ public:
 
   ExportPatches(Converter *c) : c(c) {}
 
+  static void SetAugmentationParameters(int n_aug, double rot_sigma);
+
   void operator() (const char *out_file, const SizeType &radius, double sample_frequency);
 
 private:
   Converter *c;
 
+  static int m_NumberOfAugmentations;
+  static double m_AugmentationRotationSigma;
 };
 
 #endif

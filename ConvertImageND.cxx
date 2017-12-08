@@ -737,7 +737,7 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
-  else if (cmd == "-export-patches")
+  else if (cmd == "-export-patches" || cmd == "-xp")
     {
     ExportPatches<TPixel,VDim> adapter(this);
     std::string fn = argv[1];
@@ -745,6 +745,14 @@ ImageConverter<TPixel, VDim>
     double freq = atof(argv[3]);
     adapter(fn.c_str(), radius, freq);
     return 3;
+    }
+
+  else if (cmd == "-export-patches-aug" || cmd == "-xpa")
+    {
+    int n_aug = atoi(argv[1]);
+    double sigma_angle = atof(argv[2]);
+    ExportPatches<TPixel,VDim>::SetAugmentationParameters(n_aug, sigma_angle);
+    return 2;
     }
 
   else if (cmd == "-extrude-seg") 
