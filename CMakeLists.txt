@@ -1,5 +1,22 @@
 PROJECT(CONVERT3D)
 
+# This option determines how much of the 
+OPTION(CONVERT3D_BUILD_AS_SUBPROJECT "Build Convert3D as a sub-project of a larger project" OFF)
+MARK_AS_ADVANCED(CONVERT3D_BUILD_AS_SUBPROJECT)
+
+# This is the default installation macro for command-line tools
+MACRO(CONVERT3D_INSTALL_CLI MYTARGET)
+  IF(CONVERT3D_SUBPROJECT_INSTALL_USE_CUSTOM_MACRO)
+    CONVERT3D_SUBPROJECT_INSTALL_MACRO(${MYTARGET})
+  ELSE()
+    IF(APPLE)
+      INSTALL(TARGETS ${MYTARGET} DESTINATION ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
+    ELSE()
+      INSTALL(TARGETS ${MYTARGET} DESTINATION bin)
+    ENDIF()
+  ENDIF()
+ENDMACRO()
+
 # If we are building as a sub-project we skip all of this extra stuff
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
@@ -20,12 +37,28 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   FIND_PACKAGE(ITK REQUIRED)
   INCLUDE(${ITK_USE_FILE})
 
-ENDIF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
+  # Command-line tools are being built
+  SET(BUILD_CLI ON)
+
+  # The default install cli command
+  SET(INSTALL_CLI_COMMAND CONVERT3D_INSTALL_CLI)
+
+ELSE()
+
+  # This option determines how much of the 
+  OPTION(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS "Should the executable command-line tools be built?" OFF)
+  OPTION(CONVERT3D_SUBPROJECT_INSTALL_USE_CUSTOM_MACRO "Should a custom macro CONVERT3D_SUBPROJECT_INSTALL_MACRO be used for installing the project" OFF)
+  MARK_AS_ADVANCED(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS CONVERT3D_SUBPROJECT_INSTALL_USE_CUSTOM_MACRO)
+  SET(BUILD_CLI ${CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS})
+  MESSAGE("*** BUILDING C3D AS A SUBPROJECT ***")
+
+ENDIF()
 
 # Include the library file
 INCLUDE(${CONVERT3D_SOURCE_DIR}/ConvertNDLibrary.cmake)
 
-IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
+# Build the command-line executables
+IF(BUILD_CLI)
 
   # Command-line executables
   ADD_EXECUTABLE(c3d Convert3DMain.cxx)
@@ -40,7 +73,16 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
   TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
 
-  SET(CMDLINE_TARGETS c2d c3d c4d c3d_affine_tool)
+  SET(CONVERT3D_CLI_TARGETS c2d c3d c4d c3d_affine_tool)
+
+  # Installation section
+  FOREACH(TARG ${CONVERT3D_CLI_TARGETS})
+    CONVERT3D_INSTALL_CLI(${TARG})
+  ENDFOREACH()
+
+ENDIF()
+
+IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
   IF(WIN32)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
@@ -145,9 +187,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       # install tree, and on other platforms it'll go into the bin directory.
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} BUNDLE DESTINATION . COMPONENT Runtime)
 
-      # Install the command line programs inside of the application
-      INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
-
       # Include the qt4 dependent libraries
       include(DeployQt5)
       install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app)
@@ -155,14 +194,11 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ELSEIF(WIN32)
 
       # Set the PATH to include Qt libraries
-    GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
-    GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt5Core_DIR}/../../" ABSOLUTE)
+      GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
+      GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt5Core_DIR}/../../" ABSOLUTE)
 
       # Install to the bin directory
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION bin)
-
-      # Install the command line programs inside of the application
-      INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION bin)
 
       # Include the qt4 dependent libraries
       include(DeployQt5)
@@ -185,7 +221,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       ENDIF(CMAKE_CL_64)
 
       # Give it a windowsy directory name
-    SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Convert3D")
+      SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Convert3D")
       
       # On Win32, the executable is the actual exe
       SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME} "Convert3D GUI")
@@ -197,9 +233,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_EXE} ${C3DGUI_BUNDLE_NAME})
       
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION ${C3DGUI_MAIN_INSTALL_DIR})
-
-      # Install the command line programs inside of the application
-      INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION bin)
 
       # On Linux, we generate forward shared executable
       SUBDIRS(gui/Utilities/Forwarding)
