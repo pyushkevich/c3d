@@ -1,34 +1,21 @@
 PROJECT(CONVERT3D)
 
-# This option determines how much of the 
+# CMake compatibility code
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+if(COMMAND cmake_policy)
+  CMAKE_POLICY(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+# Enable languages
+ENABLE_LANGUAGE(C)
+ENABLE_LANGUAGE(CXX)
+
+# Option allowing to build c3d as a subproject of another project
 OPTION(CONVERT3D_BUILD_AS_SUBPROJECT "Build Convert3D as a sub-project of a larger project" OFF)
 MARK_AS_ADVANCED(CONVERT3D_BUILD_AS_SUBPROJECT)
 
-# This is the default installation macro for command-line tools
-MACRO(CONVERT3D_INSTALL_CLI MYTARGET)
-  IF(CONVERT3D_SUBPROJECT_INSTALL_USE_CUSTOM_MACRO)
-    CONVERT3D_SUBPROJECT_INSTALL_MACRO(${MYTARGET})
-  ELSE()
-    IF(APPLE)
-      INSTALL(TARGETS ${MYTARGET} DESTINATION ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
-    ELSE()
-      INSTALL(TARGETS ${MYTARGET} DESTINATION bin)
-    ENDIF()
-  ENDIF()
-ENDMACRO()
-
 # If we are building as a sub-project we skip all of this extra stuff
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
-
-  # Nonsense for cmake 2.6 compatibility
-  CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
-  if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-  endif(COMMAND cmake_policy)
-
-  # enable languages
-  ENABLE_LANGUAGE(C)
-  ENABLE_LANGUAGE(CXX)
 
   # Do we want to build the UI
   OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interfaace?" OFF)
@@ -39,17 +26,19 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
   # Command-line tools are being built
   SET(BUILD_CLI ON)
-
-  # The default install cli command
-  SET(INSTALL_CLI_COMMAND CONVERT3D_INSTALL_CLI)
+  SET(INSTALL_CLI ON)
 
 ELSE()
 
-  # This option determines how much of the 
-  OPTION(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS "Should the executable command-line tools be built?" OFF)
-  OPTION(CONVERT3D_SUBPROJECT_INSTALL_USE_CUSTOM_MACRO "Should a custom macro CONVERT3D_SUBPROJECT_INSTALL_MACRO be used for installing the project" OFF)
-  MARK_AS_ADVANCED(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS CONVERT3D_SUBPROJECT_INSTALL_USE_CUSTOM_MACRO)
+  # Should the CLI tools be compiled or only the libraries?
+  OPTION(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS "Should the Convert3D command-line tools be built?" OFF)
+
+  # Should the CLI tools be installed? Then also provide CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH
+  OPTION(CONVERT3D_SUBPROJECT_INSTALL_CLI_TOOLS "Should the Convert3D command-line tools be installed?" OFF)
+  MARK_AS_ADVANCED(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS CONVERT3D_SUBPROJECT_INSTALL_CLI_TOOLS)
+
   SET(BUILD_CLI ${CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS})
+  SET(INSTALL_CLI ${CONVERT3D_SUBPROJECT_INSTALL_CLI_TOOLS})
   MESSAGE("*** BUILDING C3D AS A SUBPROJECT ***")
 
 ENDIF()
@@ -73,14 +62,20 @@ IF(BUILD_CLI)
   ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
   TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
 
-  SET(CONVERT3D_CLI_TARGETS c2d c3d c4d c3d_affine_tool)
+ENDIF(BUILD_CLI)
 
-  # Installation section
-  FOREACH(TARG ${CONVERT3D_CLI_TARGETS})
-    CONVERT3D_INSTALL_CLI(${TARG})
-  ENDFOREACH()
+# Install command-line executables
+IF(INSTALL_CLI)
+  IF(CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH)
+    SET(CLI_INSTALL_PATH ${CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH})
+  ELSEIF(APPLE AND BUILD_GUI)
+    SET(CLI_INSTALL_PATH ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
+  ELSE()
+    SET(CLI_INSTALL_PATH bin)
+  ENDIF()
 
-ENDIF()
+  INSTALL(TARGETS c2d c3d c4d c3d_affine_tool DESTINATION ${CLI_INSTALL_PATH} COMPONENT Runtime)
+ENDIF(INSTALL_CLI)
 
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
@@ -241,10 +236,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       install_qt5_executable(${C3DGUI_MAIN_INSTALL_DIR}/${C3DGUI_BUNDLE_NAME} "qgif")
 
     ENDIF()
-
-  ELSE(BUILD_GUI)
-
-    INSTALL(TARGETS c3d c2d c4d RUNTIME DESTINATION bin)
 
   ENDIF(BUILD_GUI)
 

@@ -108,14 +108,14 @@ SET(SCP_ROOT "frs.sourceforge.net:/home/frs/project/c/c3/c3d/c3d")
 #--------------------------------------------------------------------------------
 # Create targets
 
-ADD_CUSTOM_TARGET(upload_nightly 
+ADD_CUSTOM_TARGET(c3d_upload_nightly 
   VERBATIM COMMAND "${SCP_PROGRAM}" ${SCP_ARGUMENTS}
   ${CPACK_PACKAGE_FILE_NAME_WEXT} ${SCP_USERNAME},c3d@${SCP_ROOT}/Nightly/${NIGHTLY_TARGET}
   DEPENDS ${CPACK_TARGET}
   WORKING_DIRECTORY ${SNAP_BINARY_DIR}
   COMMENT "Uploading package ${CPACK_PACKAGE_FILE_NAME_WEXT} to SourceForge.net as ${NIGHTLY_TARGET}")
 
-ADD_CUSTOM_TARGET(upload_experimental 
+ADD_CUSTOM_TARGET(c3d_upload_experimental 
 	VERBATIM COMMAND "${SCP_PROGRAM}" ${SCP_ARGUMENTS} ${CPACK_PACKAGE_FILE_NAME_WEXT} ${SCP_USERNAME},c3d@${SCP_ROOT}/Experimental
   DEPENDS ${CPACK_TARGET}
   WORKING_DIRECTORY ${SNAP_BINARY_DIR}
