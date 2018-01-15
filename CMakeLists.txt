@@ -51,16 +51,14 @@ IF(BUILD_CLI)
 
   # Command-line executables
   ADD_EXECUTABLE(c3d Convert3DMain.cxx)
-  TARGET_LINK_LIBRARIES(c3d ${C3D_LINK_LIBRARIES})
-
   ADD_EXECUTABLE(c2d Convert2DMain.cxx)
-  TARGET_LINK_LIBRARIES(c2d ${C3D_LINK_LIBRARIES})
-
   ADD_EXECUTABLE(c4d Convert4DMain.cxx)
-  TARGET_LINK_LIBRARIES(c4d ${C3D_LINK_LIBRARIES})
-
   ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
-  TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
+
+  FOREACH(target c3d c2d c4d c3d_affine_tool)
+    TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC ${CONVERT3D_INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(${target} PUBLIC ${C3D_LINK_LIBRARIES})
+  ENDFOREACH()
 
 ENDIF(BUILD_CLI)
 
@@ -110,12 +108,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     #--------------------------------------------------------------------------------
     # Specify source files and headers
     #--------------------------------------------------------------------------------
-    INCLUDE_DIRECTORIES(
-      ${CONVERT3D_SOURCE_DIR}/gui
-      ${CONVERT3D_BINARY_DIR}
-      ${CONVERT3D_QT5_INCLUDE_DIRS}
-    )
-
     SET(UI_QT_CXX 
       gui/CommandEditor.cxx 
       gui/ConvertSyntaxHighlighter.cxx 
@@ -160,6 +152,15 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     # Configure the executable's sources and libraries
     ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
     TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} ${C3D_LINK_LIBRARIES})
+
+    # Configure the include path for the GUI
+    TARGET_INCLUDE_DIRECTORIES(
+      ${C3DGUI_BUNDLE_NAME} PUBLIC
+      ${CONVERT3D_INCLUDE_DIRS}
+      ${CONVERT3D_SOURCE_DIR}/gui
+      ${CONVERT3D_BINARY_DIR}
+      ${CONVERT3D_QT5_INCLUDE_DIRS}
+    )
 
     #--------------------------------------------------------------------------------
     # Install the application
