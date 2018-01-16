@@ -43,7 +43,7 @@ class UnaryFunctorVectorImageFilter :
 {
 public:
   typedef UnaryFunctorVectorImageFilter<TInputImage,TOutputImage,TFunction> Self;
-  typedef itk::InPlaceImageFilter<TInputImage, TInputImage> Superclass;
+  typedef itk::InPlaceImageFilter<TInputImage, TOutputImage> Superclass;
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
