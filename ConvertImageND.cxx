@@ -29,6 +29,7 @@
 #include "AlignByLandmarks.h"
 #include "AntiAliasImage.h"
 #include "ApplyMetric.h"
+#include "ApplyNoise.h"
 #include "BiasFieldCorrectionN4.h"
 #include "BinaryHoleFill.h"
 #include "BinaryImageCentroid.h"
@@ -1218,6 +1219,38 @@ ImageConverter<TPixel, VDim>
       }
     adapter("NMI", fnf.c_str(), fnm.c_str());
     return nret;
+    }
+
+  else if (cmd == "-noise-gaussian" || cmd == "-noise")
+    {
+    double param = atof(argv[1]);
+    ApplyNoise<TPixel, VDim> adapter(this);
+    adapter(ApplyNoise<TPixel,VDim>::GAUSSIAN, param);
+    return 1;
+    }
+
+  else if (cmd == "-noise-poisson" || cmd == "-noise-shot")
+    {
+    double param = atof(argv[1]);
+    ApplyNoise<TPixel, VDim> adapter(this);
+    adapter(ApplyNoise<TPixel,VDim>::POISSON, param);
+    return 1;
+    }
+
+  else if (cmd == "-noise-speckle")
+    {
+    double param = atof(argv[1]);
+    ApplyNoise<TPixel, VDim> adapter(this);
+    adapter(ApplyNoise<TPixel,VDim>::SPECKLE, param);
+    return 1;
+    }
+
+  else if (cmd == "-noise-salt-pepper")
+    {
+    double param = atof(argv[1]);
+    ApplyNoise<TPixel, VDim> adapter(this);
+    adapter(ApplyNoise<TPixel,VDim>::SALT_PEPPER, param);
+    return 1;
     }
 
   else if (cmd == "-nomcs" || cmd == "-no-multicomponent-split")

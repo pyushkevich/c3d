@@ -434,6 +434,35 @@ Combine with the **-dup** command to compute voxelwise square of the image
     # Compute x = a^2
     c3d a.img -dup -multiply -o x.img
 
+#### -noise-gaussian, -noise: Apply additive Gaussian noise
+
+Syntax: `-noise-gaussian <sigma>`
+
+Adds Gaussian noise to an image with zero mean and standard deviation sigma. Please see [Noise simulation article][15] by G. Lehmann for details.
+
+    c3d image.nii -noise-gaussian 5 -o noisy.nii
+
+#### -noise-poisson: Apply Poisson noise
+Syntax: `-noise-poisson <scale>`
+
+Applies Poisson (shot) noise to an image with given scale. Please see [Noise simulation article][15] by G. Lehmann for details.
+
+    c3d image.nii -noise-poisson 5 -o noisy.nii
+
+#### -noise-salt-pepper: Apply salt and pepper noise
+Syntax: `-noise-salt-pepper <probability>`
+
+Applies salt and pepper noise to an image with given probability. Please see [Noise simulation article][15] by G. Lehmann for details.
+
+    c3d image.nii -noise-salt-pepper 0.1 -o noisy.nii
+
+#### -noise-speckle: Apply Poisson noise
+Syntax: `-noise-speckle <sigma>`
+
+Applies Speckle noise to an image with given standard deviation. Please see [Noise simulation article][15] by G. Lehmann for details.
+
+    c3d image.nii -noise-speckle 5 -o noisy.nii
+
 #### -reciprocal: Image voxelwise reciprocal 
 
 Syntax: `-reciprocal `
@@ -1667,3 +1696,4 @@ To summarize, here is a checklist for adding a new command
  [13]: http://www.imagemagick.org/script/command-line-options.php#colorspace
  [14]: http://www.itk.org/Doxygen/html/classitk_1_1CannyEdgeDetectionImageFilter.html
  [15]: http://www.itk.org/Doxygen/html/classitk_1_1RecursiveGaussianImageFilter.html
+ [16]: http://www.insight-journal.org/browse/publication/721
