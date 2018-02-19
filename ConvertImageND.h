@@ -145,6 +145,9 @@ private:
   // Implementation of the 'foreach' loop
   size_t ForEachLoop(int argc, char *argv[]);
 
+  // Implementation of the 'foreach-comp' loop
+  size_t ForEachComponentLoop(int ncomp, int argc, char *argv[]);
+
   // Implementation of the 'accum' loop
   size_t AccumulateLoop(int argc, char *argv[]);
 

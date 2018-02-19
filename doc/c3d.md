@@ -255,6 +255,14 @@ This command forces the commands between **-foreach** and **-endfor** to be appl
 
     c3d epi*.nii -foreach -smooth 3mm -endfor -oo epism%03d.nii
 
+#### -foreach-comp, -endfor: Loop commands over components of a multi-component image 
+
+Syntax `-foreach-comp <N> commands-list -endfor`
+
+This command runs the list of commands separately for each component of a set of multi-component images loaded with -mcs. This makes it possible to perform component-wise operations on multi-component images. For example, it can be used to average several multi-component images. If the image stack contains images *x1* *y1* *z1* *x2* *y2* *z2*, then the operations will be run on *[x1,x2]*, *[y1,y2]*, *[z1,z2]*. For example, if multi_1.nii to multi_10.nii are three-component images, then the mean three-component image is given by
+
+    c2d -mcs multi_*.nii -foreach-comp -mean -endfor -omc multi_mean.nii
+
 #### -insert: Insert image anywhere in the stack
 
 Syntax: `-insert var pos` 
@@ -335,6 +343,14 @@ Computes the angle in radians from images containing sine and cosine. This is a 
 
     c3d sin_theta.nii.gz cos_theta.nii.gz -atan2 -o theta.nii.gz
 
+#### -ceil: Round up image intensities
+
+Syntax: `-ceil `
+
+Each image intensity is replaced by the smallest integer larger or equal to it
+
+    c3d input.img -ceil -o output.img
+
 #### -clip: Clip image intensity to range
 
 Syntax: `-clip iMin iMax`
@@ -378,6 +394,18 @@ Syntax: `-erf mu sigma`
 Computes the standard error function. This is useful for applying soft thresholds. The function computes y = erf((x - mu)/sigma). 
 
     c3d input.img -erf 5 2 -o erf.img
+
+#### -floor: Round down image intensities
+
+Syntax: `-floor `
+
+Each image intensity is replaced by the largest integer smaller or equal to it.
+
+    c3d input.img -floor -o output.img
+
+To round each intensity to the closest integer, use
+
+    c3d input.img -shift 0.5 -floor
 
 #### -log, -ln: Voxelwise natural logarithm
 

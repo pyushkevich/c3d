@@ -558,6 +558,13 @@ ImageConverter<TPixel, VDim>
     return 3;
     }
 
+  else if (cmd == "-ceil")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_ceil);
+    return 0;
+    }
+
 
   else if (cmd == "-centroid")
     {
@@ -787,12 +794,28 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  else if (cmd == "-floor")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_floor);
+    return 0;
+    }
+
   else if (cmd == "-foreach")
     {
     if (this->m_LoopType != LOOP_NONE)
       throw ConvertException("Nested loops are not allowed");
     this->m_LoopType = LOOP_FOREACH;
     return this->ForEachLoop(argc, argv);
+    }
+
+  else if (cmd == "-foreach-comp")
+    {
+    if (this->m_LoopType != LOOP_NONE)
+      throw ConvertException("Nested loops are not allowed");
+    this->m_LoopType = LOOP_FOREACH;
+    int ncomp = atoi(argv[1]);
+    return this->ForEachComponentLoop(ncomp, argc - 1, argv + 1) + 1;
     }
 
   else if (cmd == "-glm")
@@ -2628,6 +2651,58 @@ ImageConverter<TPixel, VDim>
       }
     sout << endl;
     }
+}
+
+
+template<class TPixel, unsigned int VDim>
+size_t
+ImageConverter<TPixel, VDim>
+::ForEachComponentLoop(int ncomp, int argc, char *argv[])
+{
+  size_t narg = 0;
+
+  // Allow looping by components, each run of the loop applies to all the 1st, 2nd, 3rd, etc
+  // components of a multicomponent image. 
+
+  // Back up the current stack
+  ImageStack<ImageType> in_stack = m_ImageStack, out_stack;
+
+  // Print out what's going on
+  *verbose << "Repeating commands for all " << in_stack.size() << " images in batches of " << ncomp << endl;
+
+  // Make sure the stack is divisible
+  if(in_stack.size() % ncomp != 0)
+    throw ConvertException("Number of images on the stack (%d) is not divisible by stride (%d)",
+      in_stack.size(), ncomp);
+
+  // Loop over the component
+  for(int comp = 0; comp < ncomp; comp++)
+    {
+    // Put the column of component images on the stack
+    m_ImageStack.clear();
+    for(int j = comp; j < in_stack.size(); j+=ncomp)
+      {
+      m_ImageStack.push_back(in_stack[j]);
+      }
+
+    // Set the in-loop flag
+    m_LoopType = LOOP_FOREACH;
+
+    // When the -endfor is encountered, the InLoop flag will be switched
+    narg = 1;
+    while(m_LoopType == LOOP_FOREACH)
+      narg += 1 + this->ProcessCommand(argc-narg, argv+narg);
+
+    // Place the result (if any) on the output stack
+    for(int k = 0; k < m_ImageStack.size(); k++)
+      out_stack.push_back(m_ImageStack.back());
+    }
+
+  // Update the stack
+  m_ImageStack = out_stack;
+
+  // Return the number of arguments to the next command
+  return narg - 1;
 }
 
 template<class TPixel, unsigned int VDim>
