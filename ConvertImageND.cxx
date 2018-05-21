@@ -1433,6 +1433,8 @@ ImageConverter<TPixel, VDim>
 
     // Assign the origin
     m_ImageStack.back()->SetOrigin(lps_origin);
+
+    return 2;
     }
 
   else if (cmd == "-overlap")

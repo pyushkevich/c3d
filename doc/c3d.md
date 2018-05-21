@@ -673,6 +673,14 @@ Set the origin of the image by specifying the voxel coordinates of the center of
     c3d input.img -origin-voxel 60x70x35 -o output.img
     c3d input.img -origin-voxel 50% -o output.img        # image centered around origin
 
+#### -origin-voxel-coord: Set coordinate of specified voxel
+
+Syntax: `-origin-voxel-coord: <index> <vector>`
+
+This command updates the origin of the image such that the specifed voxel has the specified coordinate. For example, you can use the command to set the world coordinate (in NIFTI coordinate space) of the center voxel of the image, as follows:
+
+    c3d input.nii -origin-voxel-coord: 50% 10x10x5mm -o output.nii
+
 #### -set-sform: Set the transform to physical space
 
 Syntax: `-set-sform <sform.mat> `
