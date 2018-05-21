@@ -43,7 +43,7 @@ class UnaryFunctorVectorImageFilter :
 {
 public:
   typedef UnaryFunctorVectorImageFilter<TInputImage,TOutputImage,TFunction> Self;
-  typedef itk::InPlaceImageFilter<TInputImage, TInputImage> Superclass;
+  typedef itk::InPlaceImageFilter<TInputImage, TOutputImage> Superclass;
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
@@ -92,11 +92,11 @@ protected:
   UnaryFunctorVectorImageFilter();
   ~UnaryFunctorVectorImageFilter() {}
 
-  void GenerateOutputInformation();
+  void GenerateOutputInformation() ITK_OVERRIDE;
   
   void ThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId);
+    itk::ThreadIdType threadId) ITK_OVERRIDE;
 
 private:
   UnaryFunctorVectorImageFilter(const Self &);  //purposely not implemented

@@ -1388,6 +1388,7 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-origin")
     {
+    // The first parameter is the origin (new physical coordinate of the voxel)
     RealVector org = ReadRealVector(argv[1], true);
     m_ImageStack.back()->SetOrigin(org.data_block());
     return 1;
@@ -1408,6 +1409,30 @@ ImageConverter<TPixel, VDim>
     // Get physical coordinate of this voxel
     m_ImageStack.back()->SetOrigin(vec.data_block());
     return 1;
+    }
+
+  else if (cmd == "-origin-voxel-coord")
+    {
+    // Read the index the voxel whose coordinate we want to assign
+    IndexType voxel = ReadIndexVector(argv[1]);
+
+    // Read the new NIFTI coordinate of this position
+    RealVector coord = ReadRealVector(argv[2], true);
+
+    // Get the LPS coordinate of the voxel under the current origin
+    typename ImageType::PointType lps_curr, lps_desired, lps_origin;
+    m_ImageStack.back()->TransformIndexToPhysicalPoint(voxel, lps_curr);
+
+    // Get the LPS coordinate that we want to assign to the voxel
+    // The origin should be shifted by (lps_desired - lps_curr)
+    for(int i = 0; i < VDim; i++)
+      {
+      lps_desired[i] = (i < 2) ? -coord[i] : coord[i];
+      lps_origin[i] = m_ImageStack.back()->GetOrigin()[i] + lps_desired[i] - lps_curr[i];
+      }
+
+    // Assign the origin
+    m_ImageStack.back()->SetOrigin(lps_origin);
     }
 
   else if (cmd == "-overlap")

@@ -1,13 +1,21 @@
 PROJECT(CONVERT3D)
 
+# CMake compatibility code
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+if(COMMAND cmake_policy)
+  CMAKE_POLICY(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+# Enable languages
+ENABLE_LANGUAGE(C)
+ENABLE_LANGUAGE(CXX)
+
+# Option allowing to build c3d as a subproject of another project
+OPTION(CONVERT3D_BUILD_AS_SUBPROJECT "Build Convert3D as a sub-project of a larger project" OFF)
+MARK_AS_ADVANCED(CONVERT3D_BUILD_AS_SUBPROJECT)
+
 # If we are building as a sub-project we skip all of this extra stuff
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
-
-  # Nonsense for cmake 2.6 compatibility
-  CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
-  if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-  endif(COMMAND cmake_policy)
 
   # Do we want to build the UI
   OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interfaace?" OFF)
@@ -16,27 +24,57 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   FIND_PACKAGE(ITK REQUIRED)
   INCLUDE(${ITK_USE_FILE})
 
-ENDIF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
+  # Command-line tools are being built
+  SET(BUILD_CLI ON)
+  SET(INSTALL_CLI ON)
+
+ELSE()
+
+  # Should the CLI tools be compiled or only the libraries?
+  OPTION(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS "Should the Convert3D command-line tools be built?" OFF)
+
+  # Should the CLI tools be installed? Then also provide CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH
+  OPTION(CONVERT3D_SUBPROJECT_INSTALL_CLI_TOOLS "Should the Convert3D command-line tools be installed?" OFF)
+  MARK_AS_ADVANCED(CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS CONVERT3D_SUBPROJECT_INSTALL_CLI_TOOLS)
+
+  SET(BUILD_CLI ${CONVERT3D_SUBPROJECT_BUILD_CLI_TOOLS})
+  SET(INSTALL_CLI ${CONVERT3D_SUBPROJECT_INSTALL_CLI_TOOLS})
+
+ENDIF()
 
 # Include the library file
 INCLUDE(${CONVERT3D_SOURCE_DIR}/ConvertNDLibrary.cmake)
 
-IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
+# Build the command-line executables
+IF(BUILD_CLI)
 
   # Command-line executables
   ADD_EXECUTABLE(c3d Convert3DMain.cxx)
-  TARGET_LINK_LIBRARIES(c3d ${C3D_LINK_LIBRARIES})
-
   ADD_EXECUTABLE(c2d Convert2DMain.cxx)
-  TARGET_LINK_LIBRARIES(c2d ${C3D_LINK_LIBRARIES})
-
   ADD_EXECUTABLE(c4d Convert4DMain.cxx)
-  TARGET_LINK_LIBRARIES(c4d ${C3D_LINK_LIBRARIES})
-
   ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
-  TARGET_LINK_LIBRARIES(c3d_affine_tool ${C3D_LINK_LIBRARIES})
 
-  SET(CMDLINE_TARGETS c2d c3d c4d c3d_affine_tool)
+  FOREACH(target c3d c2d c4d c3d_affine_tool)
+    TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC ${CONVERT3D_INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(${target} PUBLIC ${C3D_LINK_LIBRARIES})
+  ENDFOREACH()
+
+ENDIF(BUILD_CLI)
+
+# Install command-line executables
+IF(INSTALL_CLI)
+  IF(CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH)
+    SET(CLI_INSTALL_PATH ${CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH})
+  ELSEIF(APPLE AND BUILD_GUI)
+    SET(CLI_INSTALL_PATH ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
+  ELSE()
+    SET(CLI_INSTALL_PATH bin)
+  ENDIF()
+
+  INSTALL(TARGETS c2d c3d c4d c3d_affine_tool DESTINATION ${CLI_INSTALL_PATH} COMPONENT Runtime)
+ENDIF(INSTALL_CLI)
+
+IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
   IF(WIN32)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
@@ -69,12 +107,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     #--------------------------------------------------------------------------------
     # Specify source files and headers
     #--------------------------------------------------------------------------------
-    INCLUDE_DIRECTORIES(
-      ${CONVERT3D_SOURCE_DIR}/gui
-      ${CONVERT3D_BINARY_DIR}
-      ${CONVERT3D_QT5_INCLUDE_DIRS}
-    )
-
     SET(UI_QT_CXX 
       gui/CommandEditor.cxx 
       gui/ConvertSyntaxHighlighter.cxx 
@@ -120,6 +152,15 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
     TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} ${C3D_LINK_LIBRARIES})
 
+    # Configure the include path for the GUI
+    TARGET_INCLUDE_DIRECTORIES(
+      ${C3DGUI_BUNDLE_NAME} PUBLIC
+      ${CONVERT3D_INCLUDE_DIRS}
+      ${CONVERT3D_SOURCE_DIR}/gui
+      ${CONVERT3D_BINARY_DIR}
+      ${CONVERT3D_QT5_INCLUDE_DIRS}
+    )
+
     #--------------------------------------------------------------------------------
     # Install the application
     #--------------------------------------------------------------------------------
@@ -141,9 +182,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       # install tree, and on other platforms it'll go into the bin directory.
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} BUNDLE DESTINATION . COMPONENT Runtime)
 
-      # Install the command line programs inside of the application
-      INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
-
       # Include the qt4 dependent libraries
       include(DeployQt5)
       install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app)
@@ -151,14 +189,11 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ELSEIF(WIN32)
 
       # Set the PATH to include Qt libraries
-    GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
-    GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt5Core_DIR}/../../" ABSOLUTE)
+      GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
+      GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt5Core_DIR}/../../" ABSOLUTE)
 
       # Install to the bin directory
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION bin)
-
-      # Install the command line programs inside of the application
-      INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION bin)
 
       # Include the qt4 dependent libraries
       include(DeployQt5)
@@ -181,7 +216,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       ENDIF(CMAKE_CL_64)
 
       # Give it a windowsy directory name
-    SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Convert3D")
+      SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Convert3D")
       
       # On Win32, the executable is the actual exe
       SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_BUNDLE_NAME} "Convert3D GUI")
@@ -194,9 +229,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION ${C3DGUI_MAIN_INSTALL_DIR})
 
-      # Install the command line programs inside of the application
-      INSTALL(TARGETS ${CMDLINE_TARGETS} DESTINATION bin)
-
       # On Linux, we generate forward shared executable
       SUBDIRS(gui/Utilities/Forwarding)
 
@@ -204,10 +236,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       install_qt5_executable(${C3DGUI_MAIN_INSTALL_DIR}/${C3DGUI_BUNDLE_NAME} "qgif")
 
     ENDIF()
-
-  ELSE(BUILD_GUI)
-
-    INSTALL(TARGETS c3d c2d c4d RUNTIME DESTINATION bin)
 
   ENDIF(BUILD_GUI)
 
