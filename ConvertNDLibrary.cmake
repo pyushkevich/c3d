@@ -17,6 +17,7 @@ SET(CONVERT3D_INCLUDE_DIRS
   ${CONVERT3D_SOURCE_DIR}/itkextras/VoxBoIO
   ${CONVERT3D_SOURCE_DIR}/itkextras/PovRayIO
   ${CONVERT3D_SOURCE_DIR}/itkextras/RandomForest
+  ${CONVERT3D_SOURCE_DIR}/itkextras/Texture
   ${CONVERT3D_SOURCE_DIR}/utilities/doc
   ${CONVERT3D_BINARY_DIR})
 
@@ -71,6 +72,7 @@ SET(SOURCES
   adapters/ExtrudeSegmentation.cxx
   adapters/FillBackgroundWithNeighborhoodNoise.cxx
   adapters/FlipImage.cxx
+  adapters/HaralickFeatures.cxx
   adapters/HessianEigenValues.cxx
   adapters/HessianObjectness.cxx
   adapters/HistogramMatch.cxx

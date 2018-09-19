@@ -145,7 +145,7 @@ WriteImage<TPixel, VDim>
   output->Allocate();
 
   // Describe what we are doing
-  *c->verbose << "Writing Images" << pstart+1 << " to " << c->m_ImageStack.size() << " to multicomponent file " << file << endl;
+  *c->verbose << "Writing Images " << pstart+1 << " to " << (pstart+ncomp) << " to multicomponent file " << file << endl;
   *c->verbose << "  Output voxel type: " << c->m_TypeId << "[" << typeid(TOutPixel).name() << "]" << endl;
   *c->verbose << "  Rounding off: " << (xRoundFactor == 0.0 ? "Disabled" : "Enabled") << endl;
     

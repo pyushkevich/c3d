@@ -3051,7 +3051,7 @@ ImageConverter<TPixel, VDim>
     for(size_t i = 0; i < m_ImageStack.size(); i+= n_comp)
       {
       WriteImage<TPixel, VDim> adapter(this);
-      sprintf(buffer, argv[1], i);
+      sprintf(buffer, argv[1], i / n_comp);
       if(n_comp == 1)
         adapter(buffer, true, i);
       else 

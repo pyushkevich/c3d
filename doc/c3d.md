@@ -1208,8 +1208,8 @@ This command trains a classifier using an implementation of the [Breyman et al. 
 The commands are meant to replicate the "classification" pre-segmentation mode in ITK-SNAP, i.e., extending a rough example segmentation to the entire image domain. It is possible to also use the commands to train classifiers jointly on data from multiple subjects, each with its own segmentation, as long as the images from the different subjects occupy the same image space and can be stacked into a 4-dimensional image. For example:
 
     # Train using MRI and segmentations from N subjects
-    c4d mri_subj*.nii -stack w -popas ALLMRI \
-        seg_subj*.nii -stach w -popas ALLSEG \
+    c4d mri_subj*.nii -tile w -popas ALLMRI \
+        seg_subj*.nii -tile w -popas ALLSEG \
         -rf-param-patch 2x2x2x0 \
         -push ALLMRI -push ALLSEG -rf-train myforest.rf
 
