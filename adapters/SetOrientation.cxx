@@ -30,28 +30,28 @@ void
 SetOrientation<TPixel, VDim>
 ::operator() (std::string rai)
 {
-  // Check the RAI code validity
-  if(rai.length() != 3)
-    throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
+  // Check the RAI code validity (length must match image dimension)
+  if(rai.length() != VDim)
+    throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
 
-  // Only valid for 3D images
-  if(VDim != 3)
-    throw ConvertException("Orientation codes only valid for 3D images");
+  // Only valid for 3D images or less
+  if(VDim > 3)
+    throw ConvertException("Orientation codes only valid for up to 3D images");
   
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
 
   // Create a direction matrix
-  vnl_matrix_fixed<double, 3, 3> eye, dm;
+  vnl_matrix_fixed<double, VDim, VDim> eye, dm;
   eye.set_identity(); dm.set_identity();
 
   // RAI codes
   char codes[3][2] = { {'R', 'L'}, {'A', 'P'}, {'I', 'S'}};
   
-  for(size_t i = 0; i < 3; i++)
+  for(size_t i = 0; i < VDim; i++)
     {
     bool matched = false;
-    for(size_t j = 0; j < 3; j++)
+    for(size_t j = 0; j < VDim; j++)
       {
       for(size_t k = 0; k < 2; k++)
         {
