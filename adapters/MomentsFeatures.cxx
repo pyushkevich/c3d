@@ -107,7 +107,7 @@ MomentsFeatures<TPixel, VDim>
     }
 
   // Create the eigenvalue computer
-  typedef itk::Image<itk::CovariantVector<RealPixelType, VDim> > EigenValueImageType;
+  typedef itk::Image<itk::CovariantVector<RealPixelType, VDim>, VDim> EigenValueImageType;
   typedef itk::SymmetricEigenAnalysisImageFilter<TensorImageType, EigenValueImageType>
     EigenValueFilterType;
   typename EigenValueFilterType::Pointer eigen = EigenValueFilterType::New();

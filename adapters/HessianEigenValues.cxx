@@ -40,7 +40,7 @@ HessianEigenValues<TPixel, VDim>
   typedef typename itk::NumericTraits<TPixel>::RealType RealPixelType;
   typedef itk::SymmetricSecondRankTensor<RealPixelType, VDim> HessianPixelType;
   typedef itk::Image<HessianPixelType, VDim> HessianImageType;
-  typedef itk::Image<itk::CovariantVector<RealPixelType, VDim> > EigenValueImageType;
+  typedef itk::Image<itk::CovariantVector<RealPixelType, VDim>, VDim > EigenValueImageType;
 
   // Filter to compute Hessian
   typedef itk::HessianRecursiveGaussianImageFilter<ImageType, HessianImageType> 
