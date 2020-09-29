@@ -611,12 +611,17 @@ ImageConverter<TPixel, VDim>
     // Optionally, read the range of the color map (instead of using image min/max)
     int np = 1;
     double int_min = 0.0, int_max = 0.0;
-    RegularExpression re("^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)$");
-    if (argc > 3 && re.find(argv[2]) && re.find(argv[3]))
-      { 
-      int_min = atof(argv[2]);
-      int_max = atof(argv[3]);
-      np = 3;
+
+    // Try readin
+    if (argc > 3)
+      {
+      try 
+        {
+        int_min = ReadIntensityValue(argv[2]);
+        int_max = ReadIntensityValue(argv[3]);
+        np = 3;
+        }
+      catch(ConvertException &exc) {}
       }
 
     ScalarToRGB<TPixel, VDim>(this)(cmname, int_min, int_max);
