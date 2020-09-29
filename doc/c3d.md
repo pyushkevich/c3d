@@ -773,11 +773,15 @@ Marks the centroid of the foreground voxels in an image. Unlike **-centroid**, t
 
 #### -color-map, -colormap: Convert scalar image to RGB using color map    
 
-Syntax: `-color-map ColormapName`
+Syntax: `-color-map <ColormapName> [min max]`
 
 Converts a scalar image to a color (RGB) image using a specified color map. The output of the command are three images, containing the red, green and blue channels of the RGB image. The mapping uses the range of the input image, e.g., using the **jet** color map, the lowest intensity pixel in the image will be mapped to blue, and the highest intesnity pixel will be mapped to red. The admissible color maps are **hot,cool,spring,summer,autumn,winter,copper,jet,hsv,red,green,blue,grey,overunder**. The command can be used with the -omc command to write RGB images. The example below generates a PNG image from a slice in a scalar image. 
 
     c3d scalar.nii.gz -slice z 50% -flip y -color-map jet -type uchar -omc colorslice.png
+
+By default the full image intensity range is mapped. The optional **min** and **max** parameters can be used to set the range of the color map. 
+
+    c3d scalar.nii.gz -slice z 50% -flip y -color-map jet 0 1 -type uchar -omc colorslice.png
 
 #### -conv: Convolution
 

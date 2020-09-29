@@ -31,7 +31,7 @@
 template <class TPixel, unsigned int VDim>
 void
 ScalarToRGB<TPixel, VDim>
-::operator() (const std::string &colormap)
+::operator() (const std::string &colormap, double int_min, double int_max)
 {
   // Check the input parameters
   typedef itk::RGBPixel<unsigned char> RGBPixel;
@@ -69,6 +69,15 @@ ScalarToRGB<TPixel, VDim>
   typename RGBFilterType::Pointer filter = RGBFilterType::New();
   filter->SetInput(img);
   filter->SetColormap(it->second);
+
+  // If range is not specified, use the colormap as is
+  if(int_min != 0 || int_max != 0)
+    {
+    typename RGBFilterType::ColormapType::Pointer colormap = filter->GetModifiableColormap();
+    colormap->SetMinimumInputValue(int_min);
+    colormap->SetMaximumInputValue(int_max);
+    filter->SetUseInputImageExtremaForScaling(false);
+    }
 
   // Verbose
   *c->verbose << "Mapping #" << c->m_ImageStack.size() 
