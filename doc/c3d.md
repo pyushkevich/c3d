@@ -317,6 +317,16 @@ Duplicates the image at the end of the stack. This is equivalent to **-as var -p
 
     c3d input.img -dup -times -o square.img
 
+#### -pick: Select one or more images from the stack by index
+
+Syntax: `-pick [indices]` 
+
+Replaces the image stack with one or more selected images. Images can be specified using 0-based indexing (0 is the first image on the stack, etc) or negative indexing (-1 is the last image on the stack). 
+
+    c3d -mcs rgb.nii.gz -pick -1 -o blue.nii.gz
+    c3d -mcs rgb.nii.gz -pick 0 -o red.nii.gz
+    c3d -mcs pick -1 -2 -3 -omc bgr.nii.gz
+
 ### Commands: Voxelwise Calculations
 
 #### -add: Voxelwise image addition

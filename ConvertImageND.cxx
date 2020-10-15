@@ -1536,6 +1536,41 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  else if (cmd == "-pick")
+    {
+    // Create the list of images to put on the new stack
+    std::vector<int> pos;
+    std::vector<ImagePointer> new_stack;
+
+    // Read all integer arguments
+    for(int i = 1; i < argc; i++)
+      try 
+        { pos.push_back((int) myatol(argv[i])); }
+      catch(...)
+        { break; }
+
+    // Retain each component
+    for(int j = 0; j < pos.size(); j++)
+      {
+      if(pos[j] >= 0 && pos[j] < m_ImageStack.size())
+        new_stack.push_back(m_ImageStack[j]);
+      else if(pos[j] < 0 && -pos[j] <= m_ImageStack.size())
+        new_stack.push_back(m_ImageStack[m_ImageStack.size() + pos[j]]);
+      else 
+        throw ConvertException("Invalid index %d in -pick command", pos[j]);
+      }
+
+    // Clear the stack
+    m_ImageStack.clear();
+
+    // Replace the stack
+    for(int j = 0; j < new_stack.size(); j++)
+      m_ImageStack.push_back(new_stack[j]);
+
+    // Return number of arguments consumed
+    return pos.size();
+    }
+
   else if (cmd == "-pixel")
     {
     // Get a pixel value - no interpolation
