@@ -1553,7 +1553,7 @@ ImageConverter<TPixel, VDim>
     for(int j = 0; j < pos.size(); j++)
       {
       if(pos[j] >= 0 && pos[j] < m_ImageStack.size())
-        new_stack.push_back(m_ImageStack[j]);
+        new_stack.push_back(m_ImageStack[pos[j]]);
       else if(pos[j] < 0 && -pos[j] <= m_ImageStack.size())
         new_stack.push_back(m_ImageStack[m_ImageStack.size() + pos[j]]);
       else 
