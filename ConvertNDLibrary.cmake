@@ -96,6 +96,7 @@ SET(SOURCES
   adapters/NormalizeLocalWindow.cxx
   adapters/NormalizedCrossCorrelation.cxx
   adapters/OverlayLabelImage.cxx
+  adapters/OtsuThreshold.cxx
   adapters/PadImage.cxx
   adapters/PeronaMalik.cxx
   adapters/PrintImageInfo.cxx

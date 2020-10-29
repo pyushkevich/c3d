@@ -75,6 +75,7 @@
 #include "MultiplyImages.h"
 #include "NormalizedCrossCorrelation.h"
 #include "NormalizeLocalWindow.h"
+#include "OtsuThreshold.h"
 #include "OverlayLabelImage.h"
 #include "PadImage.h"
 #include "PeronaMalik.h"
@@ -1453,6 +1454,13 @@ ImageConverter<TPixel, VDim>
     m_ImageStack.back()->SetOrigin(lps_origin);
 
     return 2;
+    }
+
+  else if (cmd == "-otsu")
+    {
+    OtsuThreshold<TPixel, VDim> adapter(this);
+    adapter();
+    return 0;
     }
 
   else if (cmd == "-overlap")

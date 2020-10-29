@@ -501,6 +501,13 @@ Applies Speckle noise to an image with given standard deviation. Please see [Noi
 
     c3d image.nii -noise-speckle 5 -o noisy.nii
 
+#### -otsu: Otsu's thresholding
+Syntax: `-otsu`
+
+Applies the classical Otsu's binary thresholding algorithm to separate image foreground from background. Returns an image of zeros (background) and ones (foreground).
+
+    c3d image.nii -otsu -o thresh.nii
+
 #### -reciprocal: Image voxelwise reciprocal 
 
 Syntax: `-reciprocal `
@@ -584,11 +591,11 @@ Stretches the intensities in the image linearly, such that u1 maps to v1 and u2 
 
     c3d input.img -stretch 0.0 1.0 0 65535 -type ushort -o output.img
 
-#### -thresh, -threshold: Binary thresholding
+#### -thresh, -threshold: binary thresholding
 
-Syntax: `-thresh <u1 u2 vIn vOut> `
+syntax: `-thresh <u1 u2 vin vout> `
 
-Thresholds the image, setting voxels whose intensity is in the range [u1,u2] to vIn and all other voxels to vOut. Values *u1* and *u2* are intensity specifications (see below). This means that you can supply values **inf** and **-inf** for u1 and u2 to construct a one-sided threshold. You can also specify *u1* and *u2* as percentiles. 
+thresholds the image, setting voxels whose intensity is in the range [u1,u2] to vin and all other voxels to vout. values *u1* and *u2* are intensity specifications (see below). this means that you can supply values **inf** and **-inf** for u1 and u2 to construct a one-sided threshold. you can also specify *u1* and *u2* as percentiles. 
     c3d in.img -threshold -inf 128 1 0 -o out.img
     c3d in.img -threshold 64 128 1 0 -o out.img
     c3d in.img -threshold 20% 40% 1 0 -o out.img
