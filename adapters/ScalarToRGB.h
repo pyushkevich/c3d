@@ -37,7 +37,7 @@ public:
 
   ScalarToRGB(Converter *c) : c(c) {}
 
-  void operator() (const std::string &colormap);
+  void operator() (const std::string &colormap, double int_min = 0, double int_max = 0);
 
 private:
   Converter *c;

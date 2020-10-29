@@ -605,9 +605,27 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-colormap" || cmd == "-color-map")
     {
+    // Read the name of the color map
     std::string cmname = argv[1];
-    ScalarToRGB<TPixel, VDim>(this)(cmname);
-    return 1;
+
+    // Optionally, read the range of the color map (instead of using image min/max)
+    int np = 1;
+    double int_min = 0.0, int_max = 0.0;
+
+    // Try readin
+    if (argc > 3)
+      {
+      try 
+        {
+        int_min = ReadIntensityValue(argv[2]);
+        int_max = ReadIntensityValue(argv[3]);
+        np = 3;
+        }
+      catch(ConvertException &exc) {}
+      }
+
+    ScalarToRGB<TPixel, VDim>(this)(cmname, int_min, int_max);
+    return np;
     }
 
   else if (cmd == "-compress")
