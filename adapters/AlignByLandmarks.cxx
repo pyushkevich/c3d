@@ -138,7 +138,7 @@ AlignByLandmarks<TPixel, VDim>
 
   // We are solving for T(A) - B. Compute the translation and remove center from the data
   A = A0; B = B0;
-  cA /= A.rows(); cB /= A.rows();
+  cA /= A.rows(); cB /= B.rows();
   vnl_vector<double> translation = cB - cA;
   for(i = 0; i < A0.rows(); i++)
     {
@@ -168,8 +168,8 @@ AlignByLandmarks<TPixel, VDim>
     double rmsd_A = 0, rmsd_B = 0;
     for(i = 0; i < A.rows(); i++)
       {
-      rmsd_A += (A.get_row(i) - cA).squared_magnitude();
-      rmsd_B += (B.get_row(i) - cB).squared_magnitude();
+      rmsd_A += (A.get_row(i)).squared_magnitude();
+      rmsd_B += (B.get_row(i)).squared_magnitude();
       }
     rmsd_A = sqrt(rmsd_A / A.rows());
     rmsd_B = sqrt(rmsd_B / B.rows());
@@ -229,6 +229,8 @@ AlignByLandmarks<TPixel, VDim>
     x.fill(1);
     x.update(A0.get_row(i), 0);
     y = out_mat * x;
+    *c->verbose << "    Label " << label << ":   " 
+      << y << "       " << B0.get_row(i) << std::endl;
     double dist = (y.extract(3) - B0.get_row(i)).magnitude();
     *c->verbose << "    Label " << label << ":   " << dist << std::endl;
     totaldist += dist;
