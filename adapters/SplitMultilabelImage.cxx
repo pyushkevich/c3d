@@ -49,7 +49,7 @@ SplitMultilabelImage<TPixel, VDim>
     }
   
   // The number of finite values should be reasonable
-  if(sval.size() > 255)
+  if(sval.size() > 256)
     throw ConvertException("Number of labels passed on to -split exceeds 255");
   else if(sval.size() == 0)
     throw ConvertException("No finite labels passed on to -split");
