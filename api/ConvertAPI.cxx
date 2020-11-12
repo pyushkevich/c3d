@@ -26,6 +26,7 @@
 #include "ConvertImageND.h"
 #include "itkSmartPointer.h"
 #include "itkImage.h"
+#include <cstdarg>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -179,10 +180,17 @@ ConvertAPI<TPixel,VDim>
 template <class TPixel, unsigned int VDim>
 bool 
 ConvertAPI<TPixel,VDim>
-::Execute(const char *cmdline, std::ostream &sout)
+::Execute(const char *cmdline, ...)
 {
+  char buffer[8192];
+
+  va_list args;
+  va_start (args, cmdline);
+  vsprintf (buffer, cmdline, args);
+  va_end (args);
+
   int argc = 0;
-  char **argv = split_commandline(cmdline, &argc);
+  char **argv = split_commandline(buffer, &argc);
 
   if(!argv)
     {

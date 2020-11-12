@@ -70,7 +70,7 @@ public:
    * Return Value: if an exception is caught during command execution, this will
    * return false, and you can access the error text using GetError()
    */ 
-  bool Execute(const char *command, std::ostream &sout);
+  bool Execute(const char *command, ...);
 
   /**
    * Get the exception string 

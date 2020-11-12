@@ -10,6 +10,10 @@ endif(COMMAND cmake_policy)
 ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
 
+# Specify the C++ standard
+SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD_REQUIRED True)
+
 # Option allowing to build c3d as a subproject of another project
 OPTION(CONVERT3D_BUILD_AS_SUBPROJECT "Build Convert3D as a sub-project of a larger project" OFF)
 MARK_AS_ADVANCED(CONVERT3D_BUILD_AS_SUBPROJECT)
@@ -55,7 +59,11 @@ IF(BUILD_CLI)
   ADD_EXECUTABLE(c3d_affine_tool utilities/AffineTransformTool.cxx)
 
   FOREACH(target c3d c2d c4d c3d_affine_tool)
-    TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC ${CONVERT3D_INCLUDE_DIRS})
+    TARGET_INCLUDE_DIRECTORIES(${target} PRIVATE ${CONVERT3D_INCLUDE_DIRS})
+    TARGET_INCLUDE_DIRECTORIES(${target} 
+      INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+      $<INSTALL_INTERFACE:include>)
+
     TARGET_LINK_LIBRARIES(${target} PUBLIC ${C3D_LINK_LIBRARIES})
   ENDFOREACH()
 
@@ -71,7 +79,17 @@ IF(INSTALL_CLI)
     SET(CLI_INSTALL_PATH bin)
   ENDIF()
 
+  # Install the executables
   INSTALL(TARGETS c2d c3d c4d c3d_affine_tool DESTINATION ${CLI_INSTALL_PATH} COMPONENT Runtime)
+
+  # Install the libraries
+  INSTALL(TARGETS cnd_adapters cnd_driver cnd_api cnd_maxflow
+          DESTINATION lib
+          EXPORT Convert3DTargets)
+
+  # Install the API header
+  INSTALL(FILES api/ConvertAPI.h DESTINATION include)
+
 ENDIF(INSTALL_CLI)
 
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
@@ -245,5 +263,40 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   # CDash Support
   ENABLE_TESTING()
   INCLUDE(CTest)
+
+  # This must be at the end
+  IF(INSTALL_CLI)
+    install(EXPORT Convert3DTargets
+            FILE Convert3DTargets.cmake
+            DESTINATION lib/cmake/Convert3D)
+
+    include(CMakePackageConfigHelpers)
+
+    set ( Convert3D_INCLUDE_DIRS "include" )
+
+    # generate the config file that is includes the exports
+    configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+      "${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake"
+      INSTALL_DESTINATION "lib/cmake/example"
+      NO_SET_AND_CHECK_MACRO
+      NO_CHECK_REQUIRED_COMPONENTS_MACRO
+      PATH_VARS Convert3D_INCLUDE_DIRS)
+
+    # generate the version file for the config file
+    write_basic_package_version_file(
+      "${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfigVersion.cmake"
+      VERSION "${C3D_VERSION_FULL}"
+      COMPATIBILITY AnyNewerVersion
+    )
+
+    # install the configuration file
+    install(FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake
+      DESTINATION lib/cmake/Convert3D
+      )
+
+  ENDIF(INSTALL_CLI)
+
+
 
 ENDIF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
