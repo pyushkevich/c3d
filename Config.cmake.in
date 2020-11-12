@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+include ( "${CMAKE_CURRENT_LIST_DIR}/Convert3DTargets.cmake" )
+
+set ( Convert3D_INCLUDE_DIRS "@PACKAGE_Convert3D_INCLUDE_DIRS@")
+set ( Convert3D_LIBRARIES cnd_api cnd_driver cnd_adapters cnd_maxflow )
