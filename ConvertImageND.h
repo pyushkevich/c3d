@@ -76,7 +76,12 @@ public:
   
   ImageConverter();
   ~ImageConverter();
+
+  // Process command line (basically main, but templated)
   int ProcessCommandLine(int argc, char *argv[]);
+
+  // Process command list (argv[0] stripped off, may throw exceptions)
+  void ProcessCommandList(int argc, char *argv[]);
 
   friend class ConvertAdapter<TPixel, VDim>;
 

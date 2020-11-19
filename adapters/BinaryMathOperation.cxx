@@ -49,38 +49,46 @@ BinaryMathOperation<TPixel, VDim>
   ImagePointer i1 = c->m_ImageStack[c->m_ImageStack.size() - 1];
   ImagePointer i2 = c->m_ImageStack[c->m_ImageStack.size() - 2];
 
-  // Write something
-  *c->verbose << "Adding #" << c->m_ImageStack.size() - 1 << " and "  
-    << c->m_ImageStack.size() - 2 << endl;
-
   // Select the operation
   typedef typename itk::ImageToImageFilter<ImageType, ImageType> BaseFilterType;
   typename BaseFilterType::Pointer filter;
+  string verb;
 
   switch(op) 
     {
     case ADD:
       filter = itk::AddImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Adding";
       break;
     case ATAN2:
       filter = itk::Atan2ImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Taking atan2 of";
       break;
     case SUBTRACT:
       filter = itk::SubtractImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Subtracting";
       break;
     case MULTIPLY:
       filter = itk::MultiplyImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Multiplying";
       break;
     case DIVIDE:
       filter = itk::DivideImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Dividing";
       break;
     case MINIMUM:
       filter = itk::MinimumImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Taking minimum of";
       break;
     case MAXIMUM:
       filter = itk::MaximumImageFilter<ImageType, ImageType, ImageType>::New();
+      verb = "Taking maximum of";
       break;
     }
+
+  // Write something
+  *c->verbose << verb << " #" << c->m_ImageStack.size() << " and #"  
+    << c->m_ImageStack.size() - 1 << endl;
 
   // Run the filter
   filter->SetInput(0, i1);

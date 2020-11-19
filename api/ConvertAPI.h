@@ -27,12 +27,33 @@
 
 #include <iostream>
 #include <string>
+#include <exception>
 
 namespace itk {
   template <class TPixel, unsigned int VDim> class Image;
 }
 
 template <class TPixel, unsigned int VDim> class ImageConverter;
+
+/**
+ * A simple exception that may be thrown by the API
+ */
+class ConvertAPIException : public std::exception
+{
+public:
+  ConvertAPIException(const std::string &what)
+    : m_Message(what) {}
+
+  virtual ~ConvertAPIException() throw() {}
+
+  virtual const char *what() const throw() 
+    { 
+    return m_Message.c_str();
+    }
+private:
+  std::string m_Message;
+};
+
 
 /** 
  * This header file provides the C++ interface to the c3d API. 
@@ -70,7 +91,7 @@ public:
    * Return Value: if an exception is caught during command execution, this will
    * return false, and you can access the error text using GetError()
    */ 
-  bool Execute(const char *command, ...);
+  void Execute(const char *command, ...);
 
   /**
    * Get the exception string 

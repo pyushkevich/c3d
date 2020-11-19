@@ -329,6 +329,14 @@ Replaces the image stack with one or more selected images. Images can be specifi
 
 ### Commands: Voxelwise Calculations
 
+#### -abs: Voxelwise absolute value
+
+Syntax: `-abs`
+
+Computes the absolute value of the voxels in the last image on the stack:
+
+    c3d signed.nii.gz -abs -o absval.nii.gz
+
 #### -add: Voxelwise image addition
 
 Syntax: `-add`

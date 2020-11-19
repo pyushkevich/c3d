@@ -459,6 +459,13 @@ ImageConverter<TPixel, VDim>
     return this->AccumulateLoop(argc, argv);
     }
 
+  else if (cmd == "-abs" || cmd == "-fabs")
+    {
+    UnaryMathOperation<TPixel, VDim> adapter(this);
+    adapter(&vcl_abs);
+    return 0;
+    }
+
   else if (cmd == "-acos")
     {
     UnaryMathOperation<TPixel, VDim> adapter(this);
@@ -1409,7 +1416,7 @@ ImageConverter<TPixel, VDim>
     {
     // The first parameter is the origin (new physical coordinate of the voxel)
     RealVector org = ReadRealVector(argv[1], true);
-    m_ImageStack.back()->SetOrigin(org.data_block());
+    PopAndPushCopy()->SetOrigin(org.data_block());
     return 1;
     }
 
@@ -1426,7 +1433,7 @@ ImageConverter<TPixel, VDim>
       }
 
     // Get physical coordinate of this voxel
-    m_ImageStack.back()->SetOrigin(vec.data_block());
+    PopAndPushCopy()->SetOrigin(vec.data_block());
     return 1;
     }
 
@@ -1451,7 +1458,7 @@ ImageConverter<TPixel, VDim>
       }
 
     // Assign the origin
-    m_ImageStack.back()->SetOrigin(lps_origin);
+    PopAndPushCopy()->SetOrigin(lps_origin);
 
     return 2;
     }
@@ -1964,7 +1971,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-spacing")
     {
     RealVector org = ReadRealSize(argv[1]);
-    m_ImageStack.back()->SetSpacing(org.data_block());
+    PopAndPushCopy()->SetSpacing(org.data_block());
     return 1;
     }
 
@@ -2279,6 +2286,51 @@ ImageConverter<TPixel, VDim>
 
 
 template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::ProcessCommandList(int argc, char *argv[])
+{
+  // The last command
+  std::string lastCommand;
+
+  // The last parameter in the command line is the output file
+  string fnOutput = argv[argc-1];
+
+  // Command line processing
+  for(int i = 0; i < argc; ++i)
+    {
+    string cmd = argv[i];
+    if (cmd[0] == '-')
+      {
+      // Save the last command (for exceptions, etc)
+      lastCommand = argv[i];
+
+      // A command has been supplied
+      i += ProcessCommand(argc-i, argv+i);
+      }
+    else
+      {
+      lastCommand = "";
+
+      // An image file name has been provided. If this image is followed by commands
+      // read it and push in the pipeline.
+      if (i != argc-1)
+        {
+        ReadImage<TPixel, VDim> adapter(this);
+        adapter(argv[i]);
+        }
+      else
+        {
+        // Write the image, but in safe mode
+        WriteImage<TPixel, VDim> adapter(this);
+        adapter(argv[i], false);
+        }
+      }
+    }
+}
+
+
+template<class TPixel, unsigned int VDim>
 int
 ImageConverter<TPixel, VDim>
 ::ProcessCommandLine(int argc, char *argv[])
@@ -2303,40 +2355,8 @@ ImageConverter<TPixel, VDim>
   // Try processing command line
   try
     {
-    // The last parameter in the command line is the output file
-    string fnOutput = argv[argc-1];
-
-    // Command line processing
-    for(int i = 1; i < argc; ++i)
-      {
-      string cmd = argv[i];
-      if (cmd[0] == '-')
-        {
-        // Save the last command (for exceptions, etc)
-        lastCommand = argv[i];
-
-        // A command has been supplied
-        i += ProcessCommand(argc-i, argv+i);
-        }
-      else
-        {
-        lastCommand = "";
-
-        // An image file name has been provided. If this image is followed by commands
-        // read it and push in the pipeline.
-        if (i != argc-1)
-          {
-          ReadImage<TPixel, VDim> adapter(this);
-          adapter(argv[i]);
-          }
-        else
-          {
-          // Write the image, but in safe mode
-          WriteImage<TPixel, VDim> adapter(this);
-          adapter(argv[i], false);
-          }
-        }
-      }
+    // Process commands, ingore the first argument
+    ProcessCommandList(argc-1, argv+1);
     return 0;
     }
   catch (StackAccessException &)
