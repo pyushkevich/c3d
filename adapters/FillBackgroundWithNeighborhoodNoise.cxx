@@ -174,12 +174,6 @@ FillBackgroundWithNeighborhoodNoise<TPixel, VDim>
     typename VectorImageType::Pointer accum = 
       AccumulateNeighborhoodSumsInPlace(stats_input.GetPointer(), radius);
 
-    typedef itk::ImageFileWriter<ImageType> W;
-    typename W::Pointer w = W::New();
-    w->SetInput(newMask);
-    w->SetFileName("/tmp/debug.nii.gz");
-    w->Update();
-
     // Iterate, generating Gaussian noise (iteration is fine because most time will be
     // spent doing random number generation anyway, which threads poorly)
     typedef StatisticsToGaussianNoiseImageFilter
