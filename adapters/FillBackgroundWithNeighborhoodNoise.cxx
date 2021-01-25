@@ -63,9 +63,8 @@ public:
   void SetGrayImage(OutputImageType *image)
     { this->SetInput(image); }
 
-  void ThreadedGenerateData(
-    const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId) ITK_OVERRIDE
+  void DynamicThreadedGenerateData(
+    const OutputImageRegionType & outputRegionForThread) ITK_OVERRIDE
     {
     StatisticsImageType *stats = 
       dynamic_cast<StatisticsImageType *>(itk::ProcessObject::GetInput("statistics"));

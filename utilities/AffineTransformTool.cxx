@@ -203,7 +203,7 @@ void irtk_read(MatrixStack &vmat, const char *fname)
 
 void quart_print(MatrixType &mat )
 {
-  const double epsilon = vcl_numeric_limits<double>::epsilon();
+  const double epsilon = std::numeric_limits<double>::epsilon();
   double m_X, m_Y, m_Z, m_W;
 
   // Flip the entries that must be flipped to convert to LPS
@@ -264,7 +264,7 @@ void quart_print(MatrixType &mat )
 
   if( trace > epsilon)
     {
-    const double s = 0.5 / vcl_sqrt(trace);
+    const double s = 0.5 / std::sqrt(trace);
     m_W = 0.25 / s;
     m_X = (m(2,1) - m(1,2)) * s;
     m_Y = (m(0,2) - m(2,0)) * s;
@@ -275,7 +275,7 @@ void quart_print(MatrixType &mat )
     {
     if( m(0,0) > m(1,1) && m(0,0) > m(2,2) )
       {
-      const double s = 2.0 * vcl_sqrt(1.0 + m(0,0) - m(1,1) - m(2,2));
+      const double s = 2.0 * std::sqrt(1.0 + m(0,0) - m(1,1) - m(2,2));
       m_X = 0.25 * s;
       m_Y = (m(0,1) + m(1,0)) / s;
       m_Z = (m(0,2) + m(2,0)) / s;
@@ -286,7 +286,7 @@ void quart_print(MatrixType &mat )
       {
       if( m(1,1) > m(2,2) )
         {
-        const double s = 2.0 * vcl_sqrt(1.0 + m(1,1) - m(0,0) - m(2,2));
+        const double s = 2.0 * std::sqrt(1.0 + m(1,1) - m(0,0) - m(2,2));
         m_X = (m(0,1) + m(1,0)) / s;
         m_Y = 0.25 * s;
         m_Z = (m(1,2) + m(2,1)) / s;
@@ -295,7 +295,7 @@ void quart_print(MatrixType &mat )
         }
       else
         {
-        const double s = 2.0 * vcl_sqrt(1.0 + m(2,2) - m(0,0) - m(1,1));
+        const double s = 2.0 * std::sqrt(1.0 + m(2,2) - m(0,0) - m(1,1));
         m_X = (m(0,2) + m(2,0)) / s;
         m_Y = (m(1,2) + m(2,1)) / s;
         m_Z = 0.25 * s;
@@ -304,7 +304,7 @@ void quart_print(MatrixType &mat )
         }
       }
     }
-  double mag = vcl_sqrt( m_X*m_X + m_Y*m_Y + m_Z*m_Z + m_W*m_W );
+  double mag = std::sqrt( m_X*m_X + m_Y*m_Y + m_Z*m_Z + m_W*m_W );
   m_X /= mag;
   m_Y /= mag;
   m_Z /= mag;
@@ -313,7 +313,7 @@ void quart_print(MatrixType &mat )
   printf("Quaternion:\n");
   printf("%12.5f   %12.5f   %12.5f  %12.5f\n", m_X, m_Y, m_Z, m_W);
 
-  double L = vcl_sqrt( m_X*m_X + m_Y*m_Y + m_Z*m_Z );
+  double L = std::sqrt( m_X*m_X + m_Y*m_Y + m_Z*m_Z );
   double angle = (180.0/vnl_math::pi) * 2.0 * asin( L );
   double axis[3];
   axis[0] = m_X/L;
@@ -652,7 +652,7 @@ int main(int argc, char *argv[])
   if(argc < 2) return usage();
 
   // Set up the images that might be loaded
-  ImageType::Pointer ref = NULL, src = NULL;
+  ImageType::Pointer ref = nullptr, src = nullptr;
 
   // Set up the matrix stack
   vector<MatrixType> vmat;

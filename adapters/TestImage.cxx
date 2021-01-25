@@ -45,15 +45,15 @@ TestImage<TPixel, VDim>
     {
     double max_abs_diff = 0;
     RegionType rx = x->GetLargestPossibleRegion(), ry = y->GetLargestPossibleRegion();
-    for(int i = 0; i < VDim; i++)
+    for(unsigned int i = 0; i < VDim; i++)
       {
-      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (rx.GetSize()[i] - ry.GetSize()[i])));
-      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (rx.GetIndex()[i] - ry.GetIndex()[i])));
-      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (x->GetOrigin()[i] - y->GetOrigin()[i])));
-      max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (x->GetSpacing()[i] - y->GetSpacing()[i])));
-      for(int j = 0; j < VDim; j++)
+      max_abs_diff = vnl_math::max(max_abs_diff, vnl_math::abs((double) (rx.GetSize()[i] - ry.GetSize()[i])));
+      max_abs_diff = vnl_math::max(max_abs_diff, vnl_math::abs((double) (rx.GetIndex()[i] - ry.GetIndex()[i])));
+      max_abs_diff = vnl_math::max(max_abs_diff, vnl_math::abs((double) (x->GetOrigin()[i] - y->GetOrigin()[i])));
+      max_abs_diff = vnl_math::max(max_abs_diff, vnl_math::abs((double) (x->GetSpacing()[i] - y->GetSpacing()[i])));
+      for(unsigned int j = 0; j < VDim; j++)
         {
-        max_abs_diff = vnl_math_max(max_abs_diff, vnl_math_abs((double) (x->GetDirection()[i][j] - y->GetDirection()[i][j])));
+        max_abs_diff = vnl_math::max(max_abs_diff, vnl_math::abs((double) (x->GetDirection()[i][j] - y->GetDirection()[i][j])));
         }
       }
 

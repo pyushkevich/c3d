@@ -57,7 +57,7 @@ ReplaceIntensities<TPixel, VDim>
       {
       double u = xRule[k], v = xRule[k+1];
       if(
-        (vnl_math_isnan(val) && vnl_math_isnan(u)) ||
+        (vnl_math::isnan(val) && vnl_math::isnan(u)) ||
         (val == u) ||
         fabs(2*(val-u)/(val+u)) < epsilon)
         {

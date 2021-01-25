@@ -3,7 +3,6 @@
 
 #include "itkImageToImageFilter.h"
 #include "itkSmartPointer.h"
-#include "itkBarrier.h"
 
 namespace itk {
 
@@ -55,9 +54,7 @@ protected:
 
   void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE {};
 
-  void BeforeThreadedGenerateData(void) ITK_OVERRIDE;
-
-  void ThreadedGenerateData(const RegionType & outputRegionForThread, ThreadIdType threadId) ITK_OVERRIDE;
+  void GenerateData() ITK_OVERRIDE;
 
 private:
   SLICSuperVoxelImageFilter(const Self &); //purposely not
@@ -85,12 +82,6 @@ private:
   // Cluster center descriptor
   typedef std::vector<Cluster> ClusterVector;
   ClusterVector m_Clusters;
-
-  // Per-thread cluster lists
-  std::vector<ClusterVector> m_PerThreadClusters;
-
-  // Barrier for threading 
-  typename Barrier::Pointer m_Barrier;
 
   // Search region size
   SizeType m_SearchRegionSize;

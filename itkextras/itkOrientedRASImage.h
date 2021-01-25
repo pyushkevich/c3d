@@ -144,7 +144,7 @@ public:
     vnl_vector<double> v_origin, v_ras_offset;
 
     // Compute the matrix
-    m_dir = this->GetDirection().GetVnlMatrix();
+    m_dir = this->GetDirection().GetVnlMatrix().as_matrix();
     m_scale.set(this->GetSpacing().GetVnlVector());
     m_lps_to_ras.set(vnl_vector<double>(VImageDimension, 1.0));
     m_lps_to_ras[0] = -1;

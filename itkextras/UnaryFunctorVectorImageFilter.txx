@@ -29,7 +29,7 @@
 
 #include <itkImageLinearIteratorWithIndex.h>
 #include "ImageRegionConstIteratorWithIndexOverride.h"
-#include "itkProgressReporter.h"
+#include "itkTotalProgressReporter.h"
 
 /**
  * Constructor
@@ -56,9 +56,8 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
 template< typename TInputImage, typename TOutputImage, typename TFunction  >
 void
 UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
-::ThreadedGenerateData(
-    const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId)
+::DynamicThreadedGenerateData(
+    const OutputImageRegionType & outputRegionForThread)
 {
   // Get the image
   InputImageType *input = const_cast<InputImageType *>(this->GetInput());
@@ -86,7 +85,7 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
 
   // Progress
   const size_t numberOfLinesToProcess = outputRegionForThread.GetNumberOfPixels() / line_length;
-  itk::ProgressReporter progress( this, threadId, numberOfLinesToProcess );
+  itk::TotalProgressReporter progress( this, output->GetRequestedRegion().GetNumberOfPixels());
 
   // Start iterating over lines
   while(!itOutput.IsAtEnd())
@@ -106,7 +105,7 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
 
     itInput.NextLine();
     itOutput.NextLine();
-    progress.CompletedPixel();
+    progress.Completed(line_length);
     }
 }
 

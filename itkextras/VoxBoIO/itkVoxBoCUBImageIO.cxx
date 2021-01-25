@@ -16,7 +16,7 @@
 =========================================================================*/
 #include "itkVoxBoCUBImageIO.h"
 #include "itkIOCommon.h"
-#include "itkExceptionObject.h"
+#include "itkMacro.h"
 #include "itkMetaDataObject.h"
 #include "itkByteSwapper.h"
 #include <iostream>

@@ -74,7 +74,7 @@ ApplyMetric<TPixel, VDim>
     v_ras_to_lps[0] = v_ras_to_lps[1] = -1.0;
     vnl_diag_matrix<double> m_ras_to_lps(v_ras_to_lps);
 
-    vnl_matrix<double> amatvnl = amat.GetVnlMatrix();
+    vnl_matrix<double> amatvnl = amat.GetVnlMatrix().as_matrix();
     amatvnl = m_ras_to_lps * amatvnl * m_ras_to_lps;
     vnl_vector_fixed<double, VDim > aoffs ;
     vnl_vector_fixed<double, VDim + 1> aoffl ;
@@ -270,18 +270,18 @@ ApplyMetric<TPixel, VDim>
 {
 //  c3d_affine_tool -sform $TP1 -sform $TP0 -inv -mult -sqrt -sform $TP0 -mult -o $WDIR/hwspace.mat
 
-  MatrixType mfixed  = fixed->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix();
-  MatrixType mmoving = moving->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix();
+  MatrixType mfixed  = fixed->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix().as_matrix();
+  MatrixType mmoving = moving->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix().as_matrix();
   
-  MatrixType mcomb = mmoving * vnl_matrix_inverse<double>(mfixed);
+  MatrixType mcomb = mmoving * vnl_matrix_inverse<double>(mfixed).as_matrix();
   // Peform Denman-Beavers iteration
   MatrixType Z, Y = mcomb;
   Z.set_identity();
 
   for(size_t i = 0; i < 16; i++) 
     {    
-    MatrixType Ynext = 0.5 * (Y + vnl_matrix_inverse<double>(Z));
-    MatrixType Znext = 0.5 * (Z + vnl_matrix_inverse<double>(Y));
+    MatrixType Ynext = 0.5 * (Y + vnl_matrix_inverse<double>(Z).as_matrix());
+    MatrixType Znext = 0.5 * (Z + vnl_matrix_inverse<double>(Y).as_matrix());
     Y = Ynext;
     Z = Znext;
     }    
@@ -443,7 +443,7 @@ ApplyMetric<TPixel, VDim>
       sfm -= ( sf * sm / nPixels );
       }
 
-    const double denom = -1.0 * vcl_sqrt(sff * smm );
+    const double denom = -1.0 * std::sqrt(sff * smm );
 
     if( nPixels > 0 && denom != 0.0)
       {

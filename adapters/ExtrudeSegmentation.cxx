@@ -27,7 +27,7 @@
 
 #include "itkInPlaceImageFilter.h"
 #include "itkImageLinearIteratorWithIndex.h"
-#include "itkProgressReporter.h"
+#include "itkTotalProgressReporter.h"
 
 template <class TInputImage, class TOutputImage, class TFunction>
 class LineFunctorImageFilter 
@@ -82,9 +82,7 @@ protected:
   LineFunctorImageFilter();
   ~LineFunctorImageFilter() {}
 
-  void ThreadedGenerateData(
-    const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId) ITK_OVERRIDE;
+  void DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread) ITK_OVERRIDE;
 
 private:
   LineFunctorImageFilter(const Self &);         // purposely not implemented
@@ -108,9 +106,7 @@ LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
 template< typename TInputImage, typename TOutputImage, typename TFunction  >
 void
 LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
-::ThreadedGenerateData(
-    const OutputImageRegionType & outputRegionForThread,
-    itk::ThreadIdType threadId)
+::DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread)
 {
   // Get the image
   InputImageType *input = const_cast<InputImageType *>(this->GetInput());
@@ -133,11 +129,7 @@ LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
   int line_length = outputRegionForThread.GetSize(0);
 
   // Progress
-  const size_t numberOfLinesToProcess = outputRegionForThread.GetNumberOfPixels() / line_length;
-  itk::ProgressReporter progress( this, threadId, numberOfLinesToProcess );
-
-  // Create a functor for this thread
-  FunctorType thread_functor = m_Functor;
+  itk::TotalProgressReporter progress(this, output->GetRequestedRegion().GetNumberOfPixels());
 
   // Start iterating over lines
   while(!itOutput.IsAtEnd())
@@ -150,7 +142,7 @@ LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
 
     itInput.NextLine();
     itOutput.NextLine();
-    progress.CompletedPixel();
+    progress.Completed(line_length);
     }
 }
 
