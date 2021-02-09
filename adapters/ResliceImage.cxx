@@ -58,10 +58,7 @@ ResliceImage<TPixel, VDim>
 {
   // Check input availability
   if(c->m_ImageStack.size() < 2)
-    {
-    cerr << "Reslice operation requires two images on the stack" << endl;
-    throw -1;
-    }
+    throw ConvertException("Reslice operation requires two images on the stack");
 
   // Get the reference and source images
   ImagePointer iref = c->m_ImageStack[c->m_ImageStack.size() - 2];

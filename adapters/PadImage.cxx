@@ -63,8 +63,8 @@ PadImage<TPixel, VDim>
   ImagePointer output = padFilter->GetOutput();
 
   // ITK 3.20 fixes the origin for you, don't mess with it
-  //  cout << "INP_ORG: " << img->GetOrigin() << endl;
-  //  cout << "OUT_ORG: " << output->GetOrigin() << endl;
+  //  c->sout() << "INP_ORG: " << img->GetOrigin() << endl;
+  //  c->sout() << "OUT_ORG: " << output->GetOrigin() << endl;
 
   // Put result on stack
   c->m_ImageStack.pop_back();

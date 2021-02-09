@@ -61,10 +61,7 @@ SetSform<TPixel, VDim>
 
   // Check input availability
   if(c->m_ImageStack.size() < 1)
-    {
-    cerr << "No image to set the sform" << endl;
-    throw -1;
-    }
+    throw ConvertException("No image to set the sform");
 
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();

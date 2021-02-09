@@ -206,7 +206,7 @@ ApplyMetric<TPixel, VDim>
     metric->SetFixedImageRegion(iref->GetBufferedRegion());
     metric->Initialize();
 
-    //std::cout << "metric transform parameters: " << metric->GetTransform()->GetParameters() << endl;
+    //c->sout() << "metric transform parameters: " << metric->GetTransform()->GetParameters() << endl;
     mvalue = metric->GetValue(tran->GetParameters());
     }
   else
@@ -250,7 +250,7 @@ ApplyMetric<TPixel, VDim>
     }
 
     // Print the value
-    cout << metric_name << " = " << mvalue << endl;
+    c->sout() << metric_name << " = " << mvalue << endl;
 
     // Get image from stack
     // ImagePointer img = c->m_ImageStack.back();
@@ -321,8 +321,6 @@ ApplyMetric<TPixel, VDim>
 
   if(!strcmp(metric_name,"MSQ"))
     {
-    //std::cerr << "Internal method: " << parameters << std::endl;
-
     HalfwayIteratorType ti( halfway , halfway->GetBufferedRegion() );
 
 

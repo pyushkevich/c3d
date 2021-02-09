@@ -169,6 +169,14 @@ ConvertAPI<TPixel,VDim>
   m_Converter->SetVariable(varname, img_ras);
 }
 
+template<class TPixel, unsigned int VDim>
+void
+ConvertAPI<TPixel,VDim>
+::RedirectOutput(ostream &sout, ostream &serr)
+{
+  m_Converter->RedirectOutput(sout, serr);
+}
+
 template <class TPixel, unsigned int VDim>
 typename ConvertAPI<TPixel,VDim>::ImageType *
 ConvertAPI<TPixel,VDim>

@@ -209,7 +209,7 @@ MRFVote<TPixel, VDim>
 
   // Run the alpha-expansion - with some verbose reporting
   double e_last = graph.compute_energy();
-  c->PrintF("  Initial Energy:    Data = %9.4f   Smooth = %9.4f   Total = %9.4f\n",
+  c->PrintF(*c->verbose, "  Initial Energy:    Data = %9.4f   Smooth = %9.4f   Total = %9.4f\n",
     graph.giveDataEnergy(), graph.giveSmoothEnergy(), e_last);
 
   // List of labels in the graph
@@ -229,7 +229,7 @@ MRFVote<TPixel, VDim>
       } 
 
     double e_now = graph.compute_energy();
-    c->PrintF("  Iteration %4d:    Data = %9.4f   Smooth = %9.4f   Total = %9.4f\n",
+    c->PrintF(*c->verbose, "  Iteration %4d:    Data = %9.4f   Smooth = %9.4f   Total = %9.4f\n",
       iter, graph.giveDataEnergy(), graph.giveSmoothEnergy(), e_now);
 
     if(e_now == e_last)

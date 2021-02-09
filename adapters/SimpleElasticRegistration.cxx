@@ -172,8 +172,8 @@ SimpleElasticRegistration<TPixel, VDim>
   itk::ContinuousIndex<double, VDim> q;
   for(size_t d = 0; d < VDim; d++)
     q[d] = iref->GetBufferedRegion().GetIndex()[d] + 0.5 * iref->GetBufferedRegion().GetSize()[d];
-  cout << "F[q] " << gimov->EvaluateAtContinuousIndex(q) << endl;
-  cout << "G[q] " << gimov->EvaluateDerivativeAtContinuousIndex(q) << endl;
+  c->sout() << "F[q] " << gimov->EvaluateAtContinuousIndex(q) << endl;
+  c->sout() << "G[q] " << gimov->EvaluateDerivativeAtContinuousIndex(q) << endl;
   for(size_t d = 0; d < VDim; d++)
     {
     double eps = 1.0e-6;
@@ -182,7 +182,7 @@ SimpleElasticRegistration<TPixel, VDim>
     double f1 = gimov->EvaluateAtContinuousIndex(dq);
     dq[d] = q[d] - eps / imov->GetSpacing()[d];
     double f2 = gimov->EvaluateAtContinuousIndex(dq);
-    cout << "Dx = " << (f1-f2) / (2 * eps) << endl;
+    c->sout() << "Dx = " << (f1-f2) / (2 * eps) << endl;
     }
 
   // Another test
@@ -195,8 +195,8 @@ SimpleElasticRegistration<TPixel, VDim>
     itk::ContinuousIndex<double, VDim> qx, qy;
     iref->TransformIndexToRASPhysicalPoint(idx, x);
     iref->TransformRASPhysicalPointToContinuousIndex(x, qx);
-    cout << "X = " << x << endl;
-    cout << "QX = " << qx << endl;
+    c->sout() << "X = " << x << endl;
+    c->sout() << "QX = " << qx << endl;
 
     // Define the vector v
     double w[] = {4.0, 4.0, 4.0};
@@ -204,8 +204,8 @@ SimpleElasticRegistration<TPixel, VDim>
     for(size_t d = 0; d < VDim; d++)
       y[d] = x[d] + w[d];
     iref->TransformRASPhysicalPointToContinuousIndex(y, qy);
-    cout << "Y = " << y << endl;
-    cout << "QY = " << qy << endl;
+    c->sout() << "Y = " << y << endl;
+    c->sout() << "QY = " << qy << endl;
 
     double f0 = pow(giref->EvaluateAtContinuousIndex(qx) - gimov->EvaluateAtContinuousIndex(qy),2);
 
@@ -214,8 +214,8 @@ SimpleElasticRegistration<TPixel, VDim>
 
     // Compute the gradient
     itk::CovariantVector<double, VDim> gmov = gimov->EvaluateDerivativeAtContinuousIndex(qy);
-    cout << "f0 " << f0 << endl;
-    cout << "G[y] " << gmov << endl;
+    c->sout() << "f0 " << f0 << endl;
+    c->sout() << "G[y] " << gmov << endl;
     
     double ad = 0.0;
     for(size_t d = 0; d < 3; d++)
@@ -228,20 +228,20 @@ SimpleElasticRegistration<TPixel, VDim>
       y[d] = x[d] + w[d] + eps * off[d];
     iref->TransformRASPhysicalPointToContinuousIndex(y, qy);
     double f1 = pow(giref->EvaluateAtContinuousIndex(qx) - gimov->EvaluateAtContinuousIndex(qy),2);
-    cout << "qy " << qy << endl;
-    cout << "f1 - f0 " << f1 - f0 << endl;
+    c->sout() << "qy " << qy << endl;
+    c->sout() << "f1 - f0 " << f1 - f0 << endl;
 
     // Shift by off
     for(size_t d = 0; d < VDim; d++)
       y[d] = x[d] + w[d] - eps * off[d];
     iref->TransformRASPhysicalPointToContinuousIndex(y, qy);
     double f2 = pow(giref->EvaluateAtContinuousIndex(qx) - gimov->EvaluateAtContinuousIndex(qy),2);
-    cout << "qy " << qy << endl;
-    cout << "f2 - f0 " << f2 - f0 << endl;
+    c->sout() << "qy " << qy << endl;
+    c->sout() << "f2 - f0 " << f2 - f0 << endl;
 
     double nd = (f1 - f2) / (eps * 2.0);
 
-    cout << "AD = " << ad << ", CD = " << nd << " DIFF " << ad - nd << endl;
+    c->sout() << "AD = " << ad << ", CD = " << nd << " DIFF " << ad - nd << endl;
 
     }
 
@@ -527,7 +527,7 @@ SimpleElasticRegistration<TPixel, VDim>
 
   double f_total = f_img / (sigma * sigma) + f_reg;
 
-  printf("RMSE(mask) = %8.4f    VMAG(vol) = %8.4f    TOTAL(vol) = %8.4f \n",
+  c->PrintF(c->sout(), "RMSE(mask) = %8.4f    VMAG(vol) = %8.4f    TOTAL(vol) = %8.4f \n",
     sqrt(f_img * mask_scale), 
     sqrt(f_reg / fft_n),
     f_total / fft_n);
@@ -648,9 +648,9 @@ SimpleElasticRegistration<TPixel, VDim>
     // Compute the deriv
     double cdiffder = (f[0] - f[1]) / (2 * eps);
 
-    cout << "FUNCTION " << fc << "\t";
-    cout << "ANALYTIC " << dirderiv << "\t";
-    cout << "NUMERIC  " << cdiffder << endl;
+    c->sout() << "FUNCTION " << fc << "\t";
+    c->sout() << "ANALYTIC " << dirderiv << "\t";
+    c->sout() << "NUMERIC  " << cdiffder << endl;
     }
 }
 
@@ -672,7 +672,7 @@ SimpleElasticRegistration<TPixel, VDim>
 
   // Call the same function the optimizer calls
   double fc = cg_valgrad<TPixel,VDim>(G, X, VDim * fft_n);
-  cout << "TestGradient2 Solution " << fc << endl;
+  c->sout() << "TestGradient2 Solution " << fc << endl;
   SaveRaw(vraw[0], "gradient2field.nii");
 
   for(size_t q = 0; q < 10; q++)
@@ -703,7 +703,7 @@ SimpleElasticRegistration<TPixel, VDim>
       }
 
     double nd = (f[1] - f[0]) / (2 * eps);
-    printf("ANALYTIC %12.8f \t NUMERIC %12.8f \t DIFFERENCE %12.8f\n", ad, nd, ad-nd);
+    c->PrintF(c->sout(), "ANALYTIC %12.8f \t NUMERIC %12.8f \t DIFFERENCE %12.8f\n", ad, nd, ad-nd);
     }
 
   delete X;

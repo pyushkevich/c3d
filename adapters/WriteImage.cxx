@@ -79,11 +79,8 @@ WriteImage<TPixel, VDim>
   writer->SetFileName(file);
   writer->SetUseCompression(c->m_UseCompression);
   try { writer->Update(); }
-  catch (itk::ExceptionObject &exc) {
-    cerr << "Error writing image to " << file << endl;
-    cerr << "ITK Exception: " << exc << endl;
-    throw -1;
-  }
+  catch (itk::ExceptionObject &exc)
+    { throw ConvertException("Error writing image to %s\n ITK Exception: %s", file, exc.what()); }
 }
 
 template<class TPixel, unsigned int VDim>
@@ -213,10 +210,7 @@ WriteImage<TPixel, VDim>
 {
   // Unless in 'force' mode, check if the image already exists
   if(!force && itksys::SystemTools::FileExists(file))
-    {
-    cerr << "File " << file << " already exists. Use -o option to override!" << endl;
-    throw -1;
-    }
+    throw ConvertException("File %s  already exists. Use -o option to override!", file);
 
   if(c->m_TypeId == "char" || c->m_TypeId == "byte")
     TemplatedWriteImage<char>(file, c->m_RoundFactor, pos);

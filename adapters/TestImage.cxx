@@ -59,7 +59,7 @@ TestImage<TPixel, VDim>
 
     if(max_abs_diff > tol)
       {
-      std::cout << "Image header test failed. Max abs difference: " << max_abs_diff << endl;
+      c->sout() << "Image header test failed. Max abs difference: " << max_abs_diff << endl;
       std::exit(1);
       }
     }
@@ -79,7 +79,7 @@ TestImage<TPixel, VDim>
     double max_abs_diff = fltMinMax->GetMaximumOutput()->Get();
     if(max_abs_diff > tol)
       {
-      std::cout << "Image voxel test failed. Max abs difference: " << max_abs_diff << endl;
+      c->sout() << "Image voxel test failed. Max abs difference: " << max_abs_diff << endl;
       std::exit(1);
       }
     }

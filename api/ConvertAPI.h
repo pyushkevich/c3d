@@ -84,6 +84,11 @@ public:
    */
  void AddImage(const char *varname, ImageType *image); 
 
+ /**
+  * Redirect the output to a file or string
+  */
+ void RedirectOutput(std::ostream &sout, std::ostream &serr);
+
   /** 
    * Execute a command in c3d. This is just like a regular command-line, and the 
    * output will be captured to the provided stream.

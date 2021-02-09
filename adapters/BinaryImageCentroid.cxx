@@ -67,8 +67,8 @@ BinaryImageCentroid<TPixel, VDim>
   c->PeekLastImage()->TransformContinuousIndexToRASPhysicalPoint(center_idx, center_pt);
 
   // Print the resuts
-  cout << "CENTROID_VOX " << center_idx << endl;
-  cout << "CENTROID_MM " << center_pt << endl;
+  c->sout() << "CENTROID_VOX " << center_idx << endl;
+  c->sout() << "CENTROID_MM " << center_pt << endl;
 }
 
 /**

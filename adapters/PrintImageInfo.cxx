@@ -30,12 +30,12 @@
 
 template<class AnyType>
 bool
-try_print_metadata(itk::MetaDataDictionary &mdd, string key, AnyType deflt)
+try_print_metadata(ostream &sout, itk::MetaDataDictionary &mdd, string key, AnyType deflt)
   {
   AnyType value = deflt;
   if(itk::ExposeMetaData<AnyType>(mdd, key, value))
     {
-    cout << "    " << key << " = " << value << endl;
+    sout << "    " << key << " = " << value << endl;
     return true;
     }
   else return false;
@@ -149,7 +149,7 @@ PrintImageInfo<TPixel, VDim>
   ImagePointer image = c->m_ImageStack.back();
 
   // Print the image number
-  cout << "Image #" << c->m_ImageStack.size() << ":";
+  c->sout() << "Image #" << c->m_ImageStack.size() << ":";
 
   // Compute the bounding box
   RealVector bb0, bb1, ospm;
@@ -175,33 +175,33 @@ PrintImageInfo<TPixel, VDim>
   // Short or long?
   if(!full) 
     {
-    cout << " dim = " << image->GetBufferedRegion().GetSize() << "; ";
-    cout << " bb = {[" << bb0 << "], [" << bb1 << "]}; ";
-    cout << " vox = " << image->GetSpacing() << "; ";
-    cout << " range = [" << iMin << ", " << iMax << "]; ";
-    cout << " orient = " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix()) << endl;
-    cout << endl;
+    c->sout() << " dim = " << image->GetBufferedRegion().GetSize() << "; ";
+    c->sout() << " bb = {[" << bb0 << "], [" << bb1 << "]}; ";
+    c->sout() << " vox = " << image->GetSpacing() << "; ";
+    c->sout() << " range = [" << iMin << ", " << iMax << "]; ";
+    c->sout() << " orient = " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix()) << endl;
+    c->sout() << endl;
     }
   else
     {
-    cout << endl;
-    cout << "  Image Dimensions   : " << image->GetBufferedRegion().GetSize() << endl;
-    cout << "  Bounding Box       : " << "{[" << bb0 << "], [" << bb1 << "]}" << endl;
-    cout << "  Voxel Spacing      : " << image->GetSpacing() << endl;
-    cout << "  Intensity Range    : [" << iMin << ", " << iMax << "]" << endl;
-    cout << "  Mean Intensity     : " << iMean << endl;
-    cout << "  Canon. Orientation : " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix()) << endl;
-    cout << "  Direction Cos Mtx. : " << endl;
-    c->PrintMatrix(cout, image->GetDirection().GetVnlMatrix());
+    c->sout() << endl;
+    c->sout() << "  Image Dimensions   : " << image->GetBufferedRegion().GetSize() << endl;
+    c->sout() << "  Bounding Box       : " << "{[" << bb0 << "], [" << bb1 << "]}" << endl;
+    c->sout() << "  Voxel Spacing      : " << image->GetSpacing() << endl;
+    c->sout() << "  Intensity Range    : [" << iMin << ", " << iMax << "]" << endl;
+    c->sout() << "  Mean Intensity     : " << iMean << endl;
+    c->sout() << "  Canon. Orientation : " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix()) << endl;
+    c->sout() << "  Direction Cos Mtx. : " << endl;
+    c->PrintMatrix(c->sout(), image->GetDirection().GetVnlMatrix());
 
     // Print NIFTI s-form matrix (check against freesurfer's MRIinfo)
-    cout << "  Voxel->RAS x-form  : " << endl;
-    c->PrintMatrix(cout, 
+    c->sout() << "  Voxel->RAS x-form  : " << endl;
+    c->PrintMatrix(c->sout(), 
       image->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix(), "%12.5f ", "    ");
 
     //
     // Print metadata
-    cout << "  Image Metadata: " << endl;
+    c->sout() << "  Image Metadata: " << endl;
     itk::MetaDataDictionary &mdd = image->GetMetaDataDictionary();
     itk::MetaDataDictionary::ConstIterator itMeta;
     for(itMeta = mdd.Begin(); itMeta != mdd.End(); ++itMeta)
@@ -222,29 +222,29 @@ PrintImageInfo<TPixel, VDim>
 
         // Make sure the value has more than blanks
         if(v_string.find_first_not_of(" ") != v_string.npos)
-          cout << "    " << key << " = " << v_string << endl;
+          c->sout() << "    " << key << " = " << v_string << endl;
         }
       else if(itk::ExposeMetaData(mdd, key, v_oflags))
         {
-        cout << "    " << key << " = " << get_rai_code(v_oflags) << endl;
+        c->sout() << "    " << key << " = " << get_rai_code(v_oflags) << endl;
         }
       else 
         {
         bool rc = false;
-        if(!rc) rc |= try_print_metadata<double>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<float>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<int>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<unsigned int>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<long>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<unsigned long>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<short>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<unsigned short>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<char>(mdd, key, 0);
-        if(!rc) rc |= try_print_metadata<unsigned char>(mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<double>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<float>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<int>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<unsigned int>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<long>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<unsigned long>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<short>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<unsigned short>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<char>(c->sout(), mdd, key, 0);
+        if(!rc) rc |= try_print_metadata<unsigned char>(c->sout(), mdd, key, 0);
 
         if(!rc)
           {
-          cout << "    " << key << " of unsupported type " 
+          c->sout() << "    " << key << " of unsupported type " 
             << itMeta->second->GetMetaDataObjectTypeName() << endl;
           }
         }

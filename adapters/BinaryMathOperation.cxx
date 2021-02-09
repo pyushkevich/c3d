@@ -40,10 +40,7 @@ BinaryMathOperation<TPixel, VDim>
 {
   // Check input availability
   if(c->m_ImageStack.size() < 2)
-    {
-    cerr << "Binary operations require two images on the stack" << endl;
-    throw -1;
-    }
+    throw ConvertException("Binary operations require two images on the stack");
 
   // Get the last two images
   ImagePointer i1 = c->m_ImageStack[c->m_ImageStack.size() - 1];

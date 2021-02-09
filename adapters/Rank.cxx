@@ -68,7 +68,7 @@ Rank<TPixel, VDim>
 
     if(k == 189552)
       for(size_t j = 0; j < n; j++)
-        printf("J = %li, v = %f, r = %li\n", j, sortvec[j].first, sortvec[j].second);
+        c->PrintF(c->sout(), "J = %li, v = %f, r = %li\n", j, sortvec[j].first, sortvec[j].second);
       
 
     std::sort(sortvec.begin(), sortvec.end());

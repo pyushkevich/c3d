@@ -34,10 +34,7 @@ WarpImage<TPixel, VDim>
 {
   // Check input availability
   if(c->m_ImageStack.size() < VDim + 1)
-    {
-    cerr << "Warp operation requires " << VDim+1 << " images on the stack" << endl;
-    throw -1;
-    }
+    throw ConvertException("Warp operation requires %d images on the stack", VDim+1);
 
   // Write something 
   *c->verbose << "Warping image #" << c->m_ImageStack.size() << endl;

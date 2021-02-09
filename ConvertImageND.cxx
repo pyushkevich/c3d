@@ -342,7 +342,7 @@ struct ConvertAlgorithmParameters
 template<class TPixel, unsigned int VDim>
 ImageConverter<TPixel,VDim>
 ::ImageConverter()
-  : verbose(&devnull)
+  : verbose(&devnull), os_out(&std::cout), os_err(&std::cerr)
 {
   // Initialize to defaults
   m_TypeId = "float";
@@ -447,7 +447,7 @@ ImageConverter<TPixel, VDim>
   // Get the first command
   string cmd = argv[0];
 
-  // cout << "COMMAND: " << cmd << endl;
+  // this->sout() << "COMMAND: " << cmd << endl;
 
   // Commands in alphabetical order
   if (cmd == "-accum")
@@ -864,12 +864,12 @@ ImageConverter<TPixel, VDim>
     {
     if(argc > 1 && argv[1][0] != '-')
       {
-      PrintCommandHelp(std::cout, argv[1]);
+      PrintCommandHelp(this->sout(), argv[1]);
       return 1;
       }
     else
       {
-      PrintCommandListing(std::cout);
+      PrintCommandListing(this->sout());
       return 0;
       }
     }
@@ -1066,7 +1066,7 @@ ImageConverter<TPixel, VDim>
   // No else if here because of a windows compiler error (blocks nested too deeply)
   if (cmd == "-manual")
     {
-    this->PrintManual(std::cout);
+    this->PrintManual(this->sout());
     return 0;
     }
 
@@ -1405,9 +1405,9 @@ ImageConverter<TPixel, VDim>
     // Read an RAS code
     RegularExpression re("[raslpi]{3}");
     if (re.find(str_to_lower(argv[1])))
-      { cout << "You supplied a RAS code" << endl; }
+      { this->sout() << "You supplied a RAS code" << endl; }
     else
-      { cout << "I am expecting a matrix" << endl; }
+      { this->sout() << "I am expecting a matrix" << endl; }
     return 1;
     }
 
@@ -1593,11 +1593,11 @@ ImageConverter<TPixel, VDim>
     try
       {
       double pix = m_ImageStack.back()->GetPixel(idx);
-      cout << "Pixel " << idx << " has value " << pix << endl;
+      this->sout() << "Pixel " << idx << " has value " << pix << endl;
       }
     catch(...)
       {
-      cerr << "Error: pixel " << idx << " can not be examined!" << endl;
+      this->serr() << "Error: pixel " << idx << " can not be examined!" << endl;
       }
     return 1;
     }
@@ -1787,7 +1787,7 @@ ImageConverter<TPixel, VDim>
     // Make sure the number of replacement rules is even
     if (vReplace.size() % 2 == 1)
       {
-      cerr << "The number of parameters to '-replace' must be even!" << endl;
+      this->serr() << "The number of parameters to '-replace' must be even!" << endl;
       throw -1;
       }
 
@@ -2090,7 +2090,7 @@ ImageConverter<TPixel, VDim>
     double abs_diff = std::fabs(v_test - adapter.GetResult());
     if(abs_diff > tol)
       {
-      cout << "Probe test failed, absolute difference = " << abs_diff << endl;
+      this->sout() << "Probe test failed, absolute difference = " << abs_diff << endl;
       exit(1);
       }
     else
@@ -2153,14 +2153,14 @@ ImageConverter<TPixel, VDim>
 
   // Verbose mode
   else if (cmd == "-verbose")
-    { verbose = &std::cout; return 0; }
+    { verbose = &this->sout(); return 0; }
 
   else if (cmd == "-noverbose")
     { verbose = &devnull; return 0; }
 
   else if (cmd == "-version")
     {
-    cout << "Version " << ImageConverter_VERSION_STRING << endl;
+    this->sout() << "Version " << ImageConverter_VERSION_STRING << endl;
     return 0;
     }
 
@@ -2204,7 +2204,7 @@ ImageConverter<TPixel, VDim>
     size_t n = m_ImageStack.back()->GetBufferedRegion().GetNumberOfPixels();
     for(size_t i = 0; i < n; i++)
       sum += m_ImageStack.back()->GetBufferPointer()[i];
-    cout << "Voxel Sum: " << sum << endl;
+    this->sout() << "Voxel Sum: " << sum << endl;
     return 0;
     }
 
@@ -2218,7 +2218,7 @@ ImageConverter<TPixel, VDim>
     double vol = 1.0;
     for(size_t d = 0; d < VDim; d++)
       vol *= m_ImageStack.back()->GetSpacing()[d];
-    cout << "Voxel Integral: " << sum * vol << endl;
+    this->sout() << "Voxel Integral: " << sum * vol << endl;
     return 0;
     }
 
@@ -2278,9 +2278,9 @@ ImageConverter<TPixel, VDim>
 
   // Unknown command
   else
-    { cerr << "Unknown command " << cmd << endl; throw -1; }
+    { this->serr() << "Unknown command " << cmd << endl; throw -1; }
 
-  cerr << "Fell through!" << endl;
+  this->serr() << "Fell through!" << endl;
   throw -1;
 }
 
@@ -2344,11 +2344,12 @@ ImageConverter<TPixel, VDim>
   // Check the number of arguments
   if (argc == 1)
     {
-    cerr << "PICSL convert3d tool - from the creators of ITK-SNAP" << endl;
-    cerr << "For full documentation and usage examples, see" << endl;
-    cerr << "    http://www.itksnap.org/c3d" << endl;
-    cerr << "To get help on available commands, call" << endl;
-    cerr << "    " << argv[0] << " -h" << endl;
+    this->serr() << 
+      "PICSL convert3d tool - from the creators of ITK-SNAP " << endl <<
+      "For full documentation and usage examples, see" << endl <<
+      "    http://www.itksnap.org/c3d" << endl <<
+      "To get help on available commands, call" << endl <<
+      "    " << argv[0] << " -h" << endl;
     return -1;
     }
 
@@ -2361,29 +2362,30 @@ ImageConverter<TPixel, VDim>
     }
   catch (StackAccessException &)
     {
-    cerr << "Not enough images on the stack for the requested command." << endl;
-    cerr << "  Requested command: " << lastCommand << endl;
-    cerr << "  Note: C3D requires image operands to precede commands." << endl;
-    cerr << "        message can be caused by incorrect usage, such as" << endl;
-    cerr << "           c3d -command image.nii " << endl;
-    cerr << "        instead of " << endl;
-    cerr << "           c3d image.nii -command" << endl;
+    this->serr() <<
+      "Not enough images on the stack for the requested command." << endl <<
+      "  Requested command: " << lastCommand << endl <<
+      "  Note: C3D requires image operands to precede commands." << endl <<
+      "        message can be caused by incorrect usage, such as" << endl <<
+      "           c3d -command image.nii " << endl <<
+      "        instead of " << endl <<
+      "           c3d image.nii -command" << endl;
     return -1;
     }
   
   catch (std::exception &exc)
     {
-    cerr << "Exception caught of type " << typeid(exc).name() << endl;
+    this->serr() << "Exception caught of type " << typeid(exc).name() << endl;
     if(lastCommand.size())
-      cerr << "  When processing command: " << lastCommand << endl;
-    cerr << "  Exception detail: " << exc.what() << endl;
+      this->serr() << "  When processing command: " << lastCommand << endl;
+    this->serr() << "  Exception detail: " << exc.what() << endl;
     return -1;
     }
   catch (...)
     {
-    cerr << "Unknown exception caught by convert3d" << endl;
+    this->serr() << "Unknown exception caught by convert3d" << endl;
     if(lastCommand.size())
-      cerr << "  When processing command: " << lastCommand << endl;
+      this->serr() << "  When processing command: " << lastCommand << endl;
     return -1;
     }
 }
@@ -3012,6 +3014,18 @@ ImageConverter<TPixel, VDim>
     return NULL;
 }
 
+template<class TPixel, unsigned int VDim>
+void
+ImageConverter<TPixel, VDim>
+::RedirectOutput(ostream &sout, ostream &serr)
+{
+  if(this->verbose == this->os_out)
+    this->verbose = &sout;
+
+  this->os_out = &sout;
+  this->os_err = &serr;
+}
+
 
 template<class TPixel, unsigned int VDim>
 typename ImageConverter<TPixel, VDim>::ImagePointer
@@ -3107,7 +3121,7 @@ ImageConverter<TPixel, VDim>
 template<class TPixel, unsigned int VDim>
 void
 ImageConverter<TPixel, VDim>
-::PrintF(const char *fmt, ...)
+::PrintF(ostream &sout, const char *fmt, ...)
 {
   char buffer[4096];
   va_list args;
@@ -3115,7 +3129,7 @@ ImageConverter<TPixel, VDim>
   vsprintf (buffer, fmt, args);
   va_end (args);
 
-  *this->verbose << buffer;
+  sout << buffer;
 }
 
 template <class TPixel, unsigned int VDim>
