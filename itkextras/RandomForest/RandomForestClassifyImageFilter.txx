@@ -32,17 +32,17 @@ RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TL
 template <class TInputImage, class TInputVectorImage, class TOutputImage, class TLabel>
 void
 RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TLabel>
-::AddScalarImage(InputImageType *image)
+::AddScalarImage(const InputImageType *image)
 {
-  this->AddInput(image);
+  this->AddInput(const_cast<InputImageType *>(image));
 }
 
 template <class TInputImage, class TInputVectorImage, class TOutputImage, class TLabel>
 void
 RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TLabel>
-::AddVectorImage(InputVectorImageType *image)
+::AddVectorImage(const InputVectorImageType *image)
 {
-  this->AddInput(image);
+  this->AddInput(const_cast<InputVectorImageType *>(image));
 }
 
 template <class TInputImage, class TInputVectorImage, class TOutputImage, class TLabel>
