@@ -169,6 +169,14 @@ ConvertAPI<TPixel,VDim>
   m_Converter->SetVariable(varname, img_ras);
 }
 
+template<class TPixel, unsigned int VDim>
+void
+ConvertAPI<TPixel,VDim>
+::RedirectOutput(ostream &sout, ostream &serr)
+{
+  m_Converter->RedirectOutput(sout, serr);
+}
+
 template <class TPixel, unsigned int VDim>
 typename ConvertAPI<TPixel,VDim>::ImageType *
 ConvertAPI<TPixel,VDim>
@@ -178,7 +186,7 @@ ConvertAPI<TPixel,VDim>
 }
 
 template <class TPixel, unsigned int VDim>
-bool 
+void 
 ConvertAPI<TPixel,VDim>
 ::Execute(const char *cmdline, ...)
 {
@@ -193,33 +201,23 @@ ConvertAPI<TPixel,VDim>
   char **argv = split_commandline(buffer, &argc);
 
   if(!argv)
-    {
-    m_Error = "Error parsing the command line expression";
-    return false;
-    }
+    throw ConvertAPIException("Error parsing the command line expression");
   
   try 
     {
-    int rc = m_Converter->ProcessCommandLine(argc, argv);
-    if(rc)
-      {
-      m_Error = "Convert3D returned a non-zero return code. Check output for errors";
-      return false;
-      }
-    else
-      {
-      return true;
-      }
+    m_Converter->ProcessCommandList(argc, argv);
     }
-  catch(std::exception &exc)
+  catch (StackAccessException &)
     {
-    m_Error = exc.what();
-    return false;
+    throw ConvertAPIException("Not enough images on the stack");
     }
-  catch(...)
+  catch (std::exception &exc)
     {
-    m_Error = "Unspecified failure. Check output for more information.";
-    return false;
+    throw ConvertAPIException(exc.what());
+    }
+  catch (...)
+    {
+    throw ConvertAPIException("Unknown exception in ConvertAPI");
     }
 }
 

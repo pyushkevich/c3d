@@ -76,7 +76,12 @@ public:
   
   ImageConverter();
   ~ImageConverter();
+
+  // Process command line (basically main, but templated)
   int ProcessCommandLine(int argc, char *argv[]);
+
+  // Process command list (argv[0] stripped off, may throw exceptions)
+  void ProcessCommandList(int argc, char *argv[]);
 
   friend class ConvertAdapter<TPixel, VDim>;
 
@@ -125,6 +130,11 @@ public:
 
   // Get variable
   ImageType *GetVariable(std::string name);
+
+  // Set one of the output streams. By default, they are cout and cerr, but
+  // this can be overridden here. Verbose will point to the sout stream when
+  // user supplies the -verbose flag
+  void RedirectOutput(ostream &sout, ostream &serr);
 
 private:
 
@@ -179,7 +189,7 @@ public:
   int GetStackSize();
 
   // Print something to verbose output, but using printf syntax
-  void PrintF(const char *fmt, ...);
+  void PrintF(std::ostream &sout, const char *fmt, ...);
 
   // Get Nth image on the stack without removing it
   ImageType *PeekImage(int k);
@@ -221,6 +231,14 @@ public:
   // How % is handled for intensity specs
   enum PercentIntensityMode { PIM_QUANTILE, PIM_FGQUANTILE, PIM_RANGE };
   PercentIntensityMode m_PercentIntensityMode;
+
+  // Main output stream - where the non-verbose and optionally verbose 
+  // output and error streams go
+  std::ostream *os_out, *os_err;
+
+  // Reference to the output stream
+  std::ostream &sout() { return *os_out; }
+  std::ostream &serr() { return *os_err; }
 
   // Verbose output stream
   std::ostringstream devnull;

@@ -74,9 +74,9 @@ ConnectedComponents<TPixel, VDim>
 
   // Print the statistics about the connected components
   long szpx = fltRelabel->GetSizeOfObjectInPixels(1);
-  cout << "  There are " << 
+  c->sout() << "  There are " << 
     fltRelabel->GetNumberOfObjects() << " connected components." << endl;
-  cout << "  Largest component has " << szpx << " pixels." << endl;
+  c->sout() << "  Largest component has " << szpx << " pixels." << endl;
 
   // We have to convert the image back to the native type
   typedef itk::CastImageFilter<IntImageType, ImageType> CastFilter;

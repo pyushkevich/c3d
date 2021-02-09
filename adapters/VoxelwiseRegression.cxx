@@ -64,7 +64,7 @@ VoxelwiseRegression<TPixel, VDim>
 
   // We should report R^2, etc.
   for(size_t j = 0; j < order; j++)
-    cout << "REGCOEFF[" << j << "] = " << bhat(j,0) << endl;
+    c->sout() << "REGCOEFF[" << j << "] = " << bhat(j,0) << endl;
 }
 
 // Invocations

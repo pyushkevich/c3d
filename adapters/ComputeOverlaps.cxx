@@ -32,10 +32,7 @@ ComputeOverlaps<TPixel, VDim>
 {
   // There must be two images available on the stack!
   if(c->m_ImageStack.size() < 2)
-    {
-    cerr << "Overlap requires two images on the stack!" << endl;
-    throw -1;
-    }
+    throw ConvertException("Overlap requires two images on the stack!");
 
   // Get the last two images
   ImagePointer i2 = c->m_ImageStack[c->m_ImageStack.size() - 1];
@@ -47,10 +44,7 @@ ComputeOverlaps<TPixel, VDim>
 
   // The images must have the same size
   if(i1->GetBufferedRegion() != i2->GetBufferedRegion())
-    {
-    cerr << "Overlap requires the images to be of the same dimensions!" << endl;
-    throw -1;
-    }
+    throw ConvertException("Overlap requires the images to be of the same dimensions!");
 
   // Create iterators for the two images
   ConstIterator it1(i1, i1->GetBufferedRegion());
@@ -79,8 +73,8 @@ ComputeOverlaps<TPixel, VDim>
   double xDice = n12 * 2.0 / (n1 + n2);
   double xRobust = n12 * 1.0 / (n1 + n2 - n12);
 
-  cout << "OVL: " << v << ", " << n1 << ", " << n2 << ", " << n12;
-  cout << ", " << xDice << ", " << xRobust << endl;
+  c->sout() << "OVL: " << v << ", " << n1 << ", " << n2 << ", " << n12;
+  c->sout() << ", " << xDice << ", " << xRobust << endl;
   
   // Print the overlap to c->verbose channel
   *c->verbose << "  Matching voxels in first image:  " << n1 << endl;

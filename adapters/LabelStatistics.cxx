@@ -75,12 +75,11 @@ LabelStatistics<TPixel, VDim>
   for(size_t i = 0; i < VDim; i++)
     dim *= label->GetSpacing()[i];
 
-  // Get the number of labels                                                             .
-  printf("LabelID        Mean        StdD         Max         Min       Count     Vol(mm^%1d)        Extent(Vox)\n", VDim);
+  // Get the number of labels
+  c->PrintF(c->sout(), "LabelID        Mean        StdD         Max         Min       Count     Vol(mm^%1d)        Extent(Vox)\n", VDim);
   for(set<short>::iterator it = sval.begin(); it != sval.end(); ++it)
     {
-    // printf("xxxxx    xxxxxxxxxx  xxxxxxxxxx  xxxxxxxxxx  xxxxxxxxxx  xxxxxxxxxx");
-    printf("%5i    %10.5f  %10.5f  %10.5f  %10.5f  %10lu  %12.3f ",
+    c->PrintF(c->sout(), "%5i    %10.5f  %10.5f  %10.5f  %10.5f  %10lu  %12.3f ",
       (int) *it, 
       fltStat->GetMean(*it), 
       fltStat->GetSigma(*it), 
@@ -93,9 +92,9 @@ LabelStatistics<TPixel, VDim>
     typename StatFilter::BoundingBoxType bbox = fltStat->GetBoundingBox(*it);
     for(size_t i = 0; i < VDim; i++)
       {
-      printf(" %5lu", 1 + bbox[i*2+1] - bbox[i*2]);
+      c->PrintF(c->sout(), " %5lu", 1 + bbox[i*2+1] - bbox[i*2]);
       }
-    printf("\n");
+    c->PrintF(c->sout(), "\n");
     }
 }
 

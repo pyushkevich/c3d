@@ -51,7 +51,7 @@ SampleImage<TPixel, VDim>
   *c->verbose << "  Using " << c->m_Interpolation << " interpolation" << endl;
 
   // Print out the interpolated value
-  cout << "Interpolated image value at " << x << " is " << m_Result << endl;
+  c->sout() << "Interpolated image value at " << x << " is " << m_Result << endl;
 }
 
 // Invocations

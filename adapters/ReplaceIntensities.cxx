@@ -31,7 +31,7 @@ ReplaceIntensities<TPixel, VDim>
 ::operator() (vector<double> &xRule)
 {
   // Get the input image
-  ImagePointer input = c->m_ImageStack.back();
+  ImagePointer input = c->PopAndPushCopy();
 
   // This is a slightly sensitive procedure. We need to set an epsilon so that
   // intensities that are within machine precision are treated as equal. We define

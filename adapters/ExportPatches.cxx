@@ -72,9 +72,6 @@ public:
     R(0,2) = 2 * x * z + 2 * w * y;
     R(1,2) = 2 * y * z - 2 * w * x;
     R(2,1) = 2 * y * z + 2 * w * x;
-    std::cout << theta * 180 / vnl_math::pi << std::endl;
-    std::cout << w << "," << x << "," << y << "," << z << std::endl;
-    std::cout << R << std::endl;
     }
 };
 
@@ -243,7 +240,7 @@ ExportPatches<TPixel, VDim>
   fclose(f);
 
   // Report the number of patches
-  std::cout << "Exported patches:" << n_patches << std::endl;
+  c->sout() << "Exported patches:" << n_patches << std::endl;
 
   // Restore the mask
   c->PushImage(mask);

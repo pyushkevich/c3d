@@ -78,27 +78,27 @@ LabelOverlapMeasures<TPixel, VDim>
   // Update the fltOverlap
   filter->Update();
 
-  std::cout << "                                          "
+  c->sout() << "                                          "
             << "************ All Labels *************" << std::endl;
-  std::cout << std::setw( 10 ) << "   "
+  c->sout() << std::setw( 10 ) << "   "
     << std::setw( 17 ) << "Total"
     << std::setw( 17 ) << "Union (jaccard)"
     << std::setw( 17 ) << "Mean (dice)"
     << std::setw( 17 ) << "Volume sim."
     << std::setw( 17 ) << "False negative"
     << std::setw( 17 ) << "False positive" << std::endl;
-  std::cout << std::setw( 10 ) << "   ";
-  std::cout << std::setw( 17 ) << filter->GetTotalOverlap();
-  std::cout << std::setw( 17 ) << filter->GetUnionOverlap();
-  std::cout << std::setw( 17 ) << filter->GetMeanOverlap();
-  std::cout << std::setw( 17 ) << filter->GetVolumeSimilarity();
-  std::cout << std::setw( 17 ) << filter->GetFalseNegativeError();
-  std::cout << std::setw( 17 ) << filter->GetFalsePositiveError();
-  std::cout << std::endl;
+  c->sout() << std::setw( 10 ) << "   ";
+  c->sout() << std::setw( 17 ) << filter->GetTotalOverlap();
+  c->sout() << std::setw( 17 ) << filter->GetUnionOverlap();
+  c->sout() << std::setw( 17 ) << filter->GetMeanOverlap();
+  c->sout() << std::setw( 17 ) << filter->GetVolumeSimilarity();
+  c->sout() << std::setw( 17 ) << filter->GetFalseNegativeError();
+  c->sout() << std::setw( 17 ) << filter->GetFalsePositiveError();
+  c->sout() << std::endl;
 
-  std::cout << "                                       "
+  c->sout() << "                                       "
             << "************ Individual Labels *************" << std::endl;
-  std::cout << std::setw( 10 ) << "Label"
+  c->sout() << std::setw( 10 ) << "Label"
             << std::setw( 17 ) << "Target"
             << std::setw( 17 ) << "Union (jaccard)"
             << std::setw( 17 ) << "Mean (dice)"
@@ -117,14 +117,14 @@ LabelOverlapMeasures<TPixel, VDim>
 
     int label = (*it).first;
 
-    std::cout << std::setw( 10 ) << label;
-    std::cout << std::setw( 17 ) << filter->GetTargetOverlap( label );
-    std::cout << std::setw( 17 ) << filter->GetUnionOverlap( label );
-    std::cout << std::setw( 17 ) << filter->GetMeanOverlap( label );
-    std::cout << std::setw( 17 ) << filter->GetVolumeSimilarity( label );
-    std::cout << std::setw( 17 ) << filter->GetFalseNegativeError( label );
-    std::cout << std::setw( 17 ) << filter->GetFalsePositiveError( label );
-    std::cout << std::endl;
+    c->sout() << std::setw( 10 ) << label;
+    c->sout() << std::setw( 17 ) << filter->GetTargetOverlap( label );
+    c->sout() << std::setw( 17 ) << filter->GetUnionOverlap( label );
+    c->sout() << std::setw( 17 ) << filter->GetMeanOverlap( label );
+    c->sout() << std::setw( 17 ) << filter->GetVolumeSimilarity( label );
+    c->sout() << std::setw( 17 ) << filter->GetFalseNegativeError( label );
+    c->sout() << std::setw( 17 ) << filter->GetFalsePositiveError( label );
+    c->sout() << std::endl;
     }
 
 }

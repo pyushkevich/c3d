@@ -49,7 +49,7 @@ ComputeFFT<TPixel, VDim>
   typename ImagFilter::Pointer fltImag = ImagFilter::New();
 
   // Set inputs and outputs
-  cout << "DOING FFT" << endl;
+  c->sout() << "DOING FFT" << endl;
   try 
     {
     fltFourier->SetInput(image);
@@ -57,11 +57,11 @@ ComputeFFT<TPixel, VDim>
     }
   catch(itk::ExceptionObject &exc) 
     {
-    cerr << "Exception caught : " << exc;
-    cerr << endl;
+    c->serr() << "Exception caught : " << exc;
+    c->serr() << endl;
     return;
     }
-  cout << "DID MAIN PART" << endl;
+  c->sout() << "DID MAIN PART" << endl;
 
   fltReal->SetInput(fltFourier->GetOutput());
   fltImag->SetInput(fltFourier->GetOutput());
@@ -69,13 +69,13 @@ ComputeFFT<TPixel, VDim>
   // Compute the transforms
   fltReal->Update();
   fltImag->Update();
-  cout << "DID FFT" << endl;
+  c->sout() << "DID FFT" << endl;
 
   // Pop the last guy from the stack and push the real and imag
   c->m_ImageStack.pop_back();
   c->m_ImageStack.push_back(fltReal->GetOutput());
   c->m_ImageStack.push_back(fltImag->GetOutput());
-  cout << "FINISHED STACK" << endl;
+  c->sout() << "FINISHED STACK" << endl;
 
 }
 

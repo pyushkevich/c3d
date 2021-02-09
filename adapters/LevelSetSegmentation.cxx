@@ -110,11 +110,13 @@ private:
   void operator=(const Self &s);
 };
 
+/*
 void DumpProgress(itk::Object *object, const itk::EventObject &obj, void *client_data)
 {
   itk::ProcessObject *po = (itk::ProcessObject *)object;
-  cout << po->GetProgress() << endl;
+  c->sout() << po->GetProgress() << endl;
 }
+*/
 
 
 template <class TPixel, unsigned int VDim>
@@ -124,10 +126,7 @@ LevelSetSegmentation<TPixel, VDim>
 {
   // Check input availability
   if(c->m_ImageStack.size() < 2)
-    {
-    cerr << "Level set segmentation requires two images on the stack!" << endl;
-    throw -1;
-    }
+    throw ConvertException("Level set segmentation requires two images on the stack!");
 
   // Get the last two images
   ImagePointer i1 = c->m_ImageStack[c->m_ImageStack.size() - 1];

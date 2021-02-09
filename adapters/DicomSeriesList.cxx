@@ -60,7 +60,7 @@ DicomSeriesList<TPixel, VDim>
   gdcm_series->SetUseSeriesDetails(true);
   gdcm_series->SetDirectory(series_dir);
 
-  std::cout
+  c->sout()
       << "SeriesNumber"
       << "\tDimensions"
       << "\tNumImages"
@@ -100,7 +100,7 @@ DicomSeriesList<TPixel, VDim>
       sf.SetFile(reader.GetFile());
 
       // Read series description
-      std::cout << sf.ToString(tagSeriesNumber);
+      c->sout() << sf.ToString(tagSeriesNumber);
 
       // Read the dimensions
       ostringstream oss;
@@ -108,13 +108,13 @@ DicomSeriesList<TPixel, VDim>
           << sf.ToString(tagCols) << "x"
           << fc.size();
 
-      std::cout << "\t" << oss.str();
-      std::cout << "\t" << fc.size();
-      std::cout << "\t" << sf.ToString(tagDesc);
-      std::cout << "\t" << uids[i];
+      c->sout() << "\t" << oss.str();
+      c->sout() << "\t" << fc.size();
+      c->sout() << "\t" << sf.ToString(tagDesc);
+      c->sout() << "\t" << uids[i];
       }
 
-    std::cout << std::endl;
+    c->sout() << std::endl;
     }
 }
 

@@ -126,7 +126,7 @@ public:
     fltOrient->SetDesiredCoordinateOrientation(oflag);
 
     // Report something
-    c->PrintF("Swapping dimensions of #%d to achieve orientation %s\n", 
+    c->PrintF(*c->verbose, "Swapping dimensions of #%d to achieve orientation %s\n",
               c->GetStackSize(), code.c_str()); 
 
     fltOrient->Update();

@@ -80,11 +80,11 @@ ComputeMoments<TPixel, VDim>
   vnl_symmetric_eigensystem<double> eig(xTx);
 
   // Report the eigen-vectors and eigen-values
-  std::cout << "Centroid: " << x_mean << std::endl;
+  c->sout() << "Centroid: " << x_mean << std::endl;
   for(int j = 0; j < VDim; j++)
     {
-    std::cout << "Mode " << j << " eigenvalue: " << eig.get_eigenvalue(j) << std::endl;
-    std::cout << "Mode " << j << " eigenvector: " << eig.get_eigenvector(j) << std::endl;
+    c->sout() << "Mode " << j << " eigenvalue: " << eig.get_eigenvalue(j) << std::endl;
+    c->sout() << "Mode " << j << " eigenvector: " << eig.get_eigenvector(j) << std::endl;
     }
 
   // Do some processing ...
