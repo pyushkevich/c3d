@@ -47,7 +47,9 @@ PovRayDF3ImageIO
     }
 
   // Check that the component type is legal
-  if(m_ComponentType != UINT && m_ComponentType != UCHAR && m_ComponentType != USHORT)
+  if(m_ComponentType != IOComponentEnum::UINT &&
+     m_ComponentType != IOComponentEnum::UCHAR &&
+     m_ComponentType != IOComponentEnum::USHORT)
     {
     ExceptionObject exception(__FILE__, __LINE__);
     exception.SetDescription("Unsupported pixel component type (uchar, ushort, uint are supported)");
@@ -83,13 +85,13 @@ PovRayDF3ImageIO
   ofstream fout(this->GetFileName(), ios_base::app | ios_base::binary);
 
   // Write with a byte swap
-  if(m_ComponentType == USHORT)
+  if(m_ComponentType == IOComponentEnum::USHORT)
     itk::ByteSwapper<unsigned short>::SwapWriteRangeFromSystemToBigEndian(
       (unsigned short *) buffer, GetImageSizeInBytes() / sizeof(unsigned short), &fout);
-  else if(m_ComponentType == UINT)
+  else if(m_ComponentType == IOComponentEnum::UINT)
     itk::ByteSwapper<unsigned int>::SwapWriteRangeFromSystemToBigEndian(
       (unsigned int *) buffer, GetImageSizeInBytes() / sizeof(unsigned int), &fout);
-  else if(m_ComponentType == UCHAR)
+  else if(m_ComponentType == IOComponentEnum::UCHAR)
     itk::ByteSwapper<unsigned char>::SwapWriteRangeFromSystemToBigEndian(
       (unsigned char *) buffer, GetImageSizeInBytes() / sizeof(unsigned char), &fout);
 

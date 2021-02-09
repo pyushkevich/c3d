@@ -37,25 +37,25 @@ ScalarToRGB<TPixel, VDim>
   typedef itk::RGBPixel<unsigned char> RGBPixel;
   typedef itk::Image<RGBPixel, VDim> RGBImageType;
   typedef itk::ScalarToRGBColormapImageFilter<ImageType, RGBImageType> RGBFilterType; 
-  typedef typename RGBFilterType::ColormapEnumType ColormapEnumType;
+  typedef typename RGBFilterType::RGBColormapFilterEnum ColormapEnumType;
   typedef std::map<std::string, ColormapEnumType> ColormapNameMap;
   ColormapNameMap clmap;
 
   // Set up the map
-  clmap["red"]=RGBFilterType::Red;
-  clmap["green"]=RGBFilterType::Green;
-  clmap["blue"]=RGBFilterType::Blue;
-  clmap["grey"]=RGBFilterType::Grey;
-  clmap["hot"]=RGBFilterType::Hot;
-  clmap["cool"]=RGBFilterType::Cool;
-  clmap["spring"]=RGBFilterType::Spring;
-  clmap["summer"]=RGBFilterType::Summer;
-  clmap["autumn"]=RGBFilterType::Autumn;
-  clmap["winter"]=RGBFilterType::Winter;
-  clmap["copper"]=RGBFilterType::Copper;
-  clmap["jet"]=RGBFilterType::Jet;
-  clmap["hsv"]=RGBFilterType::HSV;
-  clmap["overunder"]=RGBFilterType::OverUnder;
+  clmap["red"]=ColormapEnumType::Red;
+  clmap["green"]=ColormapEnumType::Green;
+  clmap["blue"]=ColormapEnumType::Blue;
+  clmap["grey"]=ColormapEnumType::Grey;
+  clmap["hot"]=ColormapEnumType::Hot;
+  clmap["cool"]=ColormapEnumType::Cool;
+  clmap["spring"]=ColormapEnumType::Spring;
+  clmap["summer"]=ColormapEnumType::Summer;
+  clmap["autumn"]=ColormapEnumType::Autumn;
+  clmap["winter"]=ColormapEnumType::Winter;
+  clmap["copper"]=ColormapEnumType::Copper;
+  clmap["jet"]=ColormapEnumType::Jet;
+  clmap["hsv"]=ColormapEnumType::HSV;
+  clmap["overunder"]=ColormapEnumType::OverUnder;
 
   // Look it up
   typename ColormapNameMap::iterator it = clmap.find(colormap);

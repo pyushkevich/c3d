@@ -91,7 +91,7 @@ StructureTensorEigenValues<TPixel, VDim>
   typename EigenValueFilterType::Pointer eigen = EigenValueFilterType::New();
   eigen->SetInput(smooth->GetOutput());
   eigen->SetDimension(VDim);
-  eigen->OrderEigenValuesBy(EigenValueFilterType::FunctorType::OrderByValue);
+  eigen->OrderEigenValuesBy(itk::EigenValueOrderEnum::OrderByValue);
 
   // Run the filter
   *c->verbose << "Computing Structure Tensor Eigenvalues from #" << c->m_ImageStack.size() << endl;

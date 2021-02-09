@@ -69,14 +69,23 @@ IF(BUILD_CLI)
 
 ENDIF(BUILD_CLI)
 
+# Define the main executable
+SET(C3DGUI_BUNDLE_NAME "Convert3DGUI")
+
 # Install command-line executables
 IF(INSTALL_CLI)
   IF(CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH)
     SET(CLI_INSTALL_PATH ${CONVERT3D_SUBPROJECT_CLI_INSTALL_PATH})
+    SET(LIB_INSTALL_PATH lib)
+    SET(INC_INSTALL_PATH include)
   ELSEIF(APPLE AND BUILD_GUI)
-    SET(CLI_INSTALL_PATH ${C3DGUI_BUNDLE_NAME}.app/Contents/bin)
+    SET(CLI_INSTALL_PATH "${C3DGUI_BUNDLE_NAME}.app/Contents/bin")
+    SET(LIB_INSTALL_PATH "${C3DGUI_BUNDLE_NAME}.app/Contents/lib")
+    SET(INC_INSTALL_PATH "${C3DGUI_BUNDLE_NAME}.app/Contents/include")
   ELSE()
     SET(CLI_INSTALL_PATH bin)
+    SET(LIB_INSTALL_PATH lib)
+    SET(INC_INSTALL_PATH include)
   ENDIF()
 
   # Install the executables
@@ -84,11 +93,11 @@ IF(INSTALL_CLI)
 
   # Install the libraries
   INSTALL(TARGETS cnd_adapters cnd_driver cnd_api cnd_maxflow
-          DESTINATION lib
+          DESTINATION ${LIB_INSTALL_PATH}
           EXPORT Convert3DTargets)
 
   # Install the API header
-  INSTALL(FILES api/ConvertAPI.h DESTINATION include)
+  INSTALL(FILES api/ConvertAPI.h DESTINATION ${INC_INSTALL_PATH})
 
 ENDIF(INSTALL_CLI)
 
@@ -111,6 +120,9 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   # OPTIONAL GUI BUILD
   # =====================================================
   IF(BUILD_GUI)
+
+    # Turn off warning
+    CMAKE_POLICY(SET CMP0080 OLD)
 
     # CMake modules taken from the GUI dir
     SET(CMAKE_MODULE_PATH ${CONVERT3D_SOURCE_DIR}/gui/CMake)
@@ -163,9 +175,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     SET(C3DGUI_MAIN_SRC ${UI_QT_CXX} ${UI_WRAPPED_MOC_HEADERS} ${UI_MOC_HEADERS} 
       ${UI_NONMOC_HEADERS} ${UI_FORM_HEADERS} ${UI_OS_EXTRAS})
 
-    # Define the main executable
-    SET(C3DGUI_BUNDLE_NAME "Convert3DGUI")
-
     # Configure the executable's sources and libraries
     ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
     TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} ${C3D_LINK_LIBRARIES})
@@ -187,8 +196,16 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     IF(APPLE)
 
       # set how it shows up in the Info.plist file
-      SET(MACOSX_BUNDLE_ICON_FILE c3dgui.icns) 
-      
+      SET(CPACK_BUNDLE_ICON ${C3DGUI_OSX_ICON})
+      SET(CPACK_PACKAGE_ICON ${C3DGUI_OSX_ICON})
+
+      # Code signing certificate - optional
+      SET(CONVERT3D_MACOSX_CODESIGN_CERT "" CACHE STRING "Name of the Apple Developer Certificate to sign application")
+      MARK_AS_ADVANCED(CONVERT3D_MACOSX_CODESIGN_CERT)
+      IF(CONVERT3D_MACOSX_CODESIGN_CERT)
+        SET(CPACK_BUNDLE_APPLE_CERT_APP ${CONVERT3D_MACOSX_CODESIGN_CERT})
+      ENDIF()
+
       # set where in the bundle to put the icns file
       SET_SOURCE_FILES_PROPERTIES(${C3DGUI_OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
@@ -202,7 +219,10 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
       # Include the qt4 dependent libraries
       include(DeployQt5)
-      install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app)
+      get_target_property(QtWidgets_location Qt5::Widgets LOCATION)
+      get_filename_component(qt_dlls_dir "${QtWidgets_location}" PATH)
+      get_filename_component(qt_dlls_dir "${qt_dlls_dir}" PATH)
+      install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app "" "" "${qt_dlls_dir}" "" "")
 
     ELSEIF(WIN32)
 
@@ -268,7 +288,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   IF(INSTALL_CLI)
     install(EXPORT Convert3DTargets
             FILE Convert3DTargets.cmake
-            DESTINATION lib/cmake/Convert3D)
+            DESTINATION ${LIB_INSTALL_PATH}/cmake/Convert3D)
 
     include(CMakePackageConfigHelpers)
 
@@ -277,7 +297,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     # generate the config file that is includes the exports
     configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
       "${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake"
-      INSTALL_DESTINATION "lib/cmake/example"
+      INSTALL_DESTINATION "${LIB_INSTALL_PATH}/cmake/example"
       NO_SET_AND_CHECK_MACRO
       NO_CHECK_REQUIRED_COMPONENTS_MACRO
       PATH_VARS Convert3D_INCLUDE_DIRS)
@@ -292,7 +312,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     # install the configuration file
     install(FILES
       ${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake
-      DESTINATION lib/cmake/Convert3D
+      DESTINATION ${LIB_INSTALL_PATH}/cmake/Convert3D
       )
 
   ENDIF(INSTALL_CLI)

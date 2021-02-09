@@ -251,16 +251,16 @@ private:
 template<typename TPixel> class VoxBoCUBImageIOSwapHelper
 {
 public:
-  typedef ImageIOBase::ByteOrder ByteOrder;
+  typedef ImageIOBase::IOByteOrderEnum ByteOrder;
   static void SwapIfNecessary(
     void *buffer, unsigned long numberOfBytes, ByteOrder order)
     {
-    if ( order == ImageIOBase::LittleEndian )
+    if ( order == ByteOrder::LittleEndian )
       {
       ByteSwapper<TPixel>::SwapRangeFromSystemToLittleEndian(
         (TPixel*)buffer, numberOfBytes / sizeof(TPixel) );
       }
-    else if ( order == ImageIOBase::BigEndian )
+    else if ( order == ByteOrder::BigEndian )
       {
       ByteSwapper<TPixel>::SwapRangeFromSystemToBigEndian(
         (TPixel *)buffer, numberOfBytes / sizeof(TPixel) );
@@ -289,7 +289,7 @@ const char *VoxBoCUBImageIO::VB_DATATYPE_DOUBLE = "Double";
 VoxBoCUBImageIO::VoxBoCUBImageIO()
 {
   InitializeOrientationMap();
-  m_ByteOrder = BigEndian;
+  m_ByteOrder = IOByteOrderEnum::BigEndian;
   m_Reader = NULL;
   m_Writer = NULL;
 }
@@ -481,15 +481,15 @@ void VoxBoCUBImageIO::ReadImageInformation()
         {
         std::string type;
         iss >> type;
-        m_PixelType = SCALAR;
+        m_PixelType = IOPixelEnum::SCALAR;
         if(type == VB_DATATYPE_BYTE)
-          m_ComponentType = UCHAR;
+          m_ComponentType = IOComponentEnum::UCHAR;
         else if(type == VB_DATATYPE_INT)
-          m_ComponentType = USHORT;
+          m_ComponentType = IOComponentEnum::USHORT;
         else if(type == VB_DATATYPE_FLOAT)
-          m_ComponentType = FLOAT;
+          m_ComponentType = IOComponentEnum::FLOAT;
         else if(type == VB_DATATYPE_DOUBLE)
-          m_ComponentType = DOUBLE;
+          m_ComponentType = IOComponentEnum::DOUBLE;
         }
 
       else if(key == VB_BYTEORDER)
@@ -601,18 +601,18 @@ VoxBoCUBImageIO
   // Write the data type 
   switch(m_ComponentType) 
     {
-    case CHAR: 
-    case UCHAR:
+    case IOComponentEnum::CHAR:
+    case IOComponentEnum::UCHAR:
       header << VB_DATATYPE << ": " << VB_DATATYPE_BYTE << std::endl;
       break;
-    case SHORT:
-    case USHORT:
+    case IOComponentEnum::SHORT:
+    case IOComponentEnum::USHORT:
       header << VB_DATATYPE << ": " << VB_DATATYPE_INT << std::endl;
       break;
-    case FLOAT:
+    case IOComponentEnum::FLOAT:
       header << VB_DATATYPE << ": " << VB_DATATYPE_FLOAT << std::endl;
       break;
-    case DOUBLE:
+    case IOComponentEnum::DOUBLE:
       header << VB_DATATYPE << ": " << VB_DATATYPE_DOUBLE << std::endl;
       break;
     default:
@@ -751,34 +751,34 @@ void
 VoxBoCUBImageIO
 ::SwapBytesIfNecessary(void *buffer, unsigned long numberOfBytes)
 {
-  if(m_ComponentType == CHAR)
+  if(m_ComponentType == IOComponentEnum::CHAR)
     VoxBoCUBImageIOSwapHelper<char>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == UCHAR)
+  else if(m_ComponentType == IOComponentEnum::UCHAR)
     VoxBoCUBImageIOSwapHelper<unsigned char>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == SHORT)
+  else if(m_ComponentType == IOComponentEnum::SHORT)
     VoxBoCUBImageIOSwapHelper<short>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == USHORT)
+  else if(m_ComponentType == IOComponentEnum::USHORT)
     VoxBoCUBImageIOSwapHelper<unsigned short>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == INT)
+  else if(m_ComponentType == IOComponentEnum::INT)
     VoxBoCUBImageIOSwapHelper<int>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == UINT)
+  else if(m_ComponentType == IOComponentEnum::UINT)
     VoxBoCUBImageIOSwapHelper<unsigned int>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == LONG)
+  else if(m_ComponentType == IOComponentEnum::LONG)
     VoxBoCUBImageIOSwapHelper<long>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == ULONG)
+  else if(m_ComponentType == IOComponentEnum::ULONG)
     VoxBoCUBImageIOSwapHelper<unsigned long>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == FLOAT)
+  else if(m_ComponentType == IOComponentEnum::FLOAT)
     VoxBoCUBImageIOSwapHelper<float>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
-  else if(m_ComponentType == DOUBLE)
+  else if(m_ComponentType == IOComponentEnum::DOUBLE)
     VoxBoCUBImageIOSwapHelper<double>::SwapIfNecessary(
       buffer, numberOfBytes, m_ByteOrder);
   else 

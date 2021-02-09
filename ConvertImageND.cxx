@@ -342,7 +342,7 @@ struct ConvertAlgorithmParameters
 template<class TPixel, unsigned int VDim>
 ImageConverter<TPixel,VDim>
 ::ImageConverter()
-  : verbose(&devnull), os_out(&std::cout), os_err(&std::cerr)
+  : os_out(&std::cout), os_err(&std::cerr), verbose(&devnull)
 {
   // Initialize to defaults
   m_TypeId = "float";
@@ -462,7 +462,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-abs" || cmd == "-fabs")
     {
     UnaryMathOperation<TPixel, VDim> adapter(this);
-    adapter(&vcl_abs);
+    adapter(&std::fabs);
     return 0;
     }
 
@@ -1426,7 +1426,7 @@ ImageConverter<TPixel, VDim>
     RealVector vec = ReadRealVector(argv[1], false);
 
     // This voxel should have the coordinate zero
-    for (int i = 0; i <  VDim; i++)
+    for (unsigned int i = 0; i <  VDim; i++)
       {
       // Here we are making the RAS/LPS switch and inverting the coordinate
       vec[i] = (i >= 2) ? -vec[i] : vec[i];
@@ -1451,7 +1451,7 @@ ImageConverter<TPixel, VDim>
 
     // Get the LPS coordinate that we want to assign to the voxel
     // The origin should be shifted by (lps_desired - lps_curr)
-    for(int i = 0; i < VDim; i++)
+    for(unsigned int i = 0; i < VDim; i++)
       {
       lps_desired[i] = (i < 2) ? -coord[i] : coord[i];
       lps_origin[i] = m_ImageStack.back()->GetOrigin()[i] + lps_desired[i] - lps_curr[i];
@@ -1515,7 +1515,7 @@ ImageConverter<TPixel, VDim>
     // How much to add in each dimension
     IndexType padExtentLower, padExtentUpper;
     SizeType currentSize = this->PeekLastImage()->GetBufferedRegion().GetSize();
-    for(int i = 0; i < VDim; i++)
+    for(unsigned int i = 0; i < VDim; i++)
       {
       // Constraint: lower + upper = desired - current
       long bilateral_pad = padNewSize[i] - currentSize[i];
@@ -1565,11 +1565,11 @@ ImageConverter<TPixel, VDim>
         { break; }
 
     // Retain each component
-    for(int j = 0; j < pos.size(); j++)
+    for(unsigned int j = 0; j < pos.size(); j++)
       {
-      if(pos[j] >= 0 && pos[j] < m_ImageStack.size())
+      if(pos[j] >= 0 && pos[j] < (int) m_ImageStack.size())
         new_stack.push_back(m_ImageStack[pos[j]]);
-      else if(pos[j] < 0 && -pos[j] <= m_ImageStack.size())
+      else if(pos[j] < 0 && -pos[j] <= (int) m_ImageStack.size())
         new_stack.push_back(m_ImageStack[m_ImageStack.size() + pos[j]]);
       else 
         throw ConvertException("Invalid index %d in -pick command", pos[j]);
@@ -2455,7 +2455,7 @@ ImageConverter<TPixel, VDim>
 ::ReadRealVector(const char *vec_in, bool is_point)
 {
   // Output vector
-  RealVector x, scale, offset;
+  RealVector x;
   VecSpec type;
 
   // Read the vector

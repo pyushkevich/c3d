@@ -56,7 +56,7 @@ HessianEigenValues<TPixel, VDim>
   typename EigenValueFilterType::Pointer eigen = EigenValueFilterType::New();
   eigen->SetInput(hf->GetOutput());
   eigen->SetDimension(VDim);
-  eigen->OrderEigenValuesBy(EigenValueFilterType::FunctorType::OrderByValue);
+  eigen->OrderEigenValuesBy(itk::EigenValueOrderEnum::OrderByValue);
 
   // Run the filter
   *c->verbose << "Computing Hessian Eigenvalues from #" << c->m_ImageStack.size() << endl;
@@ -72,7 +72,7 @@ HessianEigenValues<TPixel, VDim>
   // Put result on stack
   c->m_ImageStack.pop_back();
 
-  for(int i = 0; i < VDim; i++)
+  for(unsigned int i = 0; i < VDim; i++)
     {
     typename ComponentFilter::Pointer comp = ComponentFilter::New();
     comp->SetInput(eigen->GetOutput());

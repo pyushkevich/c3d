@@ -113,7 +113,7 @@ MomentsFeatures<TPixel, VDim>
   typename EigenValueFilterType::Pointer eigen = EigenValueFilterType::New();
   eigen->SetInput(tensor);
   eigen->SetDimension(VDim);
-  eigen->OrderEigenValuesBy(EigenValueFilterType::FunctorType::OrderByValue);
+  eigen->OrderEigenValuesBy(itk::EigenValueOrderEnum::OrderByValue);
    
   // Update the eigen filter
   eigen->Update();
@@ -122,7 +122,7 @@ MomentsFeatures<TPixel, VDim>
   typedef itk::VectorIndexSelectionCastImageFilter<EigenValueImageType, ImageType>
     ComponentFilter;
 
-  for(int i = 0; i < VDim; i++)
+  for(unsigned int i = 0; i < VDim; i++)
     {
     typename ComponentFilter::Pointer comp = ComponentFilter::New();
     comp->SetInput(eigen->GetOutput());
