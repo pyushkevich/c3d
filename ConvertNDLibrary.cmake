@@ -91,6 +91,7 @@ SET(SOURCES
   adapters/MedianFilter.cxx
   adapters/MixtureModel.cxx
   adapters/MomentsFeatures.cxx
+  adapters/MorphologicalContourInterpolation.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
   adapters/NormalizeLocalWindow.cxx

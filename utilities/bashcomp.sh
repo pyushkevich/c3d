@@ -44,6 +44,7 @@ function _c3d()
   opts="$opts -merge"
   opts="$opts -mi  -mutual-info"
   opts="$opts -mixture  -mixture-model"
+  opts="$opts -mci  -morphological-contour-interpolation"
   opts="$opts -multiply  -times"
   opts="$opts -ncc  -normalized-cross-correlation"
   opts="$opts -nmi  -normalized-mutual-info"
