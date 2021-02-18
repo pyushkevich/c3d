@@ -25,7 +25,12 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interfaace?" OFF)
 
   # Get ITK
-  FIND_PACKAGE(ITK REQUIRED)
+  FIND_PACKAGE(ITK REQUIRED COMPONENTS
+	  ITKImageFeature
+	  ITKImageIO
+	  ITKOptimizers
+	  ITKTransformIO
+	  MorphologicalContourInterpolation)
   INCLUDE(${ITK_USE_FILE})
 
   # Command-line tools are being built
