@@ -939,7 +939,7 @@ ImageConverter<TPixel, VDim>
       throw ConvertException("No image assigned to variable %s", var.c_str());
 
     // Check if the position is ok
-    if (m_ImageStack.size() > pos)
+    if (m_ImageStack.size() < pos)
       throw ConvertException("Can not insert at position %i in stack of size %i", pos, m_ImageStack.size());
 
     // Insert at the appropriate place
