@@ -26,11 +26,45 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
   # Get ITK
   FIND_PACKAGE(ITK REQUIRED COMPONENTS
-	  ITKImageFeature
-	  ITKImageIO
-	  ITKOptimizers
-	  ITKTransformIO
-	  MorphologicalContourInterpolation)
+    ITKAnisotropicSmoothing
+    ITKAntiAlias
+    ITKBiasCorrection
+    ITKBinaryMathematicalMorphology
+    ITKColormap
+    ITKCommon
+    ITKConnectedComponents
+    ITKConvolution
+    ITKDistanceMap
+    ITKFFT
+    ITKGDCM
+    ITKIOGDCM
+    ITKIOImageBase
+    ITKIOTransformBase
+    ITKImageAdaptors
+    ITKImageCompare
+    ITKImageCompose
+    ITKImageFeature
+    ITKImageFilterBase
+    ITKImageFunction
+    ITKImageGradient
+    ITKImageGrid
+    ITKImageIntensity
+    ITKImageLabel
+    ITKImageNoise
+    ITKImageStatistics
+    ITKLabelMap
+    ITKLevelSets
+    ITKMathematicalMorphology
+    ITKRegistrationCommon
+    ITKSmoothing
+    ITKStatistics
+    ITKThresholding
+    ITKTransform
+    ITKTransformFactory
+    MorphologicalContourInterpolation
+    ITKImageIO
+    ITKTransformIO)
+
   INCLUDE(${ITK_USE_FILE})
 
   # Command-line tools are being built
