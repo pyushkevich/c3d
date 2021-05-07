@@ -32,7 +32,7 @@
 template <class TPixel, unsigned int VDim>
 void
 ConnectedComponents<TPixel, VDim>
-::operator() ()
+::operator() (bool fullyConnected)
 {
   // The image is assumed to be binary. If background is non-zero, call binarize
   // to map the background to zero
@@ -61,7 +61,7 @@ ConnectedComponents<TPixel, VDim>
   // Plug in the filter's components
   typename CCFilter::Pointer fltConnect = CCFilter::New();
   fltConnect->SetInput(image);
-  fltConnect->SetFullyConnected(false);
+  fltConnect->SetFullyConnected(fullyConnected);
   fltConnect->Update();
 
   // Describe what we are doing

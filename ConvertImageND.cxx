@@ -593,8 +593,17 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-connected-components" || cmd == "-connected" || cmd == "-comp")
     {
     ConnectedComponents<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
+    if (argv[1][0] == '1')
+    {
+      adapter(true);
+      std::cout << "fully connected" << std::endl;
+      return 1;
+    }
+    else
+    {
+      adapter(false);
+      return 0;
+    }
     }
 
   else if (cmd == "-clear")
