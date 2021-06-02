@@ -18,14 +18,20 @@ SET(CMAKE_CXX_STANDARD_REQUIRED True)
 OPTION(CONVERT3D_BUILD_AS_SUBPROJECT "Build Convert3D as a sub-project of a larger project" OFF)
 MARK_AS_ADVANCED(CONVERT3D_BUILD_AS_SUBPROJECT)
 
+# Options corresponding to remote ITK modules
+OPTION(CONVERT3D_USE_ITK_REMOTE_MODULES "Use remote modules from ITK" ON)
+IF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+  ADD_DEFINITIONS(-DCONVERT3D_USE_ITK_REMOTE_MODULES)
+ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+
 # If we are building as a sub-project we skip all of this extra stuff
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
   # Do we want to build the UI
   OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interfaace?" OFF)
 
-  # Get ITK
-  FIND_PACKAGE(ITK REQUIRED COMPONENTS
+  # List of ITK modules
+  SET(ITK_MODULE_LIST
     ITKAnisotropicSmoothing
     ITKAntiAlias
     ITKBiasCorrection
@@ -61,10 +67,17 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ITKThresholding
     ITKTransform
     ITKTransformFactory
-    MorphologicalContourInterpolation
     ITKImageIO
     ITKTransformIO)
 
+  # Add the remote modules
+  IF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+    SET(ITK_MODULE_LIST ${ITK_MODULE_LIST} 
+      MorphologicalContourInterpolation)
+  ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+
+  # Get ITK
+  FIND_PACKAGE(ITK REQUIRED COMPONENTS ${ITK_MODULE_LIST})
   INCLUDE(${ITK_USE_FILE})
 
   # Command-line tools are being built

@@ -91,7 +91,6 @@ SET(SOURCES
   adapters/MedianFilter.cxx
   adapters/MixtureModel.cxx
   adapters/MomentsFeatures.cxx
-  adapters/MorphologicalContourInterpolation.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
   adapters/NormalizeLocalWindow.cxx
@@ -139,6 +138,12 @@ SET(SOURCES
   adapters/WrapDimension.cxx
   adapters/WriteImage.cxx
   ${CONVERT3D_BINARY_DIR}/ConvertImageVersion.cxx)
+
+# Add optional sources
+IF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+  SET(SOURCES ${SOURCES}
+    adapters/MorphologicalContourInterpolation.cxx)
+ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
 
 # Configure the version file
 CONFIGURE_FILE(

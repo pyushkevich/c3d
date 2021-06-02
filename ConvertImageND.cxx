@@ -71,7 +71,6 @@
 #include "MedianFilter.h"
 #include "MixtureModel.h"
 #include "MomentsFeatures.h"
-#include "MorphologicalContourInterpolation.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
 #include "NormalizedCrossCorrelation.h"
@@ -118,6 +117,11 @@
 #include "WeightedSum.h"
 #include "WeightedSumVoxelwise.h"
 #include "WrapDimension.h"
+
+// Optional commands that depend on ITK5 modules
+#ifdef CONVERT3D_USE_ITK_REMOTE_MODULES
+#include "MorphologicalContourInterpolation.h"
+#endif
 
 #include <cstring>
 #include <algorithm>
@@ -1196,7 +1200,11 @@ ImageConverter<TPixel, VDim>
       catch(...)
         { break; }
       }
+#ifdef CONVERT3D_USE_ITK_REMOTE_MODULES
     MorphologicalContourInterpolation<TPixel, VDim>(this)(axis, heuristic_alignment, use_distance_transform);
+#else
+    throw ConvertException("MorphologicalContourInterpolation is not supported in this build of Convert3D");
+#endif
     return i - 1;
     }
 
