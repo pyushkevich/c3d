@@ -71,6 +71,7 @@
 #include "MedianFilter.h"
 #include "MixtureModel.h"
 #include "MomentsFeatures.h"
+#include "MorphologicalContourInterpolation.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
 #include "NormalizedCrossCorrelation.h"
@@ -1176,6 +1177,27 @@ ImageConverter<TPixel, VDim>
     SizeType radius = ReadSizeVector(argv[1]);
     MomentsFeatures<TPixel, VDim>(this)(radius);
     return 1;
+    }
+
+  else if (cmd == "-mci" || cmd == "-morphological-contour-interpolation")
+    {
+    int axis = -1;
+    bool heuristic_alignment = true;
+    bool use_distance_transform = false;
+    int i;
+    for(i = 1; i < argc; i++)
+      {
+      if (!strcmp(argv[i], "-optimal-alignment"))
+        heuristic_alignment = false;
+      else if (!strcmp(argv[i], "-use-distance-transform"))
+        use_distance_transform = true;
+      else try
+        { axis = myatol(argv[i]); i++; break; }
+      catch(...)
+        { break; }
+      }
+    MorphologicalContourInterpolation<TPixel, VDim>(this)(axis, heuristic_alignment, use_distance_transform);
+    return i - 1;
     }
 
   else if (cmd == "-mmi" || cmd == "-mattes-mutual-info")

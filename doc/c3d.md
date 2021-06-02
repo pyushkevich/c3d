@@ -1092,6 +1092,12 @@ Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
 
 Compute the Mattes mutual information metric between the last two images on the stack. See documentation for **-msq**.
 
+#### -mci, -morphological-contour-interpolation: Interpolate labels
+
+Syntax: `-mci [-optimal-alignment] [-use-distance-transform] [axis]`
+
+Interpolate sparsely drawn segmentations. The axis parameter can be -1 to interpolate along all axes (the default) or an integer between 0 and 2 to specify a single axis.
+
 #### -ncc, -normalized-cross-correlation: Compute normalized cross-correlation image
 
 Syntax: `-ncc <radius_vector>`
