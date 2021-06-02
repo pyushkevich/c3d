@@ -59,29 +59,33 @@ int usage()
     "Usage: \n"
     "  c3d_affine_tool [transform_files | options] \n"
     "Options: \n"
-    "  -fsl2ras      Convert FSL to RAS\n"
-    "  -ras2fsl      Convert RAS to FSL\n"
-    "  -ref image    Set reference (fixed) image - only for -fsl2ras and ras2fsl\n"
-    "  -src image    Set source (moving) image - only for -fsl2ras and -ras2fsl\n"
-    "  -sform image  Read matrix from NIfTI sform\n"
-    "  -o matfile    Write output matrix\n"
-    "  -det          Print the determinant\n"
-    "  -inv          Invert matrix\n"
-    "  -mult         Multiply matrices\n"
-    "  -sqrt         Matrix square root (i.e., Q s.t. A = Q * Q)\n"
-    "  -itk file     Import ITK transform\n"
-    "  -oitk file    Export ITK transform\n"
-    "  -irtk file    Import IRTK .dof format transform\n"
-    "  -oirtk file   Export IRTK .dof format transform\n"
-    "  -info         Print matrix\n"
-    "  -info-full    Print matrix and more detail about the transform\n"
+    "  -fsl2ras           Convert FSL to RAS\n"
+    "  -ras2fsl           Convert RAS to FSL\n"
+    "  -ref image         Set reference (fixed) image - only for -fsl2ras and ras2fsl\n"
+    "  -src image         Set source (moving) image - only for -fsl2ras and -ras2fsl\n"
+    "  -sform image       Read matrix from NIfTI sform\n"
+    "  -i matfile [dim]   Read dim-dimensional (2 or 3) matrix in default format. By\n"
+    "                     default, dim=3, but a 2D matrix will be converted into a\n"
+    "                     3D matrix in XY space\n"
+    "  -o matfile [dim]   Write output matrix in default format\n"
+    "  -det               Print the determinant\n"
+    "  -inv               Invert matrix\n"
+    "  -mult              Multiply matrices\n"
+    "  -sqrt              Matrix square root (i.e., Q s.t. A = Q * Q)\n"
+    "  -itk file          Import ITK transform\n"
+    "  -oitk file         Export ITK transform\n"
+    "  -irtk file         Import IRTK .dof format transform\n"
+    "  -oirtk file        Export IRTK .dof format transform\n"
+    "  -info              Print matrix\n"
+    "  -info-full         Print matrix and more detail about the transform\n"
     "  -rot theta vx vy vz:\n"
-    "                Generate rotation matrix corresponding to rotation theta\n"
-    "                (in degrees) around vector vx,vy,vz\n"
+    "                     Generate rotation matrix corresponding to rotation theta\n"
+    "                     (in degrees) around vector vx,vy,vz\n"
     "  -trans vx vy vz:\n"
-    "                Generate matrix for translation by vx,vy,vz \n"
+    "                     Generate matrix for translation by vx,vy,vz \n"
     "  -scale sx sy sz:\n"
-    "                Generate matrix for scaling by sx,sy,sz\n"
+    "                     Generate matrix for scaling by sx,sy,sz\n"
+    "  -shavg             Matrix shape average: averages matrices in log-space\n"
     ;
   return -1;
 }
@@ -436,34 +440,66 @@ void itk_write(MatrixStack &vmat, const char *fname)
   wrt->Update();
 }
 
-void ras_read(MatrixStack &vmat, const char *fname)
+void ras_read(MatrixStack &vmat, const char *fname, unsigned int dim)
 {
   MatrixType mat;
-
   ifstream fin(fname);
-  for(size_t i = 0; i < 4; i++)
-    for(size_t j = 0; j < 4; j++)
+
+  if(dim == 3)
+    {
+    // Read the 4x4 matrix directly
+    for(size_t i = 0; i < 4; i++)
+      for(size_t j = 0; j < 4; j++)
+        if(fin.good())
+          fin >> mat[i][j];
+        else
+          throw ConvertException("Unable to read 16 elements from matrix %s", fname);
+    }
+  else if (dim == 2)
+    {
+    // Read the xy components of the matrix
+    double inval[9];
+    for(size_t i = 0; i < 9; i++)
       if(fin.good())
-        {
-        fin >> mat[i][j];
-        }
+        fin >> inval[i];
       else
-        {
-        throw "Unable to read matrix";
-        }
-  fin.close();
+        throw ConvertException("Unable to read 9 elements from matrix %s", fname);
+
+    mat.set_identity();
+    mat[0][0] = inval[0];
+    mat[0][1] = inval[1];
+    mat[0][3] = inval[2];
+    mat[1][0] = inval[3];
+    mat[1][1] = inval[4];
+    mat[1][3] = inval[5];
+    }
+  else
+    throw ConvertException("Reading %d-dimensional matrix is not supported", dim);
 
   vmat.push_back(mat);
 }
 
-void ras_write(MatrixStack &vmat, const char *fname)
+void ras_write(MatrixStack &vmat, const char *fname, unsigned int dim)
 {
   MatrixType mat = vmat.back();
 
   ofstream fout(fname);
-  for(size_t i = 0; i < 4; i++)
-    for(size_t j = 0; j < 4; j++)
-      fout << mat[i][j] << (j < 3 ? " " : "\n");
+
+  if(dim == 3)
+    {
+    for(size_t i = 0; i < 4; i++)
+      for(size_t j = 0; j < 4; j++)
+        fout << mat[i][j] << (j < 3 ? " " : "\n");
+    }
+  else if(dim == 2)
+    {
+    // Only write the xy components of the matrix
+    fout << mat[0][0] << " " << mat[0][1] << " " << mat[0][3] << endl;
+    fout << mat[1][0] << " " << mat[1][1] << " " << mat[1][3] << endl;
+    fout << mat[3][0] << " " << mat[3][1] << " " << mat[3][3] << endl;
+    }
+  else 
+    throw ConvertException("Writing %d-dimensional matrix is not supported", dim);
 
   fout.close();
 }
@@ -646,6 +682,35 @@ void ras_mult(MatrixStack &vmat)
   vmat.push_back(AB);
 }
 
+void compute_shavg(MatrixStack &vmat)
+{
+  // Approximate the log of each matrix by repetition of the square root operation
+  unsigned int n_mat = vmat.size();
+  unsigned int n_exp = 8;
+
+  // Matrix holding the sum of the logs
+  MatrixType LS; LS.fill(0.0);
+
+  // Compute the average in log-domain
+  for(unsigned int i = 0; i < n_mat; i++)
+    {
+    for(unsigned int j = 0; j < n_exp; j++)
+      ras_sqrt(vmat);
+
+    MatrixType A = vmat.back();
+    LS += A;
+    vmat.pop_back();
+    }
+
+  // Exponentiate the matrix LS
+  LS *= 1.0 / n_mat;
+  for(unsigned int j = 0; j < n_exp; j++)
+    LS = LS * LS;
+
+  // Place on the stack
+  vmat.push_back(LS);
+}
+
 int main(int argc, char *argv[])
 {
   // Show usage
@@ -727,9 +792,23 @@ int main(int argc, char *argv[])
         {
         irtk_read(vmat, argv[++iarg]);
         }
+      else if(arg == "-i")
+        {
+        const char *fname = argv[++iarg];
+        int dim = 3;
+        if(iarg+1<argc && argv[iarg+1][0] != '-' && atoi(argv[iarg+1]) > 0)
+          dim = atoi(argv[++iarg]);
+          
+        ras_read(vmat, fname, dim);
+        }
       else if(arg == "-o")
         {
-        ras_write(vmat, argv[++iarg]);
+        const char *fname = argv[++iarg];
+        int dim = 3;
+        if(iarg+1<argc && argv[iarg+1][0] != '-' && atoi(argv[iarg+1]) > 0)
+          dim = atoi(argv[++iarg]);
+          
+        ras_write(vmat, fname, dim);
         }
       else if(arg == "-oitk")
         {
@@ -764,9 +843,13 @@ int main(int argc, char *argv[])
         v[2] = atof(argv[++iarg]);
         make_scaling(vmat, v);
         }
+      else if(arg == "-shavg")
+        {
+        compute_shavg(vmat);
+        }
       else if(arg[0] != '-')
         {
-        ras_read(vmat, arg.c_str());
+        ras_read(vmat, arg.c_str(), 3);
         }
       else
         {

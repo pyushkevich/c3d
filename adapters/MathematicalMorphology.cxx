@@ -26,17 +26,21 @@
 #include "MathematicalMorphology.h"
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
+#include "itkBinaryThinningImageFilter.h"
 #include "itkBinaryBallStructuringElement.h"
 
 template <class TPixel, unsigned int VDim>
 void
 MathematicalMorphology<TPixel, VDim>
-::operator() (bool erode, TPixel value, SizeType radius)
+::operator() (Mode mode, TPixel value, SizeType radius)
 {
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
 
-  *c->verbose << "Applying " << (erode ? "erosion" : "dilation") << " to #" << c->m_ImageStack.size() << endl;
+  // Operation names
+  const char *op_names[] = { "dilation", "erosion", "thinning" };
+
+  *c->verbose << "Applying " << op_names[mode] << " to #" << c->m_ImageStack.size() << endl;
   *c->verbose << "  Foreground value :    " << value << endl;
   *c->verbose << "  Ball radius      :    " << radius << endl;                                                              
 
@@ -49,7 +53,7 @@ MathematicalMorphology<TPixel, VDim>
   // Chose the right filter
   typedef itk::BinaryMorphologyImageFilter<ImageType, ImageType, Element> FilterType;
   ImagePointer output;
-  if(erode)
+  if(mode == EROSION)
     {
     typedef itk::BinaryErodeImageFilter<ImageType, ImageType, Element> FilterType;
     typename FilterType::Pointer filter = FilterType::New();
@@ -59,13 +63,21 @@ MathematicalMorphology<TPixel, VDim>
     filter->Update();
     output = filter->GetOutput();
     }
-  else
+  else if(mode == DILATION)
     {
     typedef itk::BinaryDilateImageFilter<ImageType, ImageType, Element> FilterType;
     typename FilterType::Pointer filter = FilterType::New();
     filter->SetInput(img);
     filter->SetDilateValue(value);
     filter->SetKernel(elt);
+    filter->Update();
+    output = filter->GetOutput();
+    }
+  else if(mode == THINNING)
+    {
+    typedef itk::BinaryThinningImageFilter<ImageType, ImageType> FilterType;
+    typename FilterType::Pointer filter = FilterType::New();
+    filter->SetInput(img);
     filter->Update();
     output = filter->GetOutput();
     }

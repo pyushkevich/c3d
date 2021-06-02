@@ -35,9 +35,12 @@ public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
+  /** Morphology modes */
+  enum Mode { DILATION=0, EROSION, THINNING };
+
   MathematicalMorphology(Converter *c) : c(c) {}
 
-  void operator() (bool erode, TPixel value, SizeType size);
+  void operator() (Mode mode, TPixel value, SizeType size);
 
 private:
   Converter *c;

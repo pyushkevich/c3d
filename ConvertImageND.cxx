@@ -713,7 +713,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-dilate")
     {
     MathematicalMorphology<TPixel,VDim> adapter(this);
-    adapter(false, atof(argv[1]), ReadSizeVector(argv[2]));
+    adapter(MathematicalMorphology<TPixel,VDim>::DILATION, atof(argv[1]), ReadSizeVector(argv[2]));
     return 2;
     }
 
@@ -751,7 +751,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-erode")
     {
     MathematicalMorphology<TPixel,VDim> adapter(this);
-    adapter(true, atof(argv[1]), ReadSizeVector(argv[2]));
+    adapter(MathematicalMorphology<TPixel,VDim>::EROSION, atof(argv[1]), ReadSizeVector(argv[2]));
     return 2;
     }
 
@@ -2096,6 +2096,15 @@ ImageConverter<TPixel, VDim>
     else
       exit(0);
     }
+
+  else if (cmd == "-thin")
+    {
+    MathematicalMorphology<TPixel, VDim> adapter(this);
+    SizeType sz; sz.Fill(1);
+    adapter(MathematicalMorphology<TPixel,VDim>::THINNING, 1, sz);
+    return 0;
+    }
+
 
   // Thresholding
   else if (cmd == "-threshold" || cmd == "-thresh")
