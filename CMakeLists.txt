@@ -165,9 +165,6 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     SET_TARGET_PROPERTIES(c3d PROPERTIES LINK_FLAGS "/link setargv.obj")
   ENDIF(WIN32)
 
-  # Pull in FFTW
-  FIND_LIBRARY(FFTW_LIB fftw3f)
-
   # =====================================================
   # OPTIONAL GUI BUILD
   # =====================================================
