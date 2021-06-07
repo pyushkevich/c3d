@@ -26,9 +26,9 @@
 #include "VoxelwiseComponentFunction.h"
 
 #include "itkComposeImageFilter.h"
-#include "itkNthElementImageAdaptor.h"
-#include "itkCastImageFilter.h"
+#include "itkVectorIndexSelectionCastImageFilter.h"
 #include "itkUnaryFunctorImageFilter.h"
+#include "UnaryFunctorVectorImageFilter.h"
 
 namespace VoxelwiseComponentFunctionNamespace {
 
@@ -97,6 +97,78 @@ public:
     }
 };
 
+template <class TPixel, unsigned int VDim>
+class SoftmaxFunctor
+{
+public:
+  typedef itk::VariableLengthVector<TPixel>   InputPixelType;
+  typedef InputPixelType                      OutputPixelType;
+
+  static unsigned int GetNumberOfComponentsPerPixel() { return 0; }
+
+  OutputPixelType operator() (const InputPixelType &pix)
+    {
+    unsigned int n = pix.GetSize();
+    OutputPixelType out(n);
+    double sum = 0;
+    for(unsigned int i = 0; i < n; i++)
+      {
+      out[i] = exp(pix[i]);
+      sum += out[i];
+      }
+    for(unsigned int i = 0; i < n; i++)
+      out[i] /= sum;
+
+    return out;
+    }
+};
+
+template <class TInputPixel, class TOutputPixel, unsigned int VDim, class TFunctor> class MappingSpecialization
+{
+public:
+  typedef itk::Image<TInputPixel, VDim> InputImageType;
+  typedef itk::Image<TOutputPixel, VDim> OutputImageType;
+
+  static unsigned int GetNumberOfInputComponents() { return TInputPixel::Dimension; }
+  static unsigned int GetNumberOfOutputComponents() { return TOutputPixel::Dimension; }
+
+  static void Map(InputImageType *input, OutputImageType *output)
+    {
+    // Create the unary filter
+    typedef itk::UnaryFunctorImageFilter<InputImageType, OutputImageType, TFunctor> Mapper;
+    typename Mapper::Pointer mapper = Mapper::New();
+    mapper->SetInput(input);
+    mapper->GraftOutput(output);
+    mapper->Update();
+    }
+};
+
+template <class TPixel, unsigned int VDim, class TFunctor>
+class MappingSpecialization<
+  itk::VariableLengthVector<TPixel>, itk::VariableLengthVector<TPixel>, VDim, TFunctor>
+{
+public:
+  typedef itk::VectorImage<TPixel, VDim> InputImageType;
+  typedef itk::VectorImage<TPixel, VDim> OutputImageType;
+
+  static unsigned int GetNumberOfInputComponents() { return 0; }
+  static unsigned int GetNumberOfOutputComponents() { return 0; }
+
+  static void Map(InputImageType *input, OutputImageType *output)
+    {
+    // Allocate the output image
+    output->CopyInformation(input);
+    output->SetRegions(input->GetBufferedRegion());
+    output->Allocate();
+
+    // Create the unary filter
+    typedef itk::UnaryFunctorImageFilter<InputImageType, OutputImageType, TFunctor> Mapper;
+    typename Mapper::Pointer mapper = Mapper::New();
+    mapper->SetInput(input);
+    mapper->GraftOutput(output);
+    mapper->Update();
+    }
+};
 
 }; // namespace
 
@@ -109,39 +181,45 @@ void
 VoxelwiseComponentFunction<TPixel, VDim>
 ::Apply(const TFunctor &functor, const char *func_name)
 {
-  // Number of components needed
+  // Create a specialization based on the functor
   typedef typename TFunctor::InputPixelType InputPixel;
   typedef typename TFunctor::OutputPixelType OutputPixel;
-  int n_comp = InputPixel::Dimension;
-  int n_out_comp = OutputPixel::Dimension;
-  int n_stack = c->m_ImageStack.size();
+
+  // Create specialization object
+  typedef MappingSpecialization<InputPixel, OutputPixel, VDim, TFunctor> Specialization;
+
+  // Number of components needed
+  unsigned int n_comp = Specialization::GetNumberOfInputComponents();
+  unsigned int n_out_comp = Specialization::GetNumberOfOutputComponents();
+  unsigned int n_stack = c->m_ImageStack.size();
+
+  // Zero components means use all
+  if(n_comp == 0) n_comp = n_stack;
+  if(n_out_comp == 0) n_out_comp = n_stack;
 
   // Get the images from the stack in forward order
   if(n_stack < n_comp)
     throw ConvertException("Too few components on the stack for VoxelwiseComponentFunction");
 
   // Create the filter
-  typedef itk::Image<InputPixel, VDim> InputCompositeType;
-  typedef itk::Image<OutputPixel, VDim> OutputCompositeType;
+  typedef typename Specialization::InputImageType InputCompositeType;
+  typedef typename Specialization::OutputImageType OutputCompositeType;
   typedef itk::ComposeImageFilter<ImageType, InputCompositeType> InputComposer;
   typename InputComposer::Pointer compose = InputComposer::New();
 
   // Take the last n_comp components
   for(int k = 0; k < n_comp; k++)
     compose->SetInput(k, c->m_ImageStack[n_stack + k - n_comp]);
-
-  // Create the unary filter
-  typedef itk::UnaryFunctorImageFilter<InputCompositeType, OutputCompositeType, TFunctor> Mapper;
-  typename Mapper::Pointer mapper = Mapper::New();
-  mapper->SetInput(compose->GetOutput());
+  compose->Update();
 
   // Explain what we are doing
   *c->verbose 
     << "Applying voxelwise function " << func_name << " to #"
     << n_stack - n_comp << " - #" << n_stack - 1 << endl;
 
-  // Update the mapper
-  mapper->Update();
+  // Create the unary filter
+  typename OutputCompositeType::Pointer result = OutputCompositeType::New();
+  Specialization::Map(compose->GetOutput(), result);
 
   // Pop the old components
   for (int i = 0; i < n_comp; i++)
@@ -150,16 +228,11 @@ VoxelwiseComponentFunction<TPixel, VDim>
   // Push the new ones
   for (int i = 0; i < n_out_comp; i++)
     {
-    typedef itk::NthElementImageAdaptor<OutputCompositeType, typename ImageType::PixelType> CompAdaptor;
-    typename CompAdaptor::Pointer adaptor = CompAdaptor::New();
-    adaptor->SelectNthElement(i);
-    adaptor->SetImage(mapper->GetOutput());
-
-    typedef itk::CastImageFilter<CompAdaptor, ImageType> Caster;
-    typename Caster::Pointer caster = Caster::New();
-    caster->SetInput(adaptor);
+    typedef itk::VectorIndexSelectionCastImageFilter<OutputCompositeType, ImageType> CompFilter;
+    typename CompFilter::Pointer caster = CompFilter::New();
+    caster->SetInput(result);
+    caster->SetIndex(i);
     caster->Update();
-
     c->m_ImageStack.push_back(caster->GetOutput());
     }
 }
@@ -174,6 +247,11 @@ VoxelwiseComponentFunction<TPixel, VDim>
   if(!strcmp(function, "rgb2hsv"))
     {
     RGB_to_HSV_Functor<TPixel, VDim> functor;
+    this->Apply(functor, function);
+    }
+  else if(!strcmp(function, "softmax"))
+    {
+    SoftmaxFunctor<TPixel, VDim> functor;
     this->Apply(functor, function);
     }
   else

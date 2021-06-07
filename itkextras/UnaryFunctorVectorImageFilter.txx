@@ -50,7 +50,12 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
   Superclass::GenerateOutputInformation();
   OutputImageType *outPtr = this->GetOutput();
   if(outPtr)
-    outPtr->SetNumberOfComponentsPerPixel(this->GetFunctor().GetNumberOfComponentsPerPixel());
+    {
+    unsigned int n = this->GetFunctor().GetNumberOfComponentsPerPixel();
+    if(n == 0)
+      n = this->GetInput()->GetNumberOfComponentsPerPixel();
+    outPtr->SetNumberOfComponentsPerPixel(n);
+    }
 }
 
 template< typename TInputImage, typename TOutputImage, typename TFunction  >

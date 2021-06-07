@@ -1998,6 +1998,13 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  else if (cmd == "-softmax")
+    {
+    VoxelwiseComponentFunction<TPixel, VDim> adapter(this);
+    adapter("softmax");
+    return 0;
+    }
+
   else if (cmd == "-spacing")
     {
     RealVector org = ReadRealSize(argv[1]);
