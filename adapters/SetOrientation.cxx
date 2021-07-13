@@ -30,13 +30,16 @@ void
 SetOrientation<TPixel, VDim>
 ::operator() (std::string rai)
 {
-  // Only valid for 3D images or less
-  if(VDim > 3)
-    throw ConvertException("Orientation codes only valid for up to 3D images");
+  // Only valid for 4D images or less
+  if(VDim > 4)
+    throw ConvertException("Orientation codes only valid for up to 4D images");
   
   // Check the RAI code validity (length must match image dimension)
+  // Exception for 4D images (RAI code must be 3 characters)
   if(rai.length() != VDim)
     throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
+  else if(VDim == 4 && rai.length() != 3)
+    throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
 
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
