@@ -37,9 +37,12 @@ SetOrientation<TPixel, VDim>
   // Check the RAI code validity (length must match image dimension)
   // Exception for 4D images (RAI code must be 3 characters)
   if(rai.length() != VDim)
-    throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
-  else if(VDim == 4 && rai.length() != 3)
-    throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
+    {
+    if(VDim == 4 && rai.length() != 3)
+      throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
+    else if(VDim != 4)
+      throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
+    }
 
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
@@ -56,6 +59,16 @@ SetOrientation<TPixel, VDim>
     bool matched = false;
     for(size_t j = 0; j < VDim; j++)
       {
+      // 4D images default to 0 0 0 1 direction
+      if(i==3)
+        {
+        // Set the last row of direction matrix to 1
+        dm.set_column(i, eye.get_row(3));
+
+        // Exit loop
+        matched = true;
+        break;
+        }
       for(size_t k = 0; k < 2; k++)
         {
         if(toupper(rai[i]) == codes[j][k])
