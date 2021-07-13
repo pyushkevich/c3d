@@ -38,11 +38,12 @@ SetOrientation<TPixel, VDim>
   // Exception for 4D images (RAI code must be 3 characters)
   if(rai.length() != VDim)
     {
-    if(VDim == 4 && rai.length() != 3)
-      throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
-    else if(VDim != 4)
+    if(VDim != 4)
       throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
     }
+  if(VDim == 4 && rai.length() != 3)
+    throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
+
 
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
