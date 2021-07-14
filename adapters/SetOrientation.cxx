@@ -60,12 +60,9 @@ SetOrientation<TPixel, VDim>
     bool matched = false;
     for(size_t j = 0; j < VDim; j++)
       {
-      // 4D images default to 0 0 0 1 direction
+      // 4D Cosine Matrix is identity for 4th col/row
       if(i==3)
         {
-        // Set the last row of direction matrix to 1
-        dm.set_column(i, eye.get_row(3));
-
         // Exit loop
         matched = true;
         break;
