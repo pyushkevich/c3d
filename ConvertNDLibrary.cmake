@@ -118,6 +118,7 @@ SET(SOURCES
   adapters/SignedDistanceTransform.cxx
   adapters/SLICSuperVoxel.cxx
   adapters/SmoothImage.cxx
+  adapters/SmoothMultiLabelImage.cxx
   adapters/SplitMultilabelImage.cxx
   adapters/StapleAlgorithm.cxx
   adapters/StructureTensorEigenValues.cxx
