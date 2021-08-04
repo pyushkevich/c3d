@@ -146,9 +146,9 @@ SmoothMultiLabelImage<TPixel, VDim>::operator()
   {
     *c->verbose << stdev[i];
     if (i < sigmaDim - 1)
-      *c->verbose << ','
+      *c->verbose << ',';
     else
-      *c->verbose << ')'
+      *c->verbose << ')';
   }
     
 
