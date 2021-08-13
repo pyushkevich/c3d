@@ -38,7 +38,7 @@ public:
   SmoothMultiLabelImage(Converter *c) : c(c) {}
 
   void operator() 
-  (RealVector &stdev, std::vector<unsigned short> &labelsToSmooth, std::vector<unsigned short> &labelExceptionList);
+  (RealVector &stdev, std::vector<unsigned short> &labelsToSmooth);
 
 private:
   Converter *c;

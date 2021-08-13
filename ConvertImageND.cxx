@@ -2052,13 +2052,10 @@ ImageConverter<TPixel, VDim>
     {
     RealVector stdev = ReadRealSize(argv[1]);
     std::vector<unsigned short> labelsToSmooth;
-    std::vector<unsigned short> labelExceptionList;
     bool smoothAllLabels = false;
     std::vector<string> tokens;
   
-
     tokens = split_string(argv[2], " ");
-
 
     // todo: range (:) with exception (-) parsing
     // todo: all labels (*) parsing
@@ -2083,7 +2080,7 @@ ImageConverter<TPixel, VDim>
       throw ConvertException("No labels provided for smoothing. To smooth all labels, use \"*\" as label list.");
 
     SmoothMultiLabelImage<TPixel, VDim> adapter(this);
-    adapter(stdev, labelsToSmooth, labelExceptionList);
+    adapter(stdev, labelsToSmooth);
     return 2;
     }
 

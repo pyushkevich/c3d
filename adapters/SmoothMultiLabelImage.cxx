@@ -110,7 +110,7 @@ void DeepCopy(typename TImage::Pointer input, typename TImage::Pointer output)
 template <class TPixel, unsigned int VDim>
 void
 SmoothMultiLabelImage<TPixel, VDim>::operator() 
-(RealVector &stdev, std::vector<unsigned short> &labelsToSmooth, std::vector<unsigned short> &labelExceptionList)
+(RealVector &stdev, std::vector<unsigned short> &labelsToSmooth)
 {
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
