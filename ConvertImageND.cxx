@@ -98,6 +98,7 @@
 #include "SignedDistanceTransform.h"
 #include "SLICSuperVoxel.h"
 #include "SmoothImage.h"
+#include "SmoothMultiLabelImage.h"
 #include "SplitMultilabelImage.h"
 #include "StapleAlgorithm.h"
 #include "StructureTensorEigenValues.h"
@@ -168,6 +169,15 @@ long myatol(char *str)
   return d;
 };
 
+unsigned long myatoul(const char *cstr)
+{
+  char *end = 0;
+  unsigned long ul = strtoul(cstr, &end, 10);
+  if (*end != 0)
+    throw "strtoul conversion failed";
+  return ul;
+}
+
 
 std::string str_to_lower(const char *input)
 {
@@ -185,6 +195,46 @@ bool is_double(const char *input)
 
   // Check the entire string was consumed and if either failbit or badbit is set
   return iss.eof() && !iss.fail();
+}
+
+// Check wheter value is a valid unsigned short (no leading spaces allowed)
+bool is_unsigned_short(const char *input)
+{
+  std::istringstream iss0(input);
+
+  int s;
+  iss0 >> std::noskipws >> s;
+  if (s < 0)
+    return false;
+
+  std::istringstream iss(input);
+
+  unsigned short us;
+  iss >> std::noskipws >> us; // noskipws considers leading whitespace invalid
+
+  // Check the entire string was consumed and if either failbit or badbit is set
+  return iss.eof() && !iss.fail();
+}
+
+// split string into tokens based on delimiter
+std::vector<std::string> split_string(std::string s, std::string delimiter)
+{
+  std::vector<std::string> ret;
+
+  size_t pos = 0;
+  std::string token;
+
+  while ((pos = s.find(delimiter)) != std::string::npos) 
+  {
+      token = s.substr(0, pos);
+      ret.push_back(token);
+      s.erase(0, pos + delimiter.length());
+  }
+
+  if (s.length() > 0)
+    ret.push_back(s);
+
+  return ret;
 }
 
 
@@ -1996,6 +2046,42 @@ ImageConverter<TPixel, VDim>
     SmoothImage<TPixel, VDim> adapter(this);
     adapter(stdev, true);
     return 1;
+    }
+
+  else if (cmd == "-smooth-multilabel")
+    {
+    RealVector stdev = ReadRealSize(argv[1]);
+    std::vector<unsigned short> labelsToSmooth;
+    bool smoothAllLabels = false;
+    std::vector<string> tokens;
+  
+    tokens = split_string(argv[2], " ");
+
+    // todo: range (:) with exception (-) parsing
+    // todo: all labels (*) parsing
+    for(std::string t : tokens)
+    {
+      if (!t.compare("*"))
+      {
+        smoothAllLabels = true;
+        // Adapter will see empty list as sign to smooth all labels
+        // Empty labels list without smoothAllLabel = true flag will raise an exception later
+        labelsToSmooth.clear();
+        break;
+      }
+      
+      if (is_unsigned_short(t.c_str()))
+        labelsToSmooth.push_back((unsigned short)myatoul(t.c_str()));
+      else
+        throw ConvertException("%s is not a valid label type", t.c_str());
+    }
+
+    if (labelsToSmooth.size() == 0 && !smoothAllLabels)
+      throw ConvertException("No labels provided for smoothing. To smooth all labels, use \"*\" as label list.");
+
+    SmoothMultiLabelImage<TPixel, VDim> adapter(this);
+    adapter(stdev, labelsToSmooth);
+    return 2;
     }
 
   else if (cmd == "-softmax")
