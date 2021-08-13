@@ -1389,6 +1389,12 @@ Applies Gaussian smoothing to the image using the fast [Deriche recursive smooth
 
     c3d img1.img -smooth-fast 20x10x10vox -o out.img
 
+#### -smooth-multilabel: Apply Recursive Gaussian Smoothing to selected labels
+
+Syntax: `-smooth-multilabel <sigma_vector> <label_list>`
+
+Applies Recurisve Gaussian Smoothing using [Deriche recursive smoothing algorithm][15] to an multi-label image for selected labels. The label_list should be a space-delimited string, wrapped by double quotes. To smooth all labels, leave an empty label_list: "". To select labels to smooth, for example, to smooth labels 2, 5, 6, the label list should be "2 5 6". Smoothing is applied on label-by-label basis and the labels are merged using voting (see **-merge**). Also see [Vector Format Specification][10] below. 
+
 #### -split: Split multi-label image into binary images
 
 Syntax: `-split`
