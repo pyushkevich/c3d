@@ -30,14 +30,21 @@ void
 SetOrientation<TPixel, VDim>
 ::operator() (std::string rai)
 {
-  // Check the RAI code validity (length must match image dimension)
-  if(rai.length() != VDim)
-    throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
-
-  // Only valid for 3D images or less
-  if(VDim > 3)
-    throw ConvertException("Orientation codes only valid for up to 3D images");
+  // Only valid for 4D images or less
+  if(VDim > 4)
+    throw ConvertException("Orientation codes only valid for up to 4D images");
   
+  // Check the RAI code validity (length must match image dimension)
+  // Exception for 4D images (RAI code must be 3 characters)
+  if(rai.length() != VDim)
+    {
+    if(VDim != 4)
+      throw ConvertException("Orientation code %s is not %d characters long", rai.c_str(), VDim);
+    }
+  if(VDim == 4 && rai.length() != 3)
+    throw ConvertException("Orientation code %s is not 3 characters long", rai.c_str());
+
+
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
 
@@ -53,6 +60,13 @@ SetOrientation<TPixel, VDim>
     bool matched = false;
     for(size_t j = 0; j < VDim; j++)
       {
+      // 4D Cosine Matrix is identity for 4th col/row
+      if(i==3)
+        {
+        // Exit loop
+        matched = true;
+        break;
+        }
       for(size_t k = 0; k < 2; k++)
         {
         if(toupper(rai[i]) == codes[j][k])
