@@ -1914,7 +1914,7 @@ ImageConverter<TPixel, VDim>
     SizeType sz = m_ImageStack.back()->GetBufferedRegion().GetSize();
     for(size_t i = 0; i < VDim; i++)
       {
-      sz[i] = static_cast<size_t>((0.5 + sz[i] * m_ImageStack.back()->GetSpacing()[i]) / vox[i]);
+      sz[i] = static_cast<size_t>(((0.5 + sz[i]) * m_ImageStack.back()->GetSpacing()[i]) / vox[i]);
       }
     ResampleImage<TPixel, VDim> adapter(this);
     adapter(sz);
