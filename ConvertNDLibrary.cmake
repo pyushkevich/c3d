@@ -154,8 +154,6 @@ CONFIGURE_FILE(
 # Get the extra stuff compiled
 SUBDIRS(${CONVERT3D_SOURCE_DIR}/itkextras)
 
-ADD_LIBRARY(cnd_adapters ${SOURCES})
-
 ADD_LIBRARY(cnd_maxflow 
   external/GCv2p3/GCoptimization.cpp
   external/GCv2p3/LinkedBlockList.cpp
@@ -164,6 +162,7 @@ ADD_LIBRARY(cnd_maxflow
 )
 
 ADD_LIBRARY(cnd_driver 
+  ${SOURCES}
   ConvertImageND.cxx
   utilities/doc/Documentation.cxx)
 
@@ -172,9 +171,14 @@ ADD_LIBRARY(cnd_api api/ConvertAPI.cxx)
 ADD_DEPENDENCIES(cnd_driver markdown_docs)
 
 # Set up include path for the various libraries
-FOREACH(target cnd_adapters cnd_driver cnd_api cnd_maxflow)
+FOREACH(target cnd_driver cnd_api cnd_maxflow)
   TARGET_INCLUDE_DIRECTORIES(${target} PRIVATE ${CONVERT3D_INCLUDE_DIRS})
+  TARGET_LINK_LIBRARIES(${target} PRIVATE ${ITK_LIBRARIES})
 ENDFOREACH()
 
+TARGET_LINK_LIBRARIES(cnd_driver PRIVATE cnd_maxflow)
+TARGET_LINK_LIBRARIES(cnd_api PRIVATE cnd_driver)
+
+
 SET(C3D_LINK_LIBRARIES
-  cnd_driver cnd_adapters cnd_maxflow ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)
+  cnd_driver cnd_maxflow ${ITK_LIBRARIES} ITKVoxBoIO ITKPovRayIO)

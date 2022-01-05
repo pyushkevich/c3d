@@ -145,7 +145,7 @@ IF(INSTALL_CLI)
   INSTALL(TARGETS c2d c3d c4d c3d_affine_tool DESTINATION ${CLI_INSTALL_PATH} COMPONENT Runtime)
 
   # Install the libraries
-  INSTALL(TARGETS cnd_adapters cnd_driver cnd_api cnd_maxflow
+  INSTALL(TARGETS cnd_driver cnd_api cnd_maxflow
           DESTINATION ${LIB_INSTALL_PATH}
           EXPORT Convert3DTargets)
 
