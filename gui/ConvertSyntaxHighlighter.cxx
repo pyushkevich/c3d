@@ -27,6 +27,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QDir>
+#include <QRegularExpression>
 
 ConvertSyntaxHighlighter::ConvertSyntaxHighlighter(QTextDocument *parent) :
   QSyntaxHighlighter(parent)
@@ -57,35 +58,35 @@ void ConvertSyntaxHighlighter::highlightBlock(const QString &text)
 
   // Find things that start with a minus sign
   // QRegExp reCommand = QRegExp("\\-\\b\\[a-z]+\\b");
-  QRegExp reCommand = QRegExp("(^|\\s)(-[a-z\\-]+)(\\s|$)");
-  int index = text.indexOf(reCommand);
+  QRegularExpressionMatch match;
+  QRegularExpression reCommand1("(^|\\s)(-[a-z\\-]+)(\\s|$)");
+  int index = text.indexOf(reCommand1, 0, &match);
   while(index >= 0)
     {
-    QString command = text.mid(reCommand.pos(2), reCommand.cap(2).length());
+    QString command = text.mid(match.capturedStart(2), match.capturedLength(2));
     if(m_CommandList.indexOf(command) >= 0)
-      setFormat(reCommand.pos(2), reCommand.cap(2).length(), fmtCommand);
-    index = text.indexOf(reCommand, std::max(reCommand.pos(3), index+1));
+      setFormat(match.capturedStart(2), match.capturedLength(2), fmtCommand);
+    index = text.indexOf(reCommand1, std::max((int) match.capturedStart(3), index+1), &match);
     }
 
   // Find things that look like filenames
-  reCommand = QRegExp("(^|\\s)(\\S+)(\\s|$)");
-  index = text.indexOf(reCommand);
+  QRegularExpression reCommand2("(^|\\s)(\\S+)(\\s|$)");
+  index = text.indexOf(reCommand2, 0, &match);
   while(index >= 0)
     {
     QString dir = QSettings().value("working_dir", QDir::currentPath()).toString();
-    QString testfile = reCommand.cap(2);
+    QString testfile = match.captured(2);
     QFileInfo qfi(dir, testfile);
     if(qfi.isFile())
       {
-      setFormat(reCommand.pos(2), testfile.length(), fmtFile);
+      setFormat(match.capturedStart(2), testfile.length(), fmtFile);
       }
-    index = text.indexOf(reCommand, std::max(reCommand.pos(3), index+1));
+    index = text.indexOf(reCommand2, std::max((int) match.capturedStart(3), index+1), &match);
     }
 
-  reCommand = QRegExp("(^|\\s)(c[2-4]d|snap|itksnap|view)(\\s|$)", Qt::CaseInsensitive);
-  index = text.indexOf(reCommand, 0);
+  index = text.indexOf(QRegularExpression("(^|\\s)(c[2-4]d|snap|itksnap|view)(\\s|$)"), 0, &match);
   if(index >= 0)
     {
-    setFormat(reCommand.pos(2), reCommand.cap(2).length(), fmtExe);
+    setFormat(match.capturedStart(2), match.capturedLength(2), fmtExe);
     }
 }

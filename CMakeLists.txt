@@ -179,11 +179,13 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     SET(CMAKE_MODULE_PATH ${CONVERT3D_SOURCE_DIR}/gui/CMake)
 
     #--------------------------------------------------------------------------------
-    # Find Qt5
+    # Find Qt6
     #--------------------------------------------------------------------------------
-    FIND_PACKAGE(Qt5Widgets)
-    SET(CONVERT3D_QT5_INCLUDE_DIRS ${Qt5Widgets_INCLUDE_DIRS})
-    SET(CONVERT3D_QT5_LIBRARIES Qt5::Widgets)
+    FIND_PACKAGE(Qt6Widgets)
+    SET(CONVERT3D_QT_INCLUDE_DIRS ${Qt6Widgets_INCLUDE_DIRS})
+    SET(CONVERT3D_QT_LIBRARIES Qt6::Widgets)
+    GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt6Core_DIR}/../../../bin" ABSOLUTE)
+    GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt6Core_DIR}/../../" ABSOLUTE)
 
     #--------------------------------------------------------------------------------
     # Specify source files and headers
@@ -211,8 +213,8 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     SET(UI_NONMOC_HEADERS)
 
     # Wrap the QT input files
-    QT5_WRAP_UI(UI_FORM_HEADERS ${UI_FORMS})
-    QT5_WRAP_CPP(UI_WRAPPED_MOC_HEADERS ${UI_MOC_HEADERS})
+    QT_WRAP_UI(UI_FORM_HEADERS ${UI_FORMS})
+    QT_WRAP_CPP(UI_WRAPPED_MOC_HEADERS ${UI_MOC_HEADERS})
 
     # Configure the OS-specific parts of the GUI exe
     IF(APPLE)
@@ -228,7 +230,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
     # Configure the executable's sources and libraries
     ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
-    TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT5_LIBRARIES} ${C3D_LINK_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT_LIBRARIES} ${C3D_LINK_LIBRARIES})
 
     # Configure the include path for the GUI
     TARGET_INCLUDE_DIRECTORIES(
@@ -236,7 +238,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       ${CONVERT3D_INCLUDE_DIRS}
       ${CONVERT3D_SOURCE_DIR}/gui
       ${CONVERT3D_BINARY_DIR}
-      ${CONVERT3D_QT5_INCLUDE_DIRS}
+      ${CONVERT3D_QT_INCLUDE_DIRS}
     )
 
     #--------------------------------------------------------------------------------
@@ -270,16 +272,10 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
       # Include the qt4 dependent libraries
       include(DeployQt5)
-      get_target_property(QtWidgets_location Qt5::Widgets LOCATION)
-      get_filename_component(qt_dlls_dir "${QtWidgets_location}" PATH)
-      get_filename_component(qt_dlls_dir "${qt_dlls_dir}" PATH)
-      install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app "" "" "${qt_dlls_dir}" "" "")
+      get_filename_component(QT_COCOA_PLUGIN "${QT_BINARY_DIR}/../plugins/platforms/libqcocoa.dylib" ABSOLUTE)
+      install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app "${QT_COCOA_PLUGIN}")
 
     ELSEIF(WIN32)
-
-      # Set the PATH to include Qt libraries
-      GET_FILENAME_COMPONENT(QT_BINARY_DIR "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
-      GET_FILENAME_COMPONENT(QT_LIBRARY_DIR "${Qt5Core_DIR}/../../" ABSOLUTE)
 
       # Install to the bin directory
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION bin)
@@ -288,7 +284,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       include(DeployQt5)
 
       # Make sure the GIF plugin is included
-      get_property(QT_WIN_PLUGIN TARGET Qt5::QWindowsIntegrationPlugin PROPERTY LOCATION_RELEASE)
+      get_filename_component(QT_WIN_PLUGIN "${QT_BINARY_DIR}/../plugins/platforms/qwindows.dll" ABSOLUTE)
 
       # Install with the plugin
       install_qt5_executable(bin/${C3DGUI_BUNDLE_NAME}.exe "${QT_WIN_PLUGIN}")

@@ -37,6 +37,7 @@
 #include <QMouseEvent>
 #include <QDateTime>
 #include <QFontMetrics>
+#include <QRegularExpression>
 #include "Documentation.h"
 #include <sstream>
 
@@ -107,7 +108,7 @@ QString splitTooltip(QString text, int width)
     for (;;) { 
         int i = 0; 
         while (i < text.length()) { 
-            if (fm.width(text.left(++i + 1)) > width) { 
+            if (fm.horizontalAdvance(text.left(++i + 1)) > width) { 
                 int j = text.lastIndexOf(' ', i); 
                 if (j > 0) 
                     i = j; 
@@ -256,7 +257,7 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
     tc.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
 
     // Indent after 'c3d ' or after spaces
-    QRegExp indentme("(c[2-4]d|snap|itksnap|view)\\s*|\\s*", Qt::CaseInsensitive);
+    QRegularExpression indentme("(c[2-4]d|snap|itksnap|view)\\s*|\\s*", QRegularExpression::CaseInsensitiveOption);
     QString leading = this->document()->find(indentme, tc).selectedText();
     QTextEdit::keyPressEvent(e);
     textCursor().insertText(QString(leading.length(),' '));
@@ -282,7 +283,7 @@ void CommandEditor::keyPressEvent(QKeyEvent *e)
 
   tc.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor);
   tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
-  if(tc.selectedText().indexOf(QRegExp("\\s+")) >= 0)
+  if(tc.selectedText().indexOf(QRegularExpression("\\s+")) >= 0)
     {
     textCursor().insertText("    ");
     return;
@@ -478,11 +479,11 @@ QString CommandEditor::filenameUnderCursor(QTextCursor tc)
 
   // Search backwards to find the first whitespace character
   QTextCursor prev =
-      this->document()->find(QRegExp("\\s"), tc, QTextDocument::FindBackward);
+      this->document()->find(QRegularExpression("\\s"), tc, QTextDocument::FindBackward);
 
   // Search forward for next whitespace character
   QTextCursor next =
-      this->document()->find(QRegExp("\\s"), tc);
+      this->document()->find(QRegularExpression("\\s"), tc);
 
   // Set the position
   int a = (prev.isNull() || prev.anchor() < cline.anchor())

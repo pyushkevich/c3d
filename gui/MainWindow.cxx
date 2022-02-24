@@ -41,6 +41,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QShortcut>
+#include <QRegularExpression>
 #include <HistoryDialog.h>
 #include <SettingsDialog.h>
 #include "ConvertImageND.h"
@@ -107,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->teCommand->setFont(font);
 
   QFontMetrics metrics(font);
-  ui->teCommand->setTabStopWidth(4 * metrics.width(' '));
+  ui->teCommand->setTabStopDistance(4 * metrics.horizontalAdvance(' '));
 
   // Viewer
   connect(ui->teCommand, SIGNAL(validFilenameClicked(QString)), this, SLOT(onImageViewRequested(QString)));
@@ -235,7 +236,7 @@ void MainWindow::on_btnChangeDir_clicked()
 {
   QString dir =
       QFileDialog::getExistingDirectory(this, tr("Choose Working Directory"),
-                                        ui->inWorkDir->text(), 0);
+                                        ui->inWorkDir->text());
   if(QFileInfo(dir).isDir())
     {
     onWorkingDirectoryChanged(dir);
@@ -298,7 +299,7 @@ void MainWindow::on_btnRun_clicked()
   QString contents = ui->teCommand->document()->toPlainText();
 
   // Split contents into words
-  QStringList words = contents.split(QRegExp("(\\s|^|$)+"), QString::SkipEmptyParts);
+  QStringList words = contents.split(QRegularExpression("(\\s|^|$)+"), Qt::SkipEmptyParts);
   if(words.size() == 0)
     return;
 
