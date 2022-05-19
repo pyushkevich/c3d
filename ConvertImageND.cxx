@@ -3008,7 +3008,7 @@ ImageConverter<TPixel, VDim>
   size_t narg = 0;
 
   // If there are less than two images on the stack, the accum command will not be run.
-  if (m_ImageStack.size() < 1)
+  if (m_ImageStack.size() < 2)
     {
     throw ConvertException("Too few images on the stack for the -accum command, two or more images are required!");
     }
