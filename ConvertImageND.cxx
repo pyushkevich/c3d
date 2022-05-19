@@ -3008,9 +3008,23 @@ ImageConverter<TPixel, VDim>
   size_t narg = 0;
 
   // If there are less than two images on the stack, the accum command will not be run.
-  if (m_ImageStack.size() < 2)
+  if (m_ImageStack.size() < 1)
     {
     throw ConvertException("Too few images on the stack for the -accum command, two or more images are required!");
+    }
+
+  if (m_ImageStack.size() == 1)
+    {
+    // Special case where the commands are just ignored
+    *verbose << "Accum command with one argument - skipping" << endl;
+    while(strcmp(argv[narg], "-endaccum") && narg < argc)
+      ++narg;
+
+    if(narg == argc)
+      throw ConvertException("Unterminated -accum command");
+
+    m_LoopType = LOOP_NONE;
+    return narg;
     }
 
   // Back up the current stack
