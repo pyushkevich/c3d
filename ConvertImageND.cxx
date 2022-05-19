@@ -147,7 +147,7 @@ unsigned char c3d_md[] = {
 
 using namespace itksys;
 
-extern const char *ImageConverter_VERSION_STRING;
+extern const char *Convert3DVersionInfo;
 
 // Helper function: read a double, throw exception if unreadable
 double myatof(char *str)
@@ -2199,7 +2199,7 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-version")
     {
-    this->sout() << "Version " << ImageConverter_VERSION_STRING << endl;
+    this->sout() << "Version " << Convert3DVersionInfo << endl;
     return 0;
     }
 
@@ -2915,7 +2915,7 @@ ImageConverter<TPixel, VDim>
   size_t narg = 0;
 
   // If there are less than two images on the stack, the accum command will not be run.
-  if (m_ImageStack.size() < 2)
+  if (m_ImageStack.size() < 1)
     {
     throw ConvertException("Too few images on the stack for the -accum command, two or more images are required!");
     }

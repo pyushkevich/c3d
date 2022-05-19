@@ -6,6 +6,14 @@ if(COMMAND cmake_policy)
   CMAKE_POLICY(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+#--------------------------------------------------------------------------------
+# VERSION
+#--------------------------------------------------------------------------------
+INCLUDE(CMake/PYVersion.cmake)
+
+# Set the semantic version and version date
+VERSION_VARS(1 4 0 "" "20220519" "May 19, 2022")
+
 # Enable languages
 ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
@@ -314,7 +322,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ELSE()
 
       SET(C3DGUI_EXE "c3d_gui")
-      SET(C3DGUI_MAIN_INSTALL_DIR lib/c3d_gui-${C3D_VERSION_FULL})
+      SET(C3DGUI_MAIN_INSTALL_DIR lib/c3d_gui-${CONVERT3D_VERSION_FULL})
       SET(CPACK_PACKAGE_EXECUTABLES ${C3DGUI_EXE} ${C3DGUI_BUNDLE_NAME})
       
       INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} RUNTIME DESTINATION ${C3DGUI_MAIN_INSTALL_DIR})
@@ -330,7 +338,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
   ENDIF(BUILD_GUI)
 
   # Do the packaging
-  INCLUDE(cmake/Package.cmake)
+  INCLUDE(CMake/Package.cmake)
 
   # CDash Support
   ENABLE_TESTING()
@@ -357,7 +365,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     # generate the version file for the config file
     write_basic_package_version_file(
       "${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfigVersion.cmake"
-      VERSION "${C3D_VERSION_FULL}"
+      VERSION "${CONVERT3D_VERSION_FULL}"
       COMPATIBILITY AnyNewerVersion
     )
 
