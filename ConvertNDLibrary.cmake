@@ -2,12 +2,6 @@
 # another CMake project (i.e., ITK-SNAP). It is expected that the parent
 # cmake file will take care of finding ITK
 
-# Versioning information
-SET(C3D_VERSION_MAJOR 1)
-SET(C3D_VERSION_MINOR 3)
-SET(C3D_VERSION_PATCH 0)
-SET(C3D_VERSION_FULL "${C3D_VERSION_MAJOR}.${C3D_VERSION_MINOR}.${C3D_VERSION_PATCH}")
-
 # Include directories
 SET(CONVERT3D_INCLUDE_DIRS
   ${CONVERT3D_SOURCE_DIR}
