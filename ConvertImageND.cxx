@@ -2292,7 +2292,7 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-version")
     {
-    this->sout() << "Version " << Convert3DVersionInfo << endl;
+    this->sout() << Convert3DVersionInfo << endl;
     return 0;
     }
 
