@@ -597,8 +597,19 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-connected-components" || cmd == "-connected" || cmd == "-comp")
     {
     ConnectedComponents<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
+    bool fullyConnected = false;
+    int np = 0;
+    if (argc > 1 && argv[1][0] != '-')
+      {
+      switch (atoi(argv[1])) {
+      case 0: break;
+      case 1: fullyConnected = true; break;
+      default: throw ConvertException("Valid value for option -comp [0|1] (fully connected = false|true)");
+      }
+      np = 1;
+      }
+    adapter(fullyConnected);
+    return np;
     }
 
   else if (cmd == "-clear")

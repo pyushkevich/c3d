@@ -37,7 +37,7 @@ public:
 
   ConnectedComponents(Converter *c) : c(c) {}
 
-  void operator() ();
+  void operator() (bool fullyConnected);
 
 private:
   Converter *c;
