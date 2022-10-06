@@ -136,8 +136,11 @@ WriteImage<TPixel, VDim>
   // Define the output image type
   typedef itk::VectorImage<TOutPixel, VDim> OutputImageType;
   typename OutputImageType::Pointer output = OutputImageType::New();
-  output->CopyInformation(itop);
   output->SetRegions(itop->GetBufferedRegion());
+  output->SetSpacing(itop->GetSpacing());
+  output->SetOrigin(itop->GetOrigin());
+  output->SetDirection(itop->GetDirection());
+  output->SetMetaDataDictionary(itop->GetMetaDataDictionary());
   output->SetNumberOfComponentsPerPixel(ncomp);
   output->Allocate();
 
