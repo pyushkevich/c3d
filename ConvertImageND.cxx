@@ -614,7 +614,7 @@ ImageConverter<TPixel, VDim>
     {
     Canny<TPixel, VDim> adapter(this);
     RealVector sigma = ReadRealSize(argv[1]);
-    double tLower = ReadIntensityValue(argv[1]);
+    double tLower = ReadIntensityValue(argv[2]);
     double tUpper = ReadIntensityValue(argv[3]);
 
     adapter(sigma, tLower, tUpper);

@@ -59,6 +59,7 @@ Canny<TPixel, VDim>
   filter->Update();
 
   // Iterate through the output points and save them
+  /*
   FILE *fcanny = fopen("canny.obj","wt");
   for(Iterator it(filter->GetOutput(), filter->GetOutput()->GetBufferedRegion());
     !it.IsAtEnd(); ++it)
@@ -74,6 +75,7 @@ Canny<TPixel, VDim>
       }
     }
   fclose(fcanny);
+  */
   
   // Put result on stack
   c->m_ImageStack.pop_back();
