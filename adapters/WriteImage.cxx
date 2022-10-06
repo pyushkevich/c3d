@@ -122,8 +122,8 @@ WriteImage<TPixel, VDim>
   if(ncomp <= 0)
     throw ConvertException("No data has been generated! Can't write to %s", file);
 
-  // Get the top image on the stack (for reference information)
-  ImagePointer itop = c->m_ImageStack.back();
+  // Get the last image to be saved and use it as a reference for origin/spacing/etc
+  ImagePointer itop = c->m_ImageStack[pstart + ncomp - 1];
 
   // Check compatibility
   for(size_t i = 0; i < ncomp-1; i++)
@@ -148,6 +148,7 @@ WriteImage<TPixel, VDim>
   *c->verbose << "Writing Images " << pstart+1 << " to " << (pstart+ncomp) << " to multicomponent file " << file << endl;
   *c->verbose << "  Output voxel type: " << c->m_TypeId << "[" << typeid(TOutPixel).name() << "]" << endl;
   *c->verbose << "  Rounding off: " << (xRoundFactor == 0.0 ? "Disabled" : "Enabled") << endl;
+  *c->verbose << "  Output origin " << output->GetOrigin() << endl;
     
   // Set the SPM originator header
   MakeSPMOriginFix(itop, output);
