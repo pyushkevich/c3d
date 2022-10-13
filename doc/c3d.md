@@ -1197,6 +1197,16 @@ Pads the image symmetrically with constant value to achieve a desired size.
     c3d image1.nii -pad-to 60x60x100 0 -o padded.nii
 
 
+#### -pad-to-multiple: Pad image to that the size is a multiple of some number
+
+Syntax: `-pad <size_multiple> <value> `
+
+Pads the image symmetrically with constant value so that the size in each dimension
+is a multiple of `<size_multiple>`.
+
+    c3d image1.nii -pad-to-multiple 4x4x1 0 -o padded.nii
+
+
 #### -pca: Principal components analysis of foreground voxels
 
 Syntax: `-pca`

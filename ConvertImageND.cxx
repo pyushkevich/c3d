@@ -1609,6 +1609,29 @@ ImageConverter<TPixel, VDim>
     return 2;
     }
 
+  else if (cmd == "-pad-to-multiple")
+    {
+    // Read the number by which we want the size to be divisible
+    SizeType multiple = ReadSizeVector(argv[1]);
+    float padValue = atof(argv[2]);
+
+    // How much to add in each dimension
+    IndexType padExtentLower, padExtentUpper;
+    SizeType currentSize = this->PeekLastImage()->GetBufferedRegion().GetSize();
+    for(unsigned int i = 0; i < VDim; i++)
+      {
+      // Constraint: lower + upper = desired - current
+      long bilateral_pad = multiple[i] - (currentSize[i] % multiple[i]);
+      padExtentLower[i] = bilateral_pad / 2;
+      padExtentUpper[i] = bilateral_pad - padExtentLower[i];
+      }
+
+    // Use the adapter
+    PadImage<TPixel, VDim> adapter(this);
+    adapter(padExtentLower, padExtentUpper, padValue);
+    return 2;
+    }
+
   else if (cmd == "-pca")
     {
     ComputeMoments<TPixel, VDim> adapter(this);
