@@ -1641,6 +1641,14 @@ Specifies the pixel type for the output image. By default, images are written in
 
 Some images require data in certain types. For example, to save PNG images, uchar or ushort type must be specified.
 
+#### -tolerance: overwrites the defaults ITK ImageToImageFilterCommon tolerances
+
+Syntax: `-tolerance <double> `
+
+Overwrites the default CoordinateTolerance and DirectionTolerance ITK values in [ImageToImageFilterCommon](https://github.com/InsightSoftwareConsortium/ITK/blob/master/Modules/Core/Common/src/itkImageToImageFilterCommon.cxx). This can be set to get around the "Inputs do not occupy the same physical space!" exception.
+
+    c3d in.img -tolerance 1.0e-02 -o out.img
+
 #### -verbose: Enable verbose output of commands
 
 Syntax: `-verbose`
