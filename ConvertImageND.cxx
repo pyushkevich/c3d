@@ -422,8 +422,9 @@ ImageConverter<TPixel,VDim>
 
   // Set orientation and coordinate tolerances to something more
   // reasonable than the ITK defaults
-  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(1.0e-4);
-  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(1.0e-4);
+  m_Tolerance = 1.0e-4;
+  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(m_Tolerance);
+  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(m_Tolerance);
 }
 
 
@@ -2269,6 +2270,27 @@ ImageConverter<TPixel, VDim>
     {
     TileImages<TPixel, VDim> adapter(this);
     adapter(std::string(argv[1]));
+    return 1;
+    }
+
+  // Overwrite ITK tolerances
+  else if (cmd == "-tolerance")
+    {
+    // Read the double part
+    char *endptr;
+
+    // Read the floating point part
+    char *str = argv[1];
+    double val = strtod(argv[1], &endptr);
+
+    // Check validity
+    if (endptr == str)
+      throw ConvertException("Can't convert %s to a double", str);
+
+    // Set orientation and coordinate tolerances
+    m_Tolerance = val;
+    itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(m_Tolerance);
+    itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(m_Tolerance);
     return 1;
     }
 

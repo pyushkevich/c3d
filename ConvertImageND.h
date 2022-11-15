@@ -224,6 +224,9 @@ public:
   // Number of iterations for various algorithms
   size_t m_Iterations;
 
+  // The orientation and coordinate tolerances overwriting the ITK defaults in ImageToImageFilterCommon
+  double m_Tolerance;
+
   // Parameters for various algorithms
   typedef ConvertAlgorithmParameters<TPixel, VDim> ParameterType;
   ParameterType *m_Param;
