@@ -781,7 +781,7 @@ Syntax: `-centroid`
 Reports the centroid, in physical coordinates, of all foreground voxels in the image. 
 
     c3d binaryimage.img -centroid                         // centroid of all non-0 voxels
-    c3d grayimage.img -thresh 1000 7000 1 0 -centroid 1   // centroid of all voxels in range 1000-7000
+    c3d grayimage.img -thresh 1000 7000 1 0 -centroid     // centroid of all voxels in range 1000-7000
     c3d labelimage.img -thresh 5 5 1 0 -centroid          // centroid of all voxels with label 5
     c3d labelimage.img -split -foreach -centroid -endfor  // centroids of all labels (including 0)
 
@@ -792,8 +792,8 @@ Syntax: `-centroid-mark <label>`
 
 Marks the centroid of the foreground voxels in an image. Unlike **-centroid**, this command does not print the centroid location, but marks the closest voxel in the image with the intensity **label**. The remaining voxels are assigned 0 intensity. Combined with -dilate, this can be used to mark centers of regions with spheres.
 
-    c3d binaryimage.nii -centroid-mark -dilate 1 3x3x3
-    c3d labelimage.nii -split -foreach -centroid-mark -endfor -merge -o centers.nii
+    c3d binaryimage.nii -centroid-mark 1 -dilate 1 3x3x3
+    c3d labelimage.nii -split -foreach -centroid-mark 1 -endfor -merge -o centers.nii
 
 
 #### -color-map, -colormap: Convert scalar image to RGB using color map    
