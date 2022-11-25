@@ -62,6 +62,7 @@
 #include "ImageLaplacian.h"
 #include "LabelOverlapMeasures.h"
 #include "LabelStatistics.h"
+#include "LabelVoting.h"
 #include "LandmarksToSpheres.h"
 #include "LaplacianSharpening.h"
 #include "LevelSetSegmentation.h"
@@ -237,6 +238,17 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
   return ret;
 }
 
+std::vector<int> get_int_args(char* argv[], int argc)
+{
+  std::vector<int> cmd_args;
+  for(unsigned int i = 1; i < argc; i++) {
+    try {  // try to convert to int
+      int value = std::stoi(argv[i]);
+      cmd_args.push_back(value);
+    } catch(const std::logic_error &e) { break; }
+  }
+  return cmd_args;
+}
 
 
     /*
@@ -1068,6 +1080,13 @@ ImageConverter<TPixel, VDim>
     {
     LabelStatistics<TPixel, VDim>(this)();
     return 0;
+    }
+
+  else if (cmd == "-label-voting")
+    {
+    std::vector<int> cmd_args = get_int_args(argv, argc);
+    LabelVoting<TPixel, VDim>(this)(cmd_args);
+    return cmd_args.size();
     }
 
   else if (cmd == "-landmarks-to-spheres" || cmd == "-lts")

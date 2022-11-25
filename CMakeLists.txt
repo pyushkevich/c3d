@@ -69,6 +69,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ITKImageNoise
     ITKImageStatistics
     ITKLabelMap
+    ITKLabelVoting
     ITKLevelSets
     ITKMathematicalMorphology
     ITKRegistrationCommon

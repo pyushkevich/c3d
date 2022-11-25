@@ -33,6 +33,7 @@ function _c3d()
   opts="$opts -iterations"
   opts="$opts -label-overlap"
   opts="$opts -label-statistics  -lstat"
+  opts="$opts -label-voting"
   opts="$opts -laplacian  -laplace"
   opts="$opts -levelset"
   opts="$opts -levelset-curvature"
