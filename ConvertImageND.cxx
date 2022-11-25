@@ -2553,7 +2553,7 @@ ImageConverter<TPixel, VDim>
   // Try processing command line
   try
     {
-    // Process commands, ingore the first argument
+    // Process commands, ignore the first argument
     ProcessCommandList(argc-1, argv+1);
     return 0;
     }
