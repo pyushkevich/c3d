@@ -76,6 +76,7 @@ SET(SOURCES
   adapters/GeneralLinearModel.cxx
   adapters/LabelOverlapMeasures.cxx
   adapters/LabelStatistics.cxx
+  adapters/LabelVoting.cxx
   adapters/LandmarksToSpheres.cxx
   adapters/LaplacianSharpening.cxx
   adapters/LevelSetSegmentation.cxx

@@ -62,6 +62,7 @@
 #include "ImageLaplacian.h"
 #include "LabelOverlapMeasures.h"
 #include "LabelStatistics.h"
+#include "LabelVoting.h"
 #include "LandmarksToSpheres.h"
 #include "LaplacianSharpening.h"
 #include "LevelSetSegmentation.h"
@@ -1128,6 +1129,13 @@ ImageConverter<TPixel, VDim>
     UnaryMathOperation<TPixel, VDim> adapter(this);
     adapter(&std::log10);
     return 0;
+    }
+
+  else if (cmd == "-majority-vote" || cmd == "-mv")
+    {
+    std::vector<int> cmd_args = ReadIntegerArgs(argv, argc);
+    LabelVoting<TPixel, VDim>(this)(cmd_args);
+    return cmd_args.size();
     }
 
   // No else if here because of a windows compiler error (blocks nested too deeply)
