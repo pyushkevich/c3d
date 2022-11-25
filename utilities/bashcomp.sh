@@ -56,6 +56,7 @@ function _c3d()
   opts="$opts -omc -output-multicomponent"
   opts="$opts -oo -output-multiple"
   opts="$opts -origin"
+  opts="$opts -otsu"
   opts="$opts -overlap"
   opts="$opts -pad"
   opts="$opts -pixel"
