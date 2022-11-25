@@ -1753,28 +1753,25 @@ This section describes the steps you must typically take to add a new command to
 
 2.  Next, you must write the code for the command. Typically, all you have to do now is to fill out the code for the `operator ()`. Please be sure to use the same convention as in other adapters. For example, every adapter should use the `*c->verbose` stream to report what it's doing and which image it's doing it to. Commands in C3D consume their arguments, so be sure to pop your images off the stack and push your result on the stack. Also be sure to do necessary error checking and fire off `ConvertException` if parameters or the state of the stack are invalid. 
 
-3.  Next, you must add your new adapter to the `CMakeLists.txt` file. That's easy, just look for all the other adapters and insert yours in alphabetical order. 
+3.  Next, you must add your new adapter to the `ConvertNDLibrary.cmake` file. That's easy, just look for all the other adapters and insert yours in alphabetical order. 
 
 4.  Next, edit `ConvertImageND.cxx`. This is the main application driver and command line processor. At the top of the file, add an `#include` statement for your new adapter, keeping things in alphabetical order. 
 
-5.  Staying in `ConvertImageND.cxx`, insert your new command in the `usage()` function, again, keeping things in alphabetical order. 
+5.  Still in `ConvertImageND.cxx`, find the section of the code where commands are implemented. Find where your command fits in alphabetical order, and insert a section of code corresponding to your command. Again, use existing commands as examples. Make sure to return a value - how many parameters your command has consumed from the command line. Otherwise, you will get a "fell through" error message. 
 
-6.  Still in `ConvertImageND.cxx`, find the section of the code where commands are implemented. Find where your command fits in alphabetical order, and insert a section of code corresponding to your command. Again, use existing commands as examples. Make sure to return a value - how many parameters your command has consumed from the command line. Otherwise, you will get a "fell through" error message. 
+6.  Almost done. Edit the `utilities/bashcomp.sh` script and add a line for your command there. 
 
-7.  Almost done. Edit the `utilities/bashcomp.sh` script and add a line for your command there. 
-
-8.  Last step: edit the documentation file (c3d.md) to add your command's description
+7.  Last step: edit the documentation file (c3d.md) to add your command's description
 
 To summarize, here is a checklist for adding a new command 
 
 1.  Generate adapter via bash script 
 2.  Write code for `operator ()` 
-3.  Add line in `CMakeLists.txt` 
+3.  Add line in `ConvertNDLibrary.cmake` 
 4.  Add `#include` line in `ConvertImageND.cxx` 
-5.  Add `usage()` line in `ConvertImageND.cxx` 
-6.  Add code to parse command and call adapter in `ConvertImageND.cxx` 
-7.  Add line to `bashcomp.sh` 
-8.  Document the command on the wiki
+5.  Add code to parse command and call adapter in `ConvertImageND.cxx` 
+6.  Add line to `bashcomp.sh` 
+7.  Document the command on the wiki
 
  [1]: http://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Convert3D
  [2]: http://en.wikipedia.org/wiki/Reverse_Polish_notation
