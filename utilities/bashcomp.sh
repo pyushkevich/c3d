@@ -85,6 +85,7 @@ function _c3d()
   opts="$opts -spm"
   opts="$opts -stretch"
   opts="$opts -threshold  -thresh"
+  opts="$opts -tolerance"
   opts="$opts -trim"
   opts="$opts -trim-to-size"
   opts="$opts -type"
