@@ -510,11 +510,27 @@ Applies Speckle noise to an image with given standard deviation. Please see [Noi
     c3d image.nii -noise-speckle 5 -o noisy.nii
 
 #### -otsu: Otsu's thresholding
-Syntax: `-otsu`
+Syntax: `-otsu [number of classes] [number of histogram bins]`
 
-Applies the classical Otsu's binary thresholding algorithm to separate image foreground from background. Returns an image of zeros (background) and ones (foreground).
+Applies the classical [Otsu's thresholding algorithm](https://en.wikipedia.org/wiki/Otsu%27s_method) to classify voxels into different labels. If zero arguments are given the original itkOtsuThresholdImageFilter is used which separate image foreground from background. This filter returns an image of zeros (background) and ones (foreground).
 
-    c3d image.nii -otsu -o thresh.nii
+    c3d image.nii -otsu -o otsu.nii
+
+If one or more arguments are used then the more general itkOtsuMultipleThresholdsImageFilter filter is utilized. If <number of thresholds> is set to 1 then the filter acts as the classical Otsu's binary thresholding described above (but outputs the inverse mask, see note below). If higher <number of thresholds> are input, then it returns an multilabel image of zeros (background) and not zero (foreground) divided into different label ids.
+
+For the itkOtsuMultipleThresholdsImageFilter the <number of histogram bins> can be set, if not set it defaults to 256.
+
+    c3d image.nii -otsu 2 -o otsu2.nii
+    c3d image.nii -otsu 3 200 -o otsu3-200.nii
+
+Note: the two commands '-otsu' and '-otsu 1' do not output the same result, they actually produce the inverse of each other. Instead the following two commands produce equal results.
+
+    c3d image.nii -otsu -replace 0 1 1 0 -o otsu-inverse.nii
+    c3d image.nii -otsu 1 -o otsu1.nii
+
+This behavior is intentional by the filter creators, as discussed on the [ITK mailing list](https://itk.org/pipermail/community/2016-April/011137.html).
+
+The no argument c3d -otsu option is kept for backwards compatibility.
 
 #### -reciprocal: Image voxelwise reciprocal 
 

@@ -38,6 +38,7 @@ public:
   OtsuThreshold(Converter *c) : c(c) {}
 
   void operator() ();
+  void operator() (std::vector<int> cmd_args);
 
 private:
   Converter *c;
