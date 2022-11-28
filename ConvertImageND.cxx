@@ -1565,9 +1565,13 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-otsu")
     {
-    OtsuThreshold<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
+    std::vector<int> cmd_args = get_int_args(argv, argc);
+    if (cmd_args.size()==0) {
+      OtsuThreshold<TPixel, VDim> (this)();
+    } else {
+      OtsuThreshold<TPixel, VDim> (this)(cmd_args);
+    }
+    return cmd_args.size();
     }
 
   else if (cmd == "-overlap")
