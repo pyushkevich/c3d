@@ -510,11 +510,27 @@ Applies Speckle noise to an image with given standard deviation. Please see [Noi
     c3d image.nii -noise-speckle 5 -o noisy.nii
 
 #### -otsu: Otsu's thresholding
-Syntax: `-otsu`
+Syntax: `-otsu [number of classes] [number of histogram bins]`
 
-Applies the classical Otsu's binary thresholding algorithm to separate image foreground from background. Returns an image of zeros (background) and ones (foreground).
+Applies the classical [Otsu's thresholding algorithm](https://en.wikipedia.org/wiki/Otsu%27s_method) to classify voxels into different labels. If zero arguments are given the original itkOtsuThresholdImageFilter is used which separate image foreground from background. This filter returns an image of zeros (background) and ones (foreground).
 
-    c3d image.nii -otsu -o thresh.nii
+    c3d image.nii -otsu -o otsu.nii
+
+If one or more arguments are used then the more general itkOtsuMultipleThresholdsImageFilter filter is utilized. If <number of thresholds> is set to 1 then the filter acts as the classical Otsu's binary thresholding described above (but outputs the inverse mask, see note below). If higher <number of thresholds> are input, then it returns an multilabel image of zeros (background) and not zero (foreground) divided into different label ids.
+
+For the itkOtsuMultipleThresholdsImageFilter the <number of histogram bins> can be set, if not set it defaults to 256.
+
+    c3d image.nii -otsu 2 -o otsu2.nii
+    c3d image.nii -otsu 3 200 -o otsu3-200.nii
+
+Note: the two commands '-otsu' and '-otsu 1' do not output the same result, they actually produce the inverse of each other. Instead the following two commands produce equal results.
+
+    c3d image.nii -otsu -replace 0 1 1 0 -o otsu-inverse.nii
+    c3d image.nii -otsu 1 -o otsu1.nii
+
+This behavior is intentional by the filter creators, as discussed on the [ITK mailing list](https://itk.org/pipermail/community/2016-April/011137.html).
+
+The no argument c3d -otsu option is kept for backwards compatibility.
 
 #### -reciprocal: Image voxelwise reciprocal 
 
@@ -536,7 +552,7 @@ Replace intensity I1 by J1, I2 by J2 and so on. Allowed values of intensity incl
 
 Syntax: `-retain-labels I1 I2 ... IN`
 
-Assuming that the input is a multi-label segmentation image, this command keeps all labels specifed in the list and replaces the remaining labels with the background value.
+Assuming that the input is a multi-label segmentation image, this command keeps all labels specified in the list and replaces the remaining labels with the background value.
 
     c3d seg.nii -retain-labels 2 3 4 8 -o subseg.nii
 
@@ -781,7 +797,7 @@ Syntax: `-centroid`
 Reports the centroid, in physical coordinates, of all foreground voxels in the image. 
 
     c3d binaryimage.img -centroid                         // centroid of all non-0 voxels
-    c3d grayimage.img -thresh 1000 7000 1 0 -centroid 1   // centroid of all voxels in range 1000-7000
+    c3d grayimage.img -thresh 1000 7000 1 0 -centroid     // centroid of all voxels in range 1000-7000
     c3d labelimage.img -thresh 5 5 1 0 -centroid          // centroid of all voxels with label 5
     c3d labelimage.img -split -foreach -centroid -endfor  // centroids of all labels (including 0)
 
@@ -792,8 +808,8 @@ Syntax: `-centroid-mark <label>`
 
 Marks the centroid of the foreground voxels in an image. Unlike **-centroid**, this command does not print the centroid location, but marks the closest voxel in the image with the intensity **label**. The remaining voxels are assigned 0 intensity. Combined with -dilate, this can be used to mark centers of regions with spheres.
 
-    c3d binaryimage.nii -centroid-mark -dilate 1 3x3x3
-    c3d labelimage.nii -split -foreach -centroid-mark -endfor -merge -o centers.nii
+    c3d binaryimage.nii -centroid-mark 1 -dilate 1 3x3x3
+    c3d labelimage.nii -split -foreach -centroid-mark 1 -endfor -merge -o centers.nii
 
 
 #### -color-map, -colormap: Convert scalar image to RGB using color map    
@@ -1753,28 +1769,25 @@ This section describes the steps you must typically take to add a new command to
 
 2.  Next, you must write the code for the command. Typically, all you have to do now is to fill out the code for the `operator ()`. Please be sure to use the same convention as in other adapters. For example, every adapter should use the `*c->verbose` stream to report what it's doing and which image it's doing it to. Commands in C3D consume their arguments, so be sure to pop your images off the stack and push your result on the stack. Also be sure to do necessary error checking and fire off `ConvertException` if parameters or the state of the stack are invalid. 
 
-3.  Next, you must add your new adapter to the `CMakeLists.txt` file. That's easy, just look for all the other adapters and insert yours in alphabetical order. 
+3.  Next, you must add your new adapter to the `ConvertNDLibrary.cmake` file. That's easy, just look for all the other adapters and insert yours in alphabetical order. 
 
 4.  Next, edit `ConvertImageND.cxx`. This is the main application driver and command line processor. At the top of the file, add an `#include` statement for your new adapter, keeping things in alphabetical order. 
 
-5.  Staying in `ConvertImageND.cxx`, insert your new command in the `usage()` function, again, keeping things in alphabetical order. 
+5.  Still in `ConvertImageND.cxx`, find the section of the code where commands are implemented. Find where your command fits in alphabetical order, and insert a section of code corresponding to your command. Again, use existing commands as examples. Make sure to return a value - how many parameters your command has consumed from the command line. Otherwise, you will get a "fell through" error message. 
 
-6.  Still in `ConvertImageND.cxx`, find the section of the code where commands are implemented. Find where your command fits in alphabetical order, and insert a section of code corresponding to your command. Again, use existing commands as examples. Make sure to return a value - how many parameters your command has consumed from the command line. Otherwise, you will get a "fell through" error message. 
+6.  Almost done. Edit the `utilities/bashcomp.sh` script and add a line for your command there. 
 
-7.  Almost done. Edit the `utilities/bashcomp.sh` script and add a line for your command there. 
-
-8.  Last step: edit the documentation file (c3d.md) to add your command's description
+7.  Last step: edit the documentation file (c3d.md) to add your command's description
 
 To summarize, here is a checklist for adding a new command 
 
 1.  Generate adapter via bash script 
 2.  Write code for `operator ()` 
-3.  Add line in `CMakeLists.txt` 
+3.  Add line in `ConvertNDLibrary.cmake` 
 4.  Add `#include` line in `ConvertImageND.cxx` 
-5.  Add `usage()` line in `ConvertImageND.cxx` 
-6.  Add code to parse command and call adapter in `ConvertImageND.cxx` 
-7.  Add line to `bashcomp.sh` 
-8.  Document the command on the wiki
+5.  Add code to parse command and call adapter in `ConvertImageND.cxx` 
+6.  Add line to `bashcomp.sh` 
+7.  Document the command on the wiki
 
  [1]: http://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Convert3D
  [2]: http://en.wikipedia.org/wiki/Reverse_Polish_notation

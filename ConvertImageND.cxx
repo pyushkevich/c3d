@@ -238,6 +238,17 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
 }
 
 
+std::vector<int> ReadIntegerArgs(char* argv[], int argc)
+{
+  std::vector<int> cmd_args;
+  for(unsigned int i = 1; i < argc; i++) {
+    try {  // try to convert to int
+      int value = std::stoi(argv[i]);
+      cmd_args.push_back(value);
+    } catch(const std::logic_error &e) { break; }
+  }
+  return cmd_args;
+}
 
     /*
     out << "Command Listing: " << endl;
@@ -1546,9 +1557,13 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-otsu")
     {
-    OtsuThreshold<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
+    std::vector<int> cmd_args = ReadIntegerArgs(argv, argc);
+    if (cmd_args.size()==0) {
+      OtsuThreshold<TPixel, VDim> (this)();
+    } else {
+      OtsuThreshold<TPixel, VDim> (this)(cmd_args);
+    }
+    return cmd_args.size();
     }
 
   else if (cmd == "-overlap")
@@ -2534,7 +2549,7 @@ ImageConverter<TPixel, VDim>
   // Try processing command line
   try
     {
-    // Process commands, ingore the first argument
+    // Process commands, ignore the first argument
     ProcessCommandList(argc-1, argv+1);
     return 0;
     }
