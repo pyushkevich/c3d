@@ -1490,6 +1490,15 @@ Like **-trim**, this command trims the background in an image. However, instead 
 
     c3d in.img -trim-to-size 64x64x128vox -o out.img
 
+#### -mv, -majority-vote: Majority vote among multilabel images on the stack
+
+Syntax: `-majority-vote <label of undecided voxels> [number of stack images to use]`
+
+This command takes a number of multilabel images on the stack and do majority voting use the LabelVoting filter, when the voting is a tie the label is set to the <label of undecided voxels> value.
+
+    c3d ml1.img ml2.img ml3.img -label-voting 299 -type uchar -o label.img
+
+
 #### -vote: Vote among images on the stack
 
 Syntax: `-vote `
