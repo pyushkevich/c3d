@@ -238,6 +238,17 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
 }
 
 
+std::vector<int> ReadIntegerArgs(char* argv[], int argc)
+{
+  std::vector<int> cmd_args;
+  for(unsigned int i = 1; i < argc; i++) {
+    try {  // try to convert to int
+      int value = std::stoi(argv[i]);
+      cmd_args.push_back(value);
+    } catch(const std::logic_error &e) { break; }
+  }
+  return cmd_args;
+}
 
     /*
     out << "Command Listing: " << endl;
