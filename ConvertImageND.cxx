@@ -62,6 +62,7 @@
 #include "ImageLaplacian.h"
 #include "LabelOverlapMeasures.h"
 #include "LabelStatistics.h"
+#include "LabelVoting.h"
 #include "LandmarksToSpheres.h"
 #include "LaplacianSharpening.h"
 #include "LevelSetSegmentation.h"
@@ -238,6 +239,17 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
 }
 
 
+std::vector<int> ReadIntegerArgs(char* argv[], int argc)
+{
+  std::vector<int> cmd_args;
+  for(unsigned int i = 1; i < argc; i++) {
+    try {  // try to convert to int
+      int value = std::stoi(argv[i]);
+      cmd_args.push_back(value);
+    } catch(const std::logic_error &e) { break; }
+  }
+  return cmd_args;
+}
 
     /*
     out << "Command Listing: " << endl;
@@ -422,8 +434,9 @@ ImageConverter<TPixel,VDim>
 
   // Set orientation and coordinate tolerances to something more
   // reasonable than the ITK defaults
-  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(1.0e-4);
-  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(1.0e-4);
+  m_Tolerance = 1.0e-4;
+  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(m_Tolerance);
+  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(m_Tolerance);
 }
 
 
@@ -1118,6 +1131,13 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-majority-vote" || cmd == "-mv")
+    {
+    std::vector<int> cmd_args = ReadIntegerArgs(argv, argc);
+    LabelVoting<TPixel, VDim>(this)(cmd_args);
+    return cmd_args.size();
+    }
+
   // No else if here because of a windows compiler error (blocks nested too deeply)
   if (cmd == "-manual")
     {
@@ -1545,9 +1565,13 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-otsu")
     {
-    OtsuThreshold<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
+    std::vector<int> cmd_args = ReadIntegerArgs(argv, argc);
+    if (cmd_args.size()==0) {
+      OtsuThreshold<TPixel, VDim> (this)();
+    } else {
+      OtsuThreshold<TPixel, VDim> (this)(cmd_args);
+    }
+    return cmd_args.size();
     }
 
   else if (cmd == "-overlap")
@@ -2272,6 +2296,27 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  // Overwrite ITK tolerances
+  else if (cmd == "-tolerance")
+    {
+    // Read the double part
+    char *endptr;
+
+    // Read the floating point part
+    char *str = argv[1];
+    double val = strtod(argv[1], &endptr);
+
+    // Check validity
+    if (endptr == str)
+      throw ConvertException("Can't convert %s to a double", str);
+
+    // Set orientation and coordinate tolerances
+    m_Tolerance = val;
+    itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(m_Tolerance);
+    itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(m_Tolerance);
+    return 1;
+    }
+
   // Trim the image (trim background values from the margin)
   else if (cmd == "-trim")
     {
@@ -2512,7 +2557,7 @@ ImageConverter<TPixel, VDim>
   // Try processing command line
   try
     {
-    // Process commands, ingore the first argument
+    // Process commands, ignore the first argument
     ProcessCommandList(argc-1, argv+1);
     return 0;
     }

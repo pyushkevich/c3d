@@ -23,21 +23,20 @@
 
 =========================================================================*/
 
-#ifndef __OtsuThreshold_h_
-#define __OtsuThreshold_h_
+#ifndef __LabelVoting_h_
+#define __LabelVoting_h_
 
 #include "ConvertAdapter.h"
 
 template<class TPixel, unsigned int VDim>
-class OtsuThreshold : public ConvertAdapter<TPixel, VDim>
+class LabelVoting : public ConvertAdapter<TPixel, VDim>
 {
 public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
-  OtsuThreshold(Converter *c) : c(c) {}
+  LabelVoting(Converter *c) : c(c) {}
 
-  void operator() ();
   void operator() (std::vector<int> cmd_args);
 
 private:
