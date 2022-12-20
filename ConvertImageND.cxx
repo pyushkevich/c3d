@@ -2656,9 +2656,38 @@ typename ImageConverter<TPixel, VDim>::RealVector
 ImageConverter<TPixel, VDim>
 ::ReadRealSize(const char *vec_in)
 {
-  RealVector x = ReadRealVector(vec_in, false);
-  for(size_t d = 0; d < VDim; d++)
-    x[d] = fabs(x[d]);
+  // Output vector
+  RealVector x;
+  VecSpec type;
+
+  // Read the vector
+  ReadVecSpec(vec_in, x, type);
+
+  // Check the type of the vector
+  if (type != VOXELS && type != PHYSICAL && type != PERCENT)
+    throw ConvertException(
+      "Invalid real size spec %s (must end with 'mm' or 'vox' or '%' )", vec_in);
+
+  // If in percent, scale by voxel size
+  if (type == PERCENT)
+    {
+    for(size_t i = 0; i < VDim; i++)
+      x[i] *= m_ImageStack.back()->GetBufferedRegion().GetSize()[i] / 100.0;
+    type = VOXELS;
+    }
+
+  // If the vector is in vox units, map it to physical units
+  if (type == VOXELS)
+    {
+    for(size_t i = 0; i < VDim; i++)
+      x[i] = x[i] * m_ImageStack.back()->GetSpacing()[i];
+    }
+
+  // The size cannot be negative
+  for(size_t i = 0; i < VDim; i++)
+    if(x[i] < 0.0)
+      throw ConvertException("Invalid real size spec %s (cannot be negative)", vec_in);
+
   return x;
 }
 

@@ -117,7 +117,18 @@ public:
   // Read vectors, etc from command line
   SizeType ReadSizeVector(const char *vec);
   IndexType ReadIndexVector(const char *vec);
+
+  /**
+   * Read a RAS coordinate or a RAS offset vector. If specified in units
+   * of mm, the string input is parsed and returned. If specified in voxel
+   * units, the VOX->RAS matrix is applied.
+   */
   RealVector ReadRealVector(const char *vec, bool is_point);
+
+  /**
+   * Read a size. If specified in units of mm, the string input is parsed and returned.
+   * If specified in voxel units, the input is multiplied by the spacing.
+   */
   RealVector ReadRealSize(const char *vec);
   TPixel ReadIntensityValue(const char *vec);
 
