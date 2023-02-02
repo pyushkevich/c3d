@@ -2,9 +2,9 @@
 #define RANDOMFORESTCLASSIFYIMAGEFILTER_TXX
 
 #include "RandomForestClassifyImageFilter.h"
-#include "itkImageRegionConstIterator.h"
+#include "itkImageRegionIteratorWithIndex.h"
 #include "RandomForestClassifier.h"
-#include "ImageCollectionToImageFilter.h"
+#include "ImageCollectionConstIteratorWithIndex.h"
 #include <itkProgressReporter.h>
 
 #include "Library/data.h"
@@ -163,25 +163,18 @@ RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TL
     it_out.push_back(OutputIter(this->GetOutput(k), out_region));
 
   // Create a collection iterator for the inputs
-  typedef ImageCollectionConstRegionIteratorWithIndex<
-      TInputImage, TInputVectorImage> CollectionIter;
+  typedef ImageCollectionConstIteratorWithIndex<TInputImage, TInputVectorImage> CollectionIter;
 
   // Configure the input collection iterator
-  CollectionIter cit(out_region);
+  CollectionIter cit(m_Classifier->GetPatchRadius(), out_region);
   for( itk::InputDataObjectIterator it( this ); !it.IsAtEnd(); it++ )
     cit.AddImage(it.GetInput());
-
-  // TODO: This is hard-coded
-  cit.SetRadius(m_Classifier->GetPatchRadius());
 
   // Get the number of components
   int nComp = cit.GetTotalComponents();
   int nPatch = cit.GetNeighborhoodSize();
-  int nColumns = nComp * nPatch;
-
-  // Are coordinate features used?
-  if(m_Classifier->GetUseCoordinateFeatures())
-    nColumns += 3;
+  int nImageFeatures = nComp * nPatch;
+  int nColumns = nImageFeatures + (m_Classifier->GetUseCoordinateFeatures() ? ImageDimension : 0);
 
   // Get the class weights (as they are assigned to foreground/background)
   const typename ClassifierType::WeightArray &class_weights = m_Classifier->GetClassWeights();
@@ -210,15 +203,12 @@ RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TL
   while(!it_out[0].IsAtEnd())
     {
     // Assign the data to the testData vector
-    int k = 0;
-    for(int i = 0; i < nComp; i++)
-      for(int j = 0; j < nPatch; j++)
-        testData.data[0][k++] = cit.NeighborValue(i,j);
+    cit.GetNeighborhoodValues(testData.data[0]);
 
     // Add the coordinate features
     if(m_Classifier->GetUseCoordinateFeatures())
-      for(int d = 0; d < 3; d++)
-        testData.data[0][k++] = it_out[0].GetIndex()[d];
+      for(int d = 0; d < ImageDimension; d++)
+        testData.data[0][nImageFeatures + d] = it_out[0].GetIndex()[d];
 
     // Perform classification on this data
     m_Classifier->GetForest()->ApplyFast(testData, testResult, vIndex, vResult);
