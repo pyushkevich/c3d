@@ -194,7 +194,7 @@ ConvertAPI<TPixel,VDim>
 
   va_list args;
   va_start (args, cmdline);
-  vsprintf (buffer, cmdline, args);
+  vsnprintf(buffer, 8192, cmdline, args);
   va_end (args);
 
   int argc = 0;
