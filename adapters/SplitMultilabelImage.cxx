@@ -50,7 +50,7 @@ SplitMultilabelImage<TPixel, VDim>
     for(ConstIterator it(img, img->GetBufferedRegion()); !it.IsAtEnd(); ++it)
       {
       double val = it.Get();
-      if(vnl_math::isfinite(val))
+      if(std::isfinite(val))
         sval.insert(val);
       }
   

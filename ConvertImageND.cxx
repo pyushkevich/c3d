@@ -2852,7 +2852,7 @@ ImageConverter<TPixel, VDim>
       for(size_t i = 0; i < n; i++, q++)
         {
         // We don't include nans and if FGQUANTILE, background values
-        if (!vnl_math::isnan(*q))
+        if (!std::isnan(*q))
           if (m_PercentIntensityMode == PIM_QUANTILE || *q != m_Background)
             {*p = *q; ++p;}
         }
