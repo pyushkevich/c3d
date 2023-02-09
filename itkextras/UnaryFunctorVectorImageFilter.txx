@@ -65,8 +65,14 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
 template< typename TInputImage, typename TOutputImage, typename TFunction  >
 void
 UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
+#if ITK_VERSION_MAJOR >= 5
 ::DynamicThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread)
+#else
+::ThreadedGenerateData(
+    const OutputImageRegionType & outputRegionForThread,
+    itk::ThreadIdType threadId)
+#endif
 {
   // Get the image
   InputImageType *input = const_cast<InputImageType *>(this->GetInput());

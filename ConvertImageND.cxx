@@ -384,6 +384,15 @@ struct ConvertAlgorithmParameters
     }
 };
 
+void SetNumberOfThreads(const unsigned int numThreads)
+{
+#if ITK_VERSION_MAJOR >= 5
+  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(numThreads);
+  itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(numThreads);
+#else
+  itk::MultiThreader::SetGlobalDefaultNumberOfThreads(numThreads);
+#endif
+}
 
 template<class TPixel, unsigned int VDim>
 ImageConverter<TPixel,VDim>
@@ -391,9 +400,12 @@ ImageConverter<TPixel,VDim>
   : os_out(&std::cout), os_err(&std::cerr), verbose(&devnull)
 {
   // Disable multithreading
+#if ITK_VERSION_MAJOR >= 5
   m_SystemNumberOfThreads = itk::MultiThreaderBase::GetGlobalMaximumNumberOfThreads();
-  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(1);
-  itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(1);
+#else
+  m_SystemNumberOfThreads = itk::MultiThreader::GetGlobalDefaultNumberOfThreads();
+#endif
+  SetNumberOfThreads(1);
 
   // Initialize to defaults
   m_TypeId = "float";
@@ -2330,15 +2342,13 @@ ImageConverter<TPixel, VDim>
     int nthreads = atoi(argv[1]);
     if(nthreads == 0)
       nthreads = m_SystemNumberOfThreads;
-    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(nthreads);
-    itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(nthreads);
+    SetNumberOfThreads(nthreads);
     return 1;
     }
 
   else if (cmd == "-threads-all")
     {
-    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(m_SystemNumberOfThreads);
-    itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(m_SystemNumberOfThreads);
+    SetNumberOfThreads(m_SystemNumberOfThreads);
     return 0;
     }
 
