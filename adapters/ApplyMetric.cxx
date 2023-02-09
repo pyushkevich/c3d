@@ -273,15 +273,24 @@ ApplyMetric<TPixel, VDim>
   MatrixType mfixed  = fixed->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix().as_matrix();
   MatrixType mmoving = moving->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix().as_matrix();
   
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   MatrixType mcomb = mmoving * vnl_matrix_inverse<double>(mfixed).as_matrix();
+#else
+  MatrixType mcomb = mmoving * vnl_matrix_inverse<double>(mfixed);
+#endif
   // Peform Denman-Beavers iteration
   MatrixType Z, Y = mcomb;
   Z.set_identity();
 
   for(size_t i = 0; i < 16; i++) 
     {    
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
     MatrixType Ynext = 0.5 * (Y + vnl_matrix_inverse<double>(Z).as_matrix());
     MatrixType Znext = 0.5 * (Z + vnl_matrix_inverse<double>(Y).as_matrix());
+#else
+    MatrixType Ynext = 0.5 * (Y + vnl_matrix_inverse<double>(Z));
+    MatrixType Znext = 0.5 * (Z + vnl_matrix_inverse<double>(Y));
+#endif
     Y = Ynext;
     Z = Znext;
     }    

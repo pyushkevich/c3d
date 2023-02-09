@@ -29,7 +29,11 @@
 
 #include <itkImageLinearIteratorWithIndex.h>
 #include "ImageRegionConstIteratorWithIndexOverride.h"
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
 #include "itkTotalProgressReporter.h"
+#else
+#include "itkProgressReporter.h"
+#endif
 
 /**
  * Constructor
@@ -90,7 +94,13 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
 
   // Progress
   const size_t numberOfLinesToProcess = outputRegionForThread.GetNumberOfPixels() / line_length;
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   itk::TotalProgressReporter progress( this, output->GetRequestedRegion().GetNumberOfPixels());
+#else
+#if ITK_VERSION_MAJOR < 5
+  itk::ProgressReporter progress( this, threadId, numberOfLinesToProcess );
+#endif
+#endif
 
   // Start iterating over lines
   while(!itOutput.IsAtEnd())
@@ -110,7 +120,13 @@ UnaryFunctorVectorImageFilter< TInputImage, TOutputImage, TFunction >
 
     itInput.NextLine();
     itOutput.NextLine();
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
     progress.Completed(line_length);
+#else
+#if ITK_VERSION_MAJOR < 5
+    progress.CompletedPixel();
+#endif
+#endif
     }
 }
 
