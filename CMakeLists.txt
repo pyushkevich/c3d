@@ -38,7 +38,7 @@ ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
 IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
   # Do we want to build the UI
-  OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interfaace?" OFF)
+  OPTION(BUILD_GUI "Do you want to build the Qt-based C3D user interface?" OFF)
 
   # List of ITK modules
   SET(ITK_MODULE_LIST
