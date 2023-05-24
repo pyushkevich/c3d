@@ -1561,7 +1561,7 @@ Syntax: `-wrap <vector> `
 
 Wrap image around one or more voxel dimensions. Wrapping is typically used to correct for MRI wrap-around artifacts. The vector must have integer components, possibly negative. For example, 
 
-    c3d badmri.nii.gz -wrap 0x20x0 -o fixedmri.nii.gz
+    c3d badmri.nii.gz -wrap 0x-20x0 -o fixedmri.nii.gz
 
 will wrap the image in the second voxel dimension by 20 voxels (i.e., voxel at 10x40x20 will me moved to the position 10x20x20). 
 

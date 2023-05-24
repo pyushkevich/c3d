@@ -50,9 +50,22 @@ WrapDimension<TPixel, VDim>
   // Explain what we are doing
   *c->verbose << "Wrapping image #" << c->m_ImageStack.size() << " by " << xWrap << endl;
 
+  ImagePointer out = filter->GetOutput();
+
+  // Change the origin
+  itk::Point<double, VDim> org;
+
+  IndexType negWrap;
+
+  for(int i = 0; i < VDim; i++)
+    negWrap[i] = -1 * xWrap[i];
+
+  out->TransformIndexToPhysicalPoint(negWrap, org);
+  out->SetOrigin(org);
+
   // Save the output
   c->m_ImageStack.pop_back();
-  c->m_ImageStack.push_back(filter->GetOutput());
+  c->m_ImageStack.push_back(out);
 }
 
 // Invocations
