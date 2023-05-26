@@ -13,11 +13,11 @@
 	<key>CFBundleName</key>
 	<string>Convert3DGUI</string>
 	<key>CFBundleDisplayName</key>
-	<string>C3D GUI Console</string>
+	<string>Convert3D GUI Console</string>
 	<key>CFBundleVersion</key>
 	<string>59</string>
 	<key>CFBundleShortVersionString</key>
-	<string>@C3D_VERSION_FULL@</string>
+	<string>@CONVERT3D_VERSION_FULL@</string>
 	<key>CFBundleSignature</key>
   <string>itksnap</string>
   <key>NSPrincipalClass</key>

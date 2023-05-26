@@ -112,6 +112,11 @@ WriteImage<TPixel, VDim>
     }
 }
 
+inline bool string_ends_with(const char *file, const char *ext)
+{
+  int p = strlen(file) - strlen(ext);
+  return p < 0 ? false : (strcmp(file + p, ext) == 0);
+}
 
 template<class TPixel, unsigned int VDim>
 template<class TOutPixel>
@@ -122,8 +127,8 @@ WriteImage<TPixel, VDim>
   if(ncomp <= 0)
     throw ConvertException("No data has been generated! Can't write to %s", file);
 
-  // Get the top image on the stack (for reference information)
-  ImagePointer itop = c->m_ImageStack.back();
+  // Get the last image to be saved and use it as a reference for origin/spacing/etc
+  ImagePointer itop = c->m_ImageStack[pstart + ncomp - 1];
 
   // Check compatibility
   for(size_t i = 0; i < ncomp-1; i++)
@@ -136,10 +141,20 @@ WriteImage<TPixel, VDim>
   // Define the output image type
   typedef itk::VectorImage<TOutPixel, VDim> OutputImageType;
   typename OutputImageType::Pointer output = OutputImageType::New();
-  output->CopyInformation(itop);
   output->SetRegions(itop->GetBufferedRegion());
+  output->SetSpacing(itop->GetSpacing());
+  output->SetOrigin(itop->GetOrigin());
+  output->SetDirection(itop->GetDirection());
+  output->SetMetaDataDictionary(itop->GetMetaDataDictionary());
   output->SetNumberOfComponentsPerPixel(ncomp);
   output->Allocate();
+
+  // Issue warning if writing a NIFTI file and last dimension is one
+  if(output->GetBufferedRegion().GetSize()[VDim-1] == 1 &&
+     (string_ends_with(file, ".nii.gz") || string_ends_with(file, ".nii"))) 
+    {
+    std::cerr << "Warning: spatial information is lost when saving a single-slice multi-component image as NIFTI." << std::endl;
+    }
 
   // Describe what we are doing
   *c->verbose << "Writing Images " << pstart+1 << " to " << (pstart+ncomp) << " to multicomponent file " << file << endl;

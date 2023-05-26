@@ -62,6 +62,7 @@
 #include "ImageLaplacian.h"
 #include "LabelOverlapMeasures.h"
 #include "LabelStatistics.h"
+#include "LabelVoting.h"
 #include "LandmarksToSpheres.h"
 #include "LaplacianSharpening.h"
 #include "LevelSetSegmentation.h"
@@ -148,7 +149,7 @@ unsigned char c3d_md[] = {
 
 using namespace itksys;
 
-extern const char *ImageConverter_VERSION_STRING;
+extern const char *Convert3DVersionInfo;
 
 // Helper function: read a double, throw exception if unreadable
 double myatof(char *str)
@@ -238,6 +239,17 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
 }
 
 
+std::vector<int> ReadIntegerArgs(char* argv[], int argc)
+{
+  std::vector<int> cmd_args;
+  for(unsigned int i = 1; i < argc; i++) {
+    try {  // try to convert to int
+      int value = std::stoi(argv[i]);
+      cmd_args.push_back(value);
+    } catch(const std::logic_error &e) { break; }
+  }
+  return cmd_args;
+}
 
     /*
     out << "Command Listing: " << endl;
@@ -422,8 +434,9 @@ ImageConverter<TPixel,VDim>
 
   // Set orientation and coordinate tolerances to something more
   // reasonable than the ITK defaults
-  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(1.0e-4);
-  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(1.0e-4);
+  m_Tolerance = 1.0e-4;
+  itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(m_Tolerance);
+  itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(m_Tolerance);
 }
 
 
@@ -614,7 +627,7 @@ ImageConverter<TPixel, VDim>
     {
     Canny<TPixel, VDim> adapter(this);
     RealVector sigma = ReadRealSize(argv[1]);
-    double tLower = ReadIntensityValue(argv[1]);
+    double tLower = ReadIntensityValue(argv[2]);
     double tUpper = ReadIntensityValue(argv[3]);
 
     adapter(sigma, tLower, tUpper);
@@ -1118,6 +1131,13 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-majority-vote" || cmd == "-mv")
+    {
+    std::vector<int> cmd_args = ReadIntegerArgs(argv, argc);
+    LabelVoting<TPixel, VDim>(this)(cmd_args);
+    return cmd_args.size();
+    }
+
   // No else if here because of a windows compiler error (blocks nested too deeply)
   if (cmd == "-manual")
     {
@@ -1545,9 +1565,13 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-otsu")
     {
-    OtsuThreshold<TPixel, VDim> adapter(this);
-    adapter();
-    return 0;
+    std::vector<int> cmd_args = ReadIntegerArgs(argv, argc);
+    if (cmd_args.size()==0) {
+      OtsuThreshold<TPixel, VDim> (this)();
+    } else {
+      OtsuThreshold<TPixel, VDim> (this)(cmd_args);
+    }
+    return cmd_args.size();
     }
 
   else if (cmd == "-overlap")
@@ -1599,6 +1623,29 @@ ImageConverter<TPixel, VDim>
       {
       // Constraint: lower + upper = desired - current
       long bilateral_pad = padNewSize[i] - currentSize[i];
+      padExtentLower[i] = bilateral_pad / 2;
+      padExtentUpper[i] = bilateral_pad - padExtentLower[i];
+      }
+
+    // Use the adapter
+    PadImage<TPixel, VDim> adapter(this);
+    adapter(padExtentLower, padExtentUpper, padValue);
+    return 2;
+    }
+
+  else if (cmd == "-pad-to-multiple")
+    {
+    // Read the number by which we want the size to be divisible
+    SizeType multiple = ReadSizeVector(argv[1]);
+    float padValue = atof(argv[2]);
+
+    // How much to add in each dimension
+    IndexType padExtentLower, padExtentUpper;
+    SizeType currentSize = this->PeekLastImage()->GetBufferedRegion().GetSize();
+    for(unsigned int i = 0; i < VDim; i++)
+      {
+      // Constraint: lower + upper = desired - current
+      long bilateral_pad = multiple[i] - (currentSize[i] % multiple[i]);
       padExtentLower[i] = bilateral_pad / 2;
       padExtentUpper[i] = bilateral_pad - padExtentLower[i];
       }
@@ -2249,6 +2296,27 @@ ImageConverter<TPixel, VDim>
     return 1;
     }
 
+  // Overwrite ITK tolerances
+  else if (cmd == "-tolerance")
+    {
+    // Read the double part
+    char *endptr;
+
+    // Read the floating point part
+    char *str = argv[1];
+    double val = strtod(argv[1], &endptr);
+
+    // Check validity
+    if (endptr == str)
+      throw ConvertException("Can't convert %s to a double", str);
+
+    // Set orientation and coordinate tolerances
+    m_Tolerance = val;
+    itk::ImageToImageFilterCommon::SetGlobalDefaultCoordinateTolerance(m_Tolerance);
+    itk::ImageToImageFilterCommon::SetGlobalDefaultDirectionTolerance(m_Tolerance);
+    return 1;
+    }
+
   // Trim the image (trim background values from the margin)
   else if (cmd == "-trim")
     {
@@ -2292,7 +2360,7 @@ ImageConverter<TPixel, VDim>
 
   else if (cmd == "-version")
     {
-    this->sout() << "Version " << ImageConverter_VERSION_STRING << endl;
+    this->sout() << Convert3DVersionInfo << endl;
     return 0;
     }
 
@@ -2489,7 +2557,7 @@ ImageConverter<TPixel, VDim>
   // Try processing command line
   try
     {
-    // Process commands, ingore the first argument
+    // Process commands, ignore the first argument
     ProcessCommandList(argc-1, argv+1);
     return 0;
     }
@@ -2633,9 +2701,38 @@ typename ImageConverter<TPixel, VDim>::RealVector
 ImageConverter<TPixel, VDim>
 ::ReadRealSize(const char *vec_in)
 {
-  RealVector x = ReadRealVector(vec_in, false);
-  for(size_t d = 0; d < VDim; d++)
-    x[d] = fabs(x[d]);
+  // Output vector
+  RealVector x;
+  VecSpec type;
+
+  // Read the vector
+  ReadVecSpec(vec_in, x, type);
+
+  // Check the type of the vector
+  if (type != VOXELS && type != PHYSICAL && type != PERCENT)
+    throw ConvertException(
+      "Invalid real size spec %s (must end with 'mm' or 'vox' or '%' )", vec_in);
+
+  // If in percent, scale by voxel size
+  if (type == PERCENT)
+    {
+    for(size_t i = 0; i < VDim; i++)
+      x[i] *= m_ImageStack.back()->GetBufferedRegion().GetSize()[i] / 100.0;
+    type = VOXELS;
+    }
+
+  // If the vector is in vox units, map it to physical units
+  if (type == VOXELS)
+    {
+    for(size_t i = 0; i < VDim; i++)
+      x[i] = x[i] * m_ImageStack.back()->GetSpacing()[i];
+    }
+
+  // The size cannot be negative
+  for(size_t i = 0; i < VDim; i++)
+    if(x[i] < 0.0)
+      throw ConvertException("Invalid real size spec %s (cannot be negative)", vec_in);
+
   return x;
 }
 
@@ -3008,9 +3105,23 @@ ImageConverter<TPixel, VDim>
   size_t narg = 0;
 
   // If there are less than two images on the stack, the accum command will not be run.
-  if (m_ImageStack.size() < 2)
+  if (m_ImageStack.size() < 1)
     {
     throw ConvertException("Too few images on the stack for the -accum command, two or more images are required!");
+    }
+
+  if (m_ImageStack.size() == 1)
+    {
+    // Special case where the commands are just ignored
+    *verbose << "Accum command with one argument - skipping" << endl;
+    while(strcmp(argv[narg], "-endaccum") && narg < argc)
+      ++narg;
+
+    if(narg == argc)
+      throw ConvertException("Unterminated -accum command");
+
+    m_LoopType = LOOP_NONE;
+    return narg;
     }
 
   // Back up the current stack

@@ -1,2 +1,7 @@
-const char *ImageConverter_VERSION_STRING = 
-  "@C3D_VERSION_MAJOR@.@C3D_VERSION_MINOR@.@C3D_VERSION_PATCH@";
+const char *Convert3DVersionInfo =
+    "Convert3D Version @CONVERT3D_VERSION_FULL@\n"
+    "  Release date:      @CONVERT3D_VERSION_RELEASE_DATE_FORMATTED@\n"
+    "  Compile date:      @CONVERT3D_VERSION_COMPILE_DATE@\n"
+    "  GIT branch:        @CONVERT3D_VERSION_GIT_BRANCH@\n"
+    "  GIT commit:        @CONVERT3D_VERSION_GIT_SHA1@\n"
+    "  GIT commit date:   @CONVERT3D_VERSION_GIT_TIMESTAMP@\n";
