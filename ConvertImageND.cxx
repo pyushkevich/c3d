@@ -3370,7 +3370,7 @@ ImageConverter<TPixel, VDim>
   char buffer[4096];
   va_list args;
   va_start (args, fmt);
-  vsprintf (buffer, fmt, args);
+  vsnprintf(buffer, 4096, fmt, args);
   va_end (args);
 
   sout << buffer;

@@ -35,10 +35,10 @@ class ConvertException : public std::exception
 public:
   ConvertException(const char *fmt, ...)
     {
-    char buffer[1024];
+    char buffer[4096];
     va_list parg;
     va_start(parg, fmt);
-    vsprintf(buffer, fmt, parg);
+    vsnprintf(buffer, 4096, fmt, parg);
     va_end(parg);
     message=buffer;
     }

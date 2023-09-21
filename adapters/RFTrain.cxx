@@ -24,7 +24,7 @@
 =========================================================================*/
 
 #include "RFTrain.h"
-#include "ImageCollectionToImageFilter.h"
+#include "ImageCollectionConstIteratorWithIndex.h"
 #include "itkVectorImage.h"
 #include "Library/classifier.h"
 #include "Library/classification.h"
@@ -45,8 +45,7 @@ RFTrain<TPixel, VDim>
 
   // Iterator for grouping images into a multi-component image
   typedef itk::VectorImage<TPixel, VDim> VectorImageType;
-  typedef ImageCollectionConstRegionIteratorWithIndex<
-      ImageType, VectorImageType> CollectionIter;
+  typedef ImageCollectionConstIteratorWithIndex<ImageType, VectorImageType> CollectionIter;
 
   // Get the segmentation image - which determines the samples
   typedef itk::ImageRegionConstIteratorWithIndex<ImageType> LabelIter;
@@ -63,8 +62,7 @@ RFTrain<TPixel, VDim>
       nSamples++;
 
   // Create an iterator for going over all the anatomical image data
-  CollectionIter cit(reg);
-  cit.SetRadius(param.patch_radius);
+  CollectionIter cit(param.patch_radius, reg);
 
   // Add all the anatomical images to this iterator
   for(int i = 0; i < c->m_ImageStack.size() - 1; i++)
@@ -73,11 +71,8 @@ RFTrain<TPixel, VDim>
   // Get the number of components
   int nComp = cit.GetTotalComponents();
   int nPatch = cit.GetNeighborhoodSize();
-  int nColumns = nComp * nPatch;
-
-  // Are we using coordinate informtion
-  if(param.use_coordinate_features)
-    nColumns += VDim;
+  int nImageFeatures = nComp * nPatch;
+  int nColumns = nImageFeatures + (param.use_coordinate_features ? VDim : 0);
 
   // Create a new sample
   typedef MLData<TPixel, TPixel> SampleType;
@@ -92,15 +87,12 @@ RFTrain<TPixel, VDim>
       {
       // Fill in the data
       std::vector<TPixel> &column = sample->data[iSample];
-      int k = 0;
-      for(int i = 0; i < nComp; i++)
-        for(int j = 0; j < nPatch; j++)
-          column[k++] = cit.NeighborValue(i,j);
+      cit.GetNeighborhoodValues(column);
 
       // Add the coordinate features if used
       if(param.use_coordinate_features)
         for(int d = 0; d < VDim; d++)
-          column[k++] = lit.GetIndex()[d];
+          column[nImageFeatures + d] = lit.GetIndex()[d];
 
       // Fill in the label
       sample->label[iSample] = label;
