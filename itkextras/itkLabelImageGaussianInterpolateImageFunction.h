@@ -170,11 +170,11 @@ public:
         
         double wtest;
         OutputType V = it.Get();
-        WeightIter it = wm.find(V);
-        if(it != wm.end())
+        WeightIter w_it = wm.find(V);
+        if(w_it != wm.end())
           {
-          it->second += w;
-          wtest = it->second;
+          w_it->second += w;
+          wtest = w_it->second;
           }
         else
           {
