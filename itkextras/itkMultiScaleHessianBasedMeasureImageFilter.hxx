@@ -18,6 +18,8 @@
 #ifndef __itkMultiScaleHessianBasedMeasureImageFilter_hxx
 #define __itkMultiScaleHessianBasedMeasureImageFilter_hxx
 
+#include <cmath>
+
 #include "itkMultiScaleHessianBasedMeasureImageFilter.h"
 #include "itkImageRegionIterator.h"
 #include "vnl/vnl_math.h"
@@ -349,8 +351,8 @@ MultiScaleHessianBasedMeasureImageFilter
     case Self::LogarithmicSigmaSteps:
       {
       const double stepSize =
-        vnl_math::max( 1e-10, ( vcl_log(m_SigmaMaximum) - vcl_log(m_SigmaMinimum) ) / ( m_NumberOfSigmaSteps - 1 ) );
-      sigmaValue = vcl_exp(vcl_log (m_SigmaMinimum) + stepSize * scaleLevel);
+        vnl_math::max( 1e-10, ( std::log(m_SigmaMaximum) - std::log(m_SigmaMinimum) ) / ( m_NumberOfSigmaSteps - 1 ) );
+      sigmaValue = std::exp(std::log (m_SigmaMinimum) + stepSize * scaleLevel);
       break;
       }
     default:

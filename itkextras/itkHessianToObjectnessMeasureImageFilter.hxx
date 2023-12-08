@@ -18,6 +18,8 @@
 #ifndef __itkHessianToObjectnessMeasureImageFilter_hxx
 #define __itkHessianToObjectnessMeasureImageFilter_hxx
 
+#include <cmath>
+
 #include "itkHessianToObjectnessMeasureImageFilter.h"
 #include "itkImageRegionIterator.h"
 #include "itkSymmetricEigenAnalysis.h"
@@ -124,12 +126,12 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
         {
         rADenominatorBase *= sortedAbsEigenValues[j];
         }
-      if ( vcl_fabs(rADenominatorBase) > 0.0 )
+      if ( std::fabs(rADenominatorBase) > 0.0 )
         {
-        if ( vcl_fabs(m_Alpha) > 0.0 )
+        if ( std::fabs(m_Alpha) > 0.0 )
           {
-          rA /= vcl_pow( rADenominatorBase, 1.0 / ( ImageDimension - m_ObjectDimension - 1 ) );
-          objectnessMeasure *= 1.0 - vcl_exp( -0.5 * vnl_math::sqr(rA) / vnl_math::sqr(m_Alpha) );
+          rA /= std::pow( rADenominatorBase, 1.0 / ( ImageDimension - m_ObjectDimension - 1 ) );
+          objectnessMeasure *= 1.0 - std::exp( -0.5 * vnl_math::sqr(rA) / vnl_math::sqr(m_Alpha) );
           }
         }
       else
@@ -146,11 +148,11 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
         {
         rBDenominatorBase *= sortedAbsEigenValues[j];
         }
-      if ( vcl_fabs(rBDenominatorBase) > 0.0 && vcl_fabs(m_Beta) > 0.0 )
+      if ( std::fabs(rBDenominatorBase) > 0.0 && std::fabs(m_Beta) > 0.0 )
         {
-        rB /= vcl_pow( rBDenominatorBase, 1.0 / ( ImageDimension - m_ObjectDimension ) );
+        rB /= std::pow( rBDenominatorBase, 1.0 / ( ImageDimension - m_ObjectDimension ) );
 
-        objectnessMeasure *= vcl_exp( -0.5 * vnl_math::sqr(rB) / vnl_math::sqr(m_Beta) );
+        objectnessMeasure *= std::exp( -0.5 * vnl_math::sqr(rB) / vnl_math::sqr(m_Beta) );
         }
       else
         {
@@ -158,14 +160,14 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
         }
       }
 
-    if ( vcl_fabs(m_Gamma) > 0.0 )
+    if ( std::fabs(m_Gamma) > 0.0 )
       {
       double frobeniusNormSquared = 0.0;
       for ( unsigned int i = 0; i < ImageDimension; i++ )
         {
         frobeniusNormSquared += vnl_math::sqr(sortedAbsEigenValues[i]);
         }
-      objectnessMeasure *= 1.0 - vcl_exp( -0.5 * frobeniusNormSquared / vnl_math::sqr(m_Gamma) );
+      objectnessMeasure *= 1.0 - std::exp( -0.5 * frobeniusNormSquared / vnl_math::sqr(m_Gamma) );
       }
 
     // in case, scale by largest absolute eigenvalue
