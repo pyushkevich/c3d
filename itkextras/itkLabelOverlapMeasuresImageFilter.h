@@ -18,11 +18,11 @@
 #define __itkLabelOverlapMeasuresImageFilter_h
 
 #include <mutex>
+#include <unordered_map>
 
 #include "itkImageToImageFilter.h"
 #include "itkNumericTraits.h"
 
-#include "itk_hash_map.h"
 
 namespace itk {
 
@@ -101,7 +101,7 @@ public:
     };
 
   /** Type of the map used to store data per label */
-  typedef hash_map<LabelType, LabelSetMeasures> MapType;
+  typedef std::unordered_map<LabelType, LabelSetMeasures> MapType;
   typedef typename MapType::iterator MapIterator;
   typedef typename MapType::const_iterator MapConstIterator;
 
