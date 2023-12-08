@@ -109,7 +109,7 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
     EigenValueArrayType sortedAbsEigenValues;
     for ( unsigned int i = 0; i < ImageDimension; i++ )
       {
-      sortedAbsEigenValues[i] = vnl_math_abs(sortedEigenValues[i]);
+      sortedAbsEigenValues[i] = vnl_math::abs(sortedEigenValues[i]);
       }
 
     // initialize the objectness measure
@@ -129,7 +129,7 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
         if ( vcl_fabs(m_Alpha) > 0.0 )
           {
           rA /= vcl_pow( rADenominatorBase, 1.0 / ( ImageDimension - m_ObjectDimension - 1 ) );
-          objectnessMeasure *= 1.0 - vcl_exp( -0.5 * vnl_math_sqr(rA) / vnl_math_sqr(m_Alpha) );
+          objectnessMeasure *= 1.0 - vcl_exp( -0.5 * vnl_math::sqr(rA) / vnl_math::sqr(m_Alpha) );
           }
         }
       else
@@ -150,7 +150,7 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
         {
         rB /= vcl_pow( rBDenominatorBase, 1.0 / ( ImageDimension - m_ObjectDimension ) );
 
-        objectnessMeasure *= vcl_exp( -0.5 * vnl_math_sqr(rB) / vnl_math_sqr(m_Beta) );
+        objectnessMeasure *= vcl_exp( -0.5 * vnl_math::sqr(rB) / vnl_math::sqr(m_Beta) );
         }
       else
         {
@@ -163,9 +163,9 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
       double frobeniusNormSquared = 0.0;
       for ( unsigned int i = 0; i < ImageDimension; i++ )
         {
-        frobeniusNormSquared += vnl_math_sqr(sortedAbsEigenValues[i]);
+        frobeniusNormSquared += vnl_math::sqr(sortedAbsEigenValues[i]);
         }
-      objectnessMeasure *= 1.0 - vcl_exp( -0.5 * frobeniusNormSquared / vnl_math_sqr(m_Gamma) );
+      objectnessMeasure *= 1.0 - vcl_exp( -0.5 * frobeniusNormSquared / vnl_math::sqr(m_Gamma) );
       }
 
     // in case, scale by largest absolute eigenvalue

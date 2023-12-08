@@ -153,7 +153,7 @@ private:
   struct AbsLessEqualCompare {
     bool operator()(EigenValueType a, EigenValueType b)
     {
-      return vnl_math_abs(a) <= vnl_math_abs(b);
+      return vnl_math::abs(a) <= vnl_math::abs(b);
     }
   };
 
