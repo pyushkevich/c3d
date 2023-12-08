@@ -17,8 +17,9 @@
 #ifndef __itkLabelOverlapMeasuresImageFilter_h
 #define __itkLabelOverlapMeasuresImageFilter_h
 
+#include <mutex>
+
 #include "itkImageToImageFilter.h"
-#include "itkFastMutexLock.h"
 #include "itkNumericTraits.h"
 
 #include "itk_hash_map.h"
@@ -195,7 +196,7 @@ private:
   std::vector<MapType>                            m_LabelSetMeasuresPerThread;
   MapType                                         m_LabelSetMeasures;
 
-  SimpleFastMutexLock                             m_Mutex;
+  std::mutex                                      m_Mutex;
 
 }; // end of class
 
