@@ -2148,8 +2148,24 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-split")
     {
     SplitMultilabelImage<TPixel, VDim> adapter(this);
-    adapter();
+    adapter(std::vector<double>());
     return 0;
+    }
+
+  else if (cmd == "-split-labels")
+    {
+    vector<double> v_labels;
+    for(int i = 1; i < argc; i++)
+      {
+      try
+        { v_labels.push_back(myatof(argv[i])); }
+      catch(...)
+        { break; }
+      }
+
+    SplitMultilabelImage<TPixel, VDim> adapter(this);
+    adapter(v_labels);
+    return v_labels.size();
     }
 
   else if (cmd == "-sqrt")

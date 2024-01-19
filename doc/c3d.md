@@ -1421,7 +1421,13 @@ Syntax: `-smooth-multilabel <sigma_vector> <label_list>`
 
 Applies Recurisve Gaussian Smoothing using [Deriche recursive smoothing algorithm][15] to an multi-label image for selected labels. The label_list should be a space-delimited string, wrapped by double quotes. To smooth all labels, leave an empty label_list: "". To select labels to smooth, for example, to smooth labels 2, 5, 6, the label list should be "2 5 6". Smoothing is applied on label-by-label basis and the labels are merged using voting (see **-merge**). Also see [Vector Format Specification][10] below. 
 
-#### -split: Split multi-label image into binary images
+#### -softmax: Compute softmax across all images on the stack
+
+Syntax: `-softmax`
+
+This command takes all the images on the stack, which must be the same dimensions, and replaces them with the same number of new images, where each voxel's intensity is replaced by corresponding softmax value computed across all images.
+
+#### -split: Split multi-label image into binary images (all labels present)
 
 Syntax: `-split`
 
@@ -1430,6 +1436,14 @@ This command takes a multilabel image (one with a small number of discrete inten
     c3d multilabel.nii -split -foreach -smooth 3mm -endfor -merge -o ml_smooth.nii
 
 Also of note is that the **-split** command will disregard infinite intensity values. So if you want to apply voting to a subset of the labels, you can replace labels you do not care about with *inf*, for example, using the **-thresh** command. 
+
+#### -split-labels: Split multi-label image into binary images (specific labels)
+
+Syntax: `-split-labels <label_list>`
+
+Same as the **-split** command, but labels are specified by the user.
+
+    c3d multilabel.nii -split-labels 1 2 3 0 -foreach -smooth 3mm -endfor -merge -o ml_smooth.nii
 
 #### -staple: STAPLE algorithm to combine segmentations
 

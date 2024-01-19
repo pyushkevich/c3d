@@ -37,7 +37,7 @@ public:
 
   SplitMultilabelImage(Converter *c) : c(c) {}
 
-  void operator() ();
+  void operator() (std::vector<double> values);
 
 private:
   Converter *c;
