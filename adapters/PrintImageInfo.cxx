@@ -27,6 +27,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 #include "itkSpatialOrientation.h"
+#include <nifti1_io.h>
 
 template<class AnyType>
 bool
@@ -222,7 +223,22 @@ PrintImageInfo<TPixel, VDim>
 
         // Make sure the value has more than blanks
         if(v_string.find_first_not_of(" ") != v_string.npos)
-          c->sout() << "    " << key << " = " << v_string << endl;
+          {
+          c->sout() << "    " << key << " = " << v_string;
+
+          bool v_is_integer = v_string.find_first_not_of("0123456789") == v_string.npos;
+          // Augment fields/lines with extra infomation
+          if (key == string("datatype"))  // itkNiftiImageIO field datatype
+            {
+            if (v_is_integer)
+              {
+              int v_int = atoi(v_string.c_str());
+              // Convert to string using nifti1_io.c function nifti_datatype_to_string
+              c->sout() << " (" << nifti_datatype_to_string(v_int) << ")";
+              }
+            }
+          c->sout() << endl;
+          }
         }
       else if(itk::ExposeMetaData(mdd, key, v_oflags))
         {
