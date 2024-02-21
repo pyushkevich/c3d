@@ -294,8 +294,8 @@ protected:
     std::vector<int> dest_offset;
   };
 
-  typedef typename Self::ImageData<TScalarImage> ScalarImageData;
-  typedef typename Self::ImageData<TVectorImage> VectorImageData;
+  typedef Self::ImageData<TScalarImage> ScalarImageData;
+  typedef Self::ImageData<TVectorImage> VectorImageData;
 
   std::vector<ScalarImageData> m_ScalarImageData;
   std::vector<VectorImageData> m_VectorImageData;
