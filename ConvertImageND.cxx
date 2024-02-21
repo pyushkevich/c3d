@@ -5,7 +5,7 @@
   Language:  C++
   Website:   itksnap.org/c3d
   Copyright (c) 2014 Paul A. Yushkevich
-  
+
   This file is part of C3D, a command-line companion tool to ITK-SNAP
 
   C3D is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -91,6 +91,7 @@
 #include "RetainLabels.h"
 #include "RFApply.h"
 #include "RFTrain.h"
+#include "RootMeanSquare.h"
 #include "SampleImage.h"
 #include "ScalarToRGB.h"
 #include "ScaleShiftImage.h"
@@ -144,7 +145,7 @@
 // this looks a little odd, but works - the include file contains raw bytes
 unsigned char c3d_md[] = {
   #include "markdown_docs.h"
-  0x00 
+  0x00
 };
 
 using namespace itksys;
@@ -225,7 +226,7 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
   size_t pos = 0;
   std::string token;
 
-  while ((pos = s.find(delimiter)) != std::string::npos) 
+  while ((pos = s.find(delimiter)) != std::string::npos)
   {
       token = s.substr(0, pos);
       ret.push_back(token);
@@ -384,7 +385,7 @@ std::vector<int> ReadIntegerArgs(char* argv[], int argc)
     */
 
 /**
- * Parameters for the various algorithms. Stored in a separate structure 
+ * Parameters for the various algorithms. Stored in a separate structure
  * in order to reduce number of variables declared in the header
  */
 template <class TPixel, unsigned int VDim>
@@ -466,18 +467,18 @@ ImageConverter<TPixel, VDim>
   // Print additional information on getting help
   out << "Getting help:" << std::endl;
 
-  out << "    " 
-    << std::setw(32) << std::left 
+  out << "    "
+    << std::setw(32) << std::left
     << "-h"
     << ": List commands" << std::endl;
 
-  out << "    " 
-    << std::setw(32) << std::left 
+  out << "    "
+    << std::setw(32) << std::left
     << "-h command"
     << ": Print help on command (e.g. -h add)" << std::endl;
 
-  out << "    " 
-    << std::setw(32) << std::left 
+  out << "    "
+    << std::setw(32) << std::left
     << "-manual"
     << ": Print complete reference manual" << std::endl;
 }
@@ -568,7 +569,7 @@ ImageConverter<TPixel, VDim>
 
   // Anti-alias a binary image, turning it into a smoother floating point image;
   // the argument is the iso-surface value
-  // This command is affected by -iterations and -rms flags
+  // This command is affected by -iterations and -alias-rms flags
   else if (cmd == "-antialias" || cmd == "-alias")
     {
     AntiAliasImage<TPixel, VDim> adapter(this);
@@ -691,7 +692,7 @@ ImageConverter<TPixel, VDim>
     // Try readin
     if (argc > 3)
       {
-      try 
+      try
         {
         int_min = ReadIntensityValue(argv[2]);
         int_max = ReadIntensityValue(argv[3]);
@@ -857,7 +858,7 @@ ImageConverter<TPixel, VDim>
     return 2;
     }
 
-  else if (cmd == "-extrude-seg") 
+  else if (cmd == "-extrude-seg")
     {
     ExtrudeSegmentation<TPixel, VDim> adapter(this);
     adapter();
@@ -967,7 +968,7 @@ ImageConverter<TPixel, VDim>
     int dimension = atoi(argv[1]);
     double minscale = atof(argv[2]);
     double maxscale = atof(argv[3]);
-    
+
     HessianObjectness<TPixel, VDim> adapter(this);
     adapter(dimension, minscale, maxscale);
 
@@ -1486,7 +1487,7 @@ ImageConverter<TPixel, VDim>
     // Write the rest
     return 1 + this->WriteMultiple(argc-1, argv+1, nc, cmd.c_str());
     }
-  
+
   else if (cmd == "-orient")
     {
     SetOrientation<TPixel,VDim> adapter(this);
@@ -1660,7 +1661,7 @@ ImageConverter<TPixel, VDim>
     {
     ComputeMoments<TPixel, VDim> adapter(this);
     adapter();
-    return 0; 
+    return 0;
     }
 
   else if (cmd == "-percent-intensity-mode" || cmd == "-pim")
@@ -1686,7 +1687,7 @@ ImageConverter<TPixel, VDim>
 
     // Read all integer arguments
     for(int i = 1; i < argc; i++)
-      try 
+      try
         { pos.push_back((int) myatol(argv[i])); }
       catch(...)
         { break; }
@@ -1698,7 +1699,7 @@ ImageConverter<TPixel, VDim>
         new_stack.push_back(m_ImageStack[pos[j]]);
       else if(pos[j] < 0 && -pos[j] <= (int) m_ImageStack.size())
         new_stack.push_back(m_ImageStack[m_ImageStack.size() + pos[j]]);
-      else 
+      else
         throw ConvertException("Invalid index %d in -pick command", pos[j]);
       }
 
@@ -1991,6 +1992,13 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-rms")
+    {
+    RootMeanSquare<TPixel, VDim> adapter(this);
+    adapter();
+    return 0;
+    }
+
   else if (cmd == "-rgb2hsv")
     {
     VoxelwiseComponentFunction<TPixel, VDim> adapter(this);
@@ -1998,7 +2006,7 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
-  else if (cmd == "-rms")
+  else if (cmd == "-antialias-rms")
     { m_Param->m_AntiAliasRMS = atof(argv[1]); return 1; }
 
   else if (cmd == "-round")
@@ -2101,7 +2109,7 @@ ImageConverter<TPixel, VDim>
     std::vector<unsigned short> labelsToSmooth;
     bool smoothAllLabels = false;
     std::vector<string> tokens;
-  
+
     tokens = split_string(argv[2], " ");
 
     // todo: range (:) with exception (-) parsing
@@ -2116,7 +2124,7 @@ ImageConverter<TPixel, VDim>
         labelsToSmooth.clear();
         break;
       }
-      
+
       if (is_unsigned_short(t.c_str()))
         labelsToSmooth.push_back((unsigned short)myatoul(t.c_str()));
       else
@@ -2228,7 +2236,7 @@ ImageConverter<TPixel, VDim>
     return 4;
     }
 
-  else if (cmd == "-swapdim") 
+  else if (cmd == "-swapdim")
     {
     // For now we only support a single string
     std::vector<std::string> code;
@@ -2561,7 +2569,7 @@ ImageConverter<TPixel, VDim>
   // Check the number of arguments
   if (argc == 1)
     {
-    this->serr() << 
+    this->serr() <<
       "PICSL convert3d tool - from the creators of ITK-SNAP " << endl <<
       "For full documentation and usage examples, see" << endl <<
       "    http://www.itksnap.org/c3d" << endl <<
@@ -2589,7 +2597,7 @@ ImageConverter<TPixel, VDim>
       "           c3d image.nii -command" << endl;
     return -1;
     }
-  
+
   catch (std::exception &exc)
     {
     this->serr() << "Exception caught of type " << typeid(exc).name() << endl;
@@ -3018,7 +3026,7 @@ ImageConverter<TPixel, VDim>
   size_t narg = 0;
 
   // Allow looping by components, each run of the loop applies to all the 1st, 2nd, 3rd, etc
-  // components of a multicomponent image. 
+  // components of a multicomponent image.
 
   // Back up the current stack
   ImageStack<ImageType> in_stack = m_ImageStack, out_stack;
@@ -3108,7 +3116,7 @@ ImageConverter<TPixel, VDim>
 }
 
 /**
- * The -accum function allows us to apply binary operations like -add to a list of 
+ * The -accum function allows us to apply binary operations like -add to a list of
  * images. The commands inside the -accum/-endaccum block are repeated for consecutive
  * pairs of images, i.e., 1 2 , then result(1,2) and 3, and so on. Within each block,
  * there are always two images on the stack, and the block must produce one image
@@ -3409,7 +3417,7 @@ ImageConverter<TPixel, VDim>
       sprintf(buffer, argv[1], i / n_comp);
       if(n_comp == 1)
         adapter(buffer, true, i);
-      else 
+      else
         adapter.WriteMultiComponent(buffer, n_comp, i);
       }
     return 1;

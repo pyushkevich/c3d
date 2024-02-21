@@ -26,7 +26,7 @@ ENDIF(WIN32)
 # modified from: https://github.com/starseeker/tinyscheme-cmake/blob/master/CMakeLists.txt
 # # Rather than load the init.scm file at run time,
 # # with the uncertainties as to where exactly the file
-# # resides, use William Ahern's hexdump to generate 
+# # resides, use William Ahern's hexdump to generate
 # # an embeddable version. Build our own copy of hexdump
 # # to ensure consistent behavior and portability.
 # # See http://25thandclement.com/~william/projects/hexdump.c.html
@@ -103,6 +103,7 @@ SET(SOURCES
   adapters/ResampleImage.cxx
   adapters/ResliceImage.cxx
   adapters/RetainLabels.cxx
+  adapters/RootMeanSquare.cxx
   adapters/RFApply.cxx
   adapters/RFTrain.cxx
   adapters/SampleImage.cxx
@@ -149,14 +150,14 @@ CONFIGURE_FILE(
 # Get the extra stuff compiled
 SUBDIRS(${CONVERT3D_SOURCE_DIR}/itkextras)
 
-ADD_LIBRARY(cnd_maxflow 
+ADD_LIBRARY(cnd_maxflow
   external/GCv2p3/GCoptimization.cpp
   external/GCv2p3/LinkedBlockList.cpp
   external/GCv2p3/graph.cpp
   external/GCv2p3/maxflow.cpp
 )
 
-ADD_LIBRARY(cnd_driver 
+ADD_LIBRARY(cnd_driver
   ${SOURCES}
   ConvertImageND.cxx
   utilities/doc/Documentation.cxx)
