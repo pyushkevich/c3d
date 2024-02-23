@@ -105,7 +105,7 @@ ExtractSlice<TPixel, VDim>
 template <class TPixel, unsigned int VDim>
 void
 ExtractSlice<TPixel, VDim>
-::operator() (string axis, char* position, unsigned int n_comp)
+::operator() (string axis, char* positions, unsigned int n_comp)
 {
   // Check input availability
   if(c->m_ImageStack.size() < n_comp)
@@ -139,6 +139,13 @@ ExtractSlice<TPixel, VDim>
   // 5. 12:3:-4 // range, every third slice
   
   // Split the string on the ':'
+  std::vector< std::vector<int> > pos_lists;
+  std::string position;
+  std::stringstream source_all(positions);
+  while(std::getline(source_all, position, ','))
+  {
+  *c->verbose << "Processing slice string: " << position << endl;
+
   std::string piece;
   std::stringstream source(position);
   std::vector<int> pos_list;
@@ -160,6 +167,13 @@ ExtractSlice<TPixel, VDim>
 
     pos_list.push_back(slicepos);
     }
+    pos_lists.push_back(pos_list);
+  }
+
+  std::vector<int> slice_extraction_list;
+  for(int l= 0; l < pos_lists.size(); l++)
+  {
+  std::vector<int> pos_list = pos_lists[l];
 
   // Now we have one, two or three numbers parsed
   int pos_first, pos_step = 1, pos_last;
@@ -204,13 +218,21 @@ ExtractSlice<TPixel, VDim>
       "Wrong slice list specification %d:%d:%d for -slice or -slice-all command! Step should be negative.",
       pos_first, pos_step, pos_last);
 
+  // Store slice extration positions
+  for(int i = pos_first; i <= pos_last; i+=pos_step)
+    slice_extraction_list.push_back(i);
+  }
+
   // Take the last n_comp images on the stack
   std::vector<ImagePointer> comp_ptr = c->PopNImages(n_comp);
 
   // Now extract each slice
-  for(int i = pos_first; i <= pos_last; i+=pos_step)
+  for(int s = 0; s < slice_extraction_list.size(); s++)
+  {
+    int i = slice_extraction_list[s];
     for(int k = 0; k < n_comp; k++)
       this->ExtractOneSlice(comp_ptr[k], slicedir, i);
+  }
 }
 
 // Invocations

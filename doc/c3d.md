@@ -1387,6 +1387,10 @@ Extracts a slice along the specified axis (x,y or z). The position specifier **p
     c3d input.img -slice z 0:-1 -oo slice%0d.nii.gz
     c3d input.img -slice z 20%:10%:80% -oo slice%0d.nii.gz
 
+Additional more than one entry or range can be given at the same time using the comma separated list notation.
+
+    c3d input.img -slice z 20%,30%:10%:70%,80% -oo slice%0d.nii.gz
+
 With the new command **c4d**, the **-slice** command can be used to extract volumes from a 4D image. This can be useful to reformat a 4D NIFTI image as a 3D multi-component NIFTI image, using the command.
 
     c4d input4d.nii.gz -slice w 0:-1 -omc output3d_multicomp.nii.gz
