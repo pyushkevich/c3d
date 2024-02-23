@@ -109,11 +109,11 @@ ExtractSlice<TPixel, VDim>
 {
   // Check input availability
   if(c->m_ImageStack.size() < n_comp)
-    throw ConvertException("At least %d images are required on the stack for the -slice command", n_comp);
+    throw ConvertException("At least %d images are required on the stack for the -slice or -slice-all command", n_comp);
 
   // Check that the images are the same size
   if(n_comp > 1 && !c->CheckStackSameDimensions(n_comp))
-    throw ConvertException("All images must be the same size for the -mslice command");
+    throw ConvertException("All images must be the same size for the -slice-all command");
 
   // Get the last image for the size command considerations
   SizeType size = c->PeekImage(0)->GetBufferedRegion().GetSize();
@@ -129,7 +129,7 @@ ExtractSlice<TPixel, VDim>
   else if (!axis.compare("w") || !axis.compare("3") || !axis.compare("t"))
     slicedir = 3;
   else
-    throw ConvertException("first parameter to -slice must be x,y,z or w");
+    throw ConvertException("first parameter to -slice or -slice-all must be one of either 0,1,2,3 or x,y,z,w/t");
 
   // Now determine the pattern of the second parameter. Allowed formats are
   // 1. 15      // slice 15 (0-based indexing)
@@ -196,12 +196,12 @@ ExtractSlice<TPixel, VDim>
   // Make sure all is legit
   if(pos_first < pos_last && pos_step <= 0)
     throw ConvertException(
-      "Wrong slice list specification %d:%d:%d for -slice command! Step should be positive.",
+      "Wrong slice list specification %d:%d:%d for -slice or -slice-all command! Step should be positive.",
       pos_first, pos_step, pos_last);
 
   if(pos_first > pos_last && pos_step >= 0)
     throw ConvertException(
-      "Wrong slice list specification %d:%d:%d for -slice command! Step should be negative.",
+      "Wrong slice list specification %d:%d:%d for -slice or -slice-all command! Step should be negative.",
       pos_first, pos_step, pos_last);
 
   // Take the last n_comp images on the stack
