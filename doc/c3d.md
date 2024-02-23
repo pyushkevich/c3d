@@ -1379,15 +1379,15 @@ Applies the Laplacian sharpening filter from ITK, which accentuates the edges in
 
 Syntax: `-slice axis position_spec`
 
-Extracts a slice along the specified axis (x,y or z). The position specifier **position_spec** can be a single slice or a range of slices. For a single slice, it can be specified as a number or a percentage. Numbering is zero-based, i.e, the first slice is slice 0, the last slice is N-1, where N is the number of slices. For a range, use MATLAB notation first:step:last. The slice is placed on the stack as an image with size 1 in the last dimension. You can save the slice as a 2D PNG image. 
+Extracts a slice along the specified axis (x,y or z). The position specifier **position_spec** can be a single slice or a range of slices. For a single slice, it can be specified as a number or a percentage. Numbering is zero-based, i.e, the first slice is slice 0, the last slice is N-1, where N is the number of slices. For a range, use MATLAB notation first:step:last. The slice is placed on the stack as an image with size 1 in the last dimension. You can save the slice as a 2D PNG image.
 
     c3d input.img -slice x 128 -o myslice.nii.gz
     c3d input.img -slice y 50% myslice.nii.gz
     c3d input.img -slice z 25% -type uchar -stretch 0 2000 0 255 -o myslice.png
-    c3d input.img -slice z 0:-1 -oo slice%0d.nii.gz 
-    c3d input.img -slice z 20%:10%:80% -oo slice%0d.nii.gz 
+    c3d input.img -slice z 0:-1 -oo slice%0d.nii.gz
+    c3d input.img -slice z 20%:10%:80% -oo slice%0d.nii.gz
 
-With the new command **c4d**, the **-slice** command can be used to extract volumes from a 4D image. This can be useful to reformat a 4D NIFTI image as a 3D multi-component NIFTI image, using the command 
+With the new command **c4d**, the **-slice** command can be used to extract volumes from a 4D image. This can be useful to reformat a 4D NIFTI image as a 3D multi-component NIFTI image, using the command.
 
     c4d input4d.nii.gz -slice w 0:-1 -omc output3d_multicomp.nii.gz
 
