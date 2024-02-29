@@ -75,6 +75,7 @@ FastMarching<TPixel, VDim>
   
   // Put result on stack
   c->m_ImageStack.pop_back();
+  c->m_ImageStack.pop_back();
   c->m_ImageStack.push_back(result);
 }
 
