@@ -926,6 +926,14 @@ This command must precede the `-export-patches (-xp)` command and instructs this
 
     c3d chan1.nii chan2.nii chan3.nii mask.nii -xpa 5 10 -xp samples.dat 4x4x4 100
 
+#### -fast-marching, -fm: Fast marching filter
+
+Syntax `-fast-marching <stopping_value>`
+
+This command executes the Fast Marching algorithm with the last image on the stack as the initialization and the penultimate image on the stack as the speed image. All non-zero voxels in the initialization image are treated as points with arrival time 1. The fast marching algorithm propagates through image space at a speed modulated by the speed image (which must have non-negative values, typically between 0 and 1). The output of this filter is the arrival time at all points reached by fast marching before hitting the stopping value.
+
+    c3d prob_map.nii seed.nii -fm 20.0 -o arrival.nii
+
 #### -fft: Fast Fourier transform
 
 Syntax `-fft`

@@ -51,6 +51,7 @@
 #include "ExtractRegion.h"
 #include "ExtractSlice.h"
 #include "ExtrudeSegmentation.h"
+#include "FastMarching.h"
 #include "FlipImage.h"
 #include "FillBackgroundWithNeighborhoodNoise.h"
 #include "GeneralLinearModel.h"
@@ -893,6 +894,14 @@ ImageConverter<TPixel, VDim>
     UnaryMathOperation<TPixel, VDim> adapter(this);
     adapter(&std::floor);
     return 0;
+    }
+
+  else if (cmd == "-fm" || cmd == "-fast-marching")
+    {
+    FastMarching<TPixel, VDim> adapter(this);
+    double stop_value = atof(argv[1]);
+    adapter(stop_value);
+    return 1;
     }
 
   else if (cmd == "-foreach")
