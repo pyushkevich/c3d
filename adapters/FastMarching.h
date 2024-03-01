@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   C3D: Command-line companion tool to ITK-SNAP
-  Module:    SplitMultilabelImage.h
+  Module:    %fn%.h
   Language:  C++
   Website:   itksnap.org/c3d
   Copyright (c) 2014 Paul A. Yushkevich
@@ -23,21 +23,21 @@
 
 =========================================================================*/
 
-#ifndef __SplitMultilabelImage_h_
-#define __SplitMultilabelImage_h_
+#ifndef __FastMarching_h_
+#define __FastMarching_h_
 
 #include "ConvertAdapter.h"
 
 template<class TPixel, unsigned int VDim>
-class SplitMultilabelImage : public ConvertAdapter<TPixel, VDim>
+class FastMarching : public ConvertAdapter<TPixel, VDim>
 {
 public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
-  SplitMultilabelImage(Converter *c) : c(c) {}
+  FastMarching(Converter *c) : c(c) {}
 
-  void operator() (std::vector<double> values);
+  void operator() (double stopping_value);
 
 private:
   Converter *c;

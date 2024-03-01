@@ -51,6 +51,7 @@
 #include "ExtractRegion.h"
 #include "ExtractSlice.h"
 #include "ExtrudeSegmentation.h"
+#include "FastMarching.h"
 #include "FlipImage.h"
 #include "FillBackgroundWithNeighborhoodNoise.h"
 #include "GeneralLinearModel.h"
@@ -894,6 +895,14 @@ ImageConverter<TPixel, VDim>
     UnaryMathOperation<TPixel, VDim> adapter(this);
     adapter(&std::floor);
     return 0;
+    }
+
+  else if (cmd == "-fm" || cmd == "-fast-marching")
+    {
+    FastMarching<TPixel, VDim> adapter(this);
+    double stop_value = atof(argv[1]);
+    adapter(stop_value);
+    return 1;
     }
 
   else if (cmd == "-foreach")
@@ -2149,8 +2158,24 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-split")
     {
     SplitMultilabelImage<TPixel, VDim> adapter(this);
-    adapter();
+    adapter(std::vector<double>());
     return 0;
+    }
+
+  else if (cmd == "-split-labels")
+    {
+    vector<double> v_labels;
+    for(int i = 1; i < argc; i++)
+      {
+      try
+        { v_labels.push_back(myatof(argv[i])); }
+      catch(...)
+        { break; }
+      }
+
+    SplitMultilabelImage<TPixel, VDim> adapter(this);
+    adapter(v_labels);
+    return v_labels.size();
     }
 
   else if (cmd == "-sqrt")

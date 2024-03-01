@@ -26,6 +26,7 @@
 #include "SplitMultilabelImage.h"
 #include "ThresholdImage.h"
 #include "UpdateMetadataKey.h"
+#include <fstream>
 #include <set>
 #include "vnl/vnl_math.h"
 
@@ -34,19 +35,24 @@ using namespace std;
 template <class TPixel, unsigned int VDim>
 void
 SplitMultilabelImage<TPixel, VDim>
-::operator() ()
+::operator() (std::vector<double> values)
 {
   // Get image from stack
   ImagePointer img = c->m_ImageStack.back();
 
-  // Create a list of all the finite values in the image
+  // List of labels to split into
   set<double> sval;
-  for(ConstIterator it(img, img->GetBufferedRegion()); !it.IsAtEnd(); ++it)
-    {
-    double val = it.Get();
-    if(vnl_math::isfinite(val))
-      sval.insert(val);
-    }
+
+  // Create a list of all the finite values in the image or get from supplied list
+  if(values.size() > 0)
+    for(auto &it : values) sval.insert(it);
+  else
+    for(ConstIterator it(img, img->GetBufferedRegion()); !it.IsAtEnd(); ++it)
+      {
+      double val = it.Get();
+      if(vnl_math::isfinite(val))
+        sval.insert(val);
+      }
   
   // The number of finite values should be reasonable
   if(sval.size() > 256)
