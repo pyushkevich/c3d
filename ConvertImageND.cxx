@@ -108,6 +108,7 @@
 #include "ThresholdImage.h"
 #include "TileImages.h"
 #include "TrimImage.h"
+#include "TustisonWellComposedness.h"
 #include "UnaryMathOperation.h"
 #include "UpdateMetadataKey.h"
 #include "Vote.h"
@@ -2445,6 +2446,15 @@ ImageConverter<TPixel, VDim>
     RealVector stdev = ReadRealSize(argv[1]);
     WarpLabelImage<TPixel, VDim> adapter(this);
     adapter(stdev);
+    return 1;
+    }
+
+  // Apply the well-composedness filter
+  else if (cmd == "-well-comp" || cmd == "-wellcomp" || cmd == "-wc")
+    {
+    int label = atoi(argv[1]);
+    TustisonWellComposedness<TPixel, VDim> adapter(this);
+    adapter(label);
     return 1;
     }
 

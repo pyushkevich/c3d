@@ -122,6 +122,7 @@ SET(SOURCES
   adapters/ThresholdImage.cxx
   adapters/TileImages.cxx
   adapters/TrimImage.cxx
+  adapters/TustisonWellComposedness.cxx
   adapters/UnaryMathOperation.cxx
   adapters/UpdateMetadataKey.cxx
   adapters/Vote.cxx
