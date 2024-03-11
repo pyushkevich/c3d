@@ -58,13 +58,21 @@ PadImage<TPixel, VDim>
 
   padFilter->SetInput(img);
 
-  padFilter->Update();
+  // Explain the padding we are doing
+  *c->verbose << "Padding #" << c->m_ImageStack.size() 
+    << " with LB " << lowerBound 
+    << " and UB " << upperBound << std::endl;
 
+  // Print the origin of the image before and after the padding
+  *c->verbose << "  Input region: " << img->GetBufferedRegion() << endl;
+  *c->verbose << "  Input origin: " << img->GetOrigin() << endl;
+
+  padFilter->Update();
   ImagePointer output = padFilter->GetOutput();
 
-  // ITK 3.20 fixes the origin for you, don't mess with it
-  //  c->sout() << "INP_ORG: " << img->GetOrigin() << endl;
-  //  c->sout() << "OUT_ORG: " << output->GetOrigin() << endl;
+  *c->verbose << "  Input region: " << output->GetBufferedRegion() << endl;
+  *c->verbose << "  Input origin: " << output->GetOrigin() << endl;
+
 
   // Put result on stack
   c->m_ImageStack.pop_back();
