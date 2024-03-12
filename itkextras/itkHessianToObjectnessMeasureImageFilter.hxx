@@ -59,10 +59,20 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
 template< typename TInputImage, typename TOutputImage >
 void
 HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
+#if ITK_VERSION_MAJOR >= 5
 ::DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread)
+#else
+::ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
+                       ThreadIdType threadId)
+#endif
 {
   typename OutputImageType::Pointer output = this->GetOutput();
   typename InputImageType::ConstPointer input = this->GetInput();
+
+#if ITK_VERSION_MAJOR < 5
+  // support progress methods/callbacks
+  ProgressReporter progress( this, threadId, outputRegionForThread.GetNumberOfPixels(), 1000 / this->GetNumberOfThreads() );
+#endif
 
   // calculator for computation of the eigen values
   typedef SymmetricEigenAnalysis< InputPixelType, EigenValueArrayType > CalculatorType;
@@ -103,6 +113,9 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
       oit.Set(NumericTraits< OutputPixelType >::Zero);
       ++it;
       ++oit;
+#if ITK_VERSION_MAJOR < 5
+      progress.CompletedPixel();
+#endif
       continue;
       }
 
@@ -178,6 +191,9 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
 
     ++it;
     ++oit;
+#if ITK_VERSION_MAJOR < 5
+    progress.CompletedPixel();
+#endif
     }
 }
 

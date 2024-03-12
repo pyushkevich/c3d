@@ -136,7 +136,11 @@ protected:
 
   void BeforeThreadedGenerateData(void);
 
+#if ITK_VERSION_MAJOR >= 5
   void DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread) ITK_OVERRIDE;
+#else
+  void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread, ThreadIdType threadId);
+#endif
 
 private:
   HessianToObjectnessMeasureImageFilter(const Self &); //purposely not

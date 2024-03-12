@@ -124,7 +124,7 @@ SmoothMultiLabelImage<TPixel, VDim>::operator()
   for(ConstIterator it(img, img->GetBufferedRegion()); !it.IsAtEnd(); ++it)
     {
     TPixel val = it.Get();
-    if(vnl_math::isfinite(val))
+    if(std::isfinite(val))
       label_set.insert(val);
     }
 

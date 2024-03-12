@@ -37,7 +37,11 @@ ScalarToRGB<TPixel, VDim>
   typedef itk::RGBPixel<unsigned char> RGBPixel;
   typedef itk::Image<RGBPixel, VDim> RGBImageType;
   typedef itk::ScalarToRGBColormapImageFilter<ImageType, RGBImageType> RGBFilterType; 
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   typedef typename RGBFilterType::RGBColormapFilterEnum ColormapEnumType;
+#else
+  typedef typename RGBFilterType::ColormapEnumType ColormapEnumType;
+#endif
   typedef std::map<std::string, ColormapEnumType> ColormapNameMap;
   ColormapNameMap clmap;
 

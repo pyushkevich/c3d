@@ -32,6 +32,10 @@
 inline double myround(double x)
   { return (double) ((int) (x + 0.5)); }
 
+#if !( (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5 )
+typedef itk::ImageIOBase IOComponentEnum;
+#endif
+
 namespace itk {
 
 
@@ -251,7 +255,11 @@ private:
 template<typename TPixel> class VoxBoCUBImageIOSwapHelper
 {
 public:
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   typedef ImageIOBase::IOByteOrderEnum ByteOrder;
+#else
+  typedef ImageIOBase::ByteOrder ByteOrder;
+#endif
   static void SwapIfNecessary(
     void *buffer, unsigned long numberOfBytes, ByteOrder order)
     {
@@ -289,7 +297,11 @@ const char *VoxBoCUBImageIO::VB_DATATYPE_DOUBLE = "Double";
 VoxBoCUBImageIO::VoxBoCUBImageIO()
 {
   InitializeOrientationMap();
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   m_ByteOrder = IOByteOrderEnum::BigEndian;
+#else
+  m_ByteOrder = BigEndian;
+#endif
   m_Reader = NULL;
   m_Writer = NULL;
 }
@@ -481,7 +493,11 @@ void VoxBoCUBImageIO::ReadImageInformation()
         {
         std::string type;
         iss >> type;
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
         m_PixelType = IOPixelEnum::SCALAR;
+#else
+        m_PixelType = SCALAR;
+#endif
         if(type == VB_DATATYPE_BYTE)
           m_ComponentType = IOComponentEnum::UCHAR;
         else if(type == VB_DATATYPE_INT)

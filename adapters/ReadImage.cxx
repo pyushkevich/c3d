@@ -105,7 +105,11 @@ ReadImage<TPixel, VDim>
     *c->verbose << "Reading #" << (1 + c->m_ImageStack.size()) << " from " << file << endl;
 
     // Delegate to the Factory (based on filename, etc)
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
     iobase = itk::ImageIOFactory::CreateImageIO(file, itk::IOFileModeEnum::ReadMode);
+#else
+    iobase = itk::ImageIOFactory::CreateImageIO(file, itk::ImageIOFactory::ReadMode);
+#endif
 
     if(!iobase)
       throw ConvertException("Unable to read image %s; IO factory can not create IO object.", file);

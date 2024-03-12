@@ -128,7 +128,12 @@ RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TL
 template <class TInputImage, class TInputVectorImage, class TOutputImage, class TLabel>
 void
 RandomForestClassifyImageFilter<TInputImage, TInputVectorImage, TOutputImage, TLabel>
+#if ITK_VERSION_MAJOR >= 5
 ::DynamicThreadedGenerateData(const OutputImageRegionType &outputRegionForThread)
+#else
+::ThreadedGenerateData(const OutputImageRegionType &outputRegionForThread,
+                       itk::ThreadIdType threadId)
+#endif
 {
   assert(m_Classifier);
 

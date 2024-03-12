@@ -27,6 +27,10 @@
 
 using namespace std;
 
+#if !( (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5 )
+typedef itk::ImageIOBase IOComponentEnum;
+#endif
+
 namespace itk {
 
 bool PovRayDF3ImageIO::CanWriteFile( const char * name )
