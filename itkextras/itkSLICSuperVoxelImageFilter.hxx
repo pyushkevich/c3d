@@ -111,7 +111,7 @@ SLICSuperVoxelImageFilter<TInputImage, TLabelImage, TRealImage>
     imgCluster->TransformContinuousIndexToPhysicalPoint(cidx, ptx);
     input->TransformPhysicalPointToIndex(ptx, idxInput);
 
-    // Seach the gradient magnitude image for the
+    // Search the gradient magnitude image for the
     itGrad.SetLocation(idxInput);
 
     bool inbounds;
