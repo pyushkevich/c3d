@@ -96,6 +96,19 @@ public:
       }
     }
 
+#ifdef ITK_INTERPOLATOR_HAS_GETRADIUS
+  // Since ITK5 descendents of itk::InterpolateImageFunction must
+  // implement GetRadius().  Before ITK5 there was no GetRadius() to
+  // override.
+  virtual typename Superclass::SizeType GetRadius() const override
+  {
+    typename Superclass::SizeType radius;
+    for(size_t d = 0; d < VDim; d++)
+      radius.SetElement(d, (int) ceil(cut[d]));
+    return radius;
+  }
+#endif
+
   /** Set input */
   virtual void SetInputImage(const TInputImage *img)
     {
@@ -170,11 +183,11 @@ public:
         
         double wtest;
         OutputType V = it.Get();
-        WeightIter it = wm.find(V);
-        if(it != wm.end())
+        WeightIter w_it = wm.find(V);
+        if(w_it != wm.end())
           {
-          it->second += w;
-          wtest = it->second;
+          w_it->second += w;
+          wtest = w_it->second;
           }
         else
           {

@@ -22,6 +22,15 @@ IF(WIN32)
   SOURCE_GROUP("Adapter Headers" REGULAR_EXPRESSION "adapters/*h")
 ENDIF(WIN32)
 
+IF(ITK_VERSION_MAJOR GREATER_EQUAL 5)
+  # Since ITK5, descendents of itk::InterpolateImageFunction must
+  # implement GetRadius().  However, GetRadius() does not exist in
+  # ITK4 so overriding it in the descent causes it to fail to build.
+  # When we no longer support ITK4, we can remove this.
+  ADD_DEFINITIONS(-DITK_INTERPOLATOR_HAS_GETRADIUS)
+ENDIF(ITK_VERSION_MAJOR GREATER_EQUAL 5)
+
+
 # Markdown documentation compiled into the C code
 # modified from: https://github.com/starseeker/tinyscheme-cmake/blob/master/CMakeLists.txt
 # # Rather than load the init.scm file at run time,
