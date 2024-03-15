@@ -3021,7 +3021,7 @@ ImageConverter<TPixel, VDim>
     sout << prefix;
     for(size_t j = 0; j < mat.columns(); j++)
       {
-      sprintf(buffer, fmt, mat(i,j));
+      snprintf(buffer, sizeof(buffer), fmt, mat(i,j));
       sout << buffer;
       }
     sout << endl;
@@ -3418,14 +3418,14 @@ ImageConverter<TPixel, VDim>
 {
   // Check if the argument is a printf pattern
   char buffer[(FILENAME_MAX+1)*n_comp];
-  sprintf(buffer, argv[1],0);
+  snprintf(buffer, sizeof(buffer), argv[1],0);
   if (strcmp(buffer, argv[1]))
     {
     // A pattern is specified. For each image on the stack, use pattern
     for(size_t i = 0; i < m_ImageStack.size(); i+= n_comp)
       {
       WriteImage<TPixel, VDim> adapter(this);
-      sprintf(buffer, argv[1], i / n_comp);
+      snprintf(buffer, sizeof(buffer), argv[1], i / n_comp);
       if(n_comp == 1)
         adapter(buffer, true, i);
       else 
