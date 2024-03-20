@@ -18,10 +18,10 @@
 #define __itkLabelOverlapMeasuresImageFilter_h
 
 #include "itkImageToImageFilter.h"
-#include "itkFastMutexLock.h"
+#include <mutex>
 #include "itkNumericTraits.h"
 
-#include "itk_hash_map.h"
+#include <unordered_map>
 
 namespace itk {
 
@@ -100,7 +100,7 @@ public:
     };
 
   /** Type of the map used to store data per label */
-  typedef hash_map<LabelType, LabelSetMeasures> MapType;
+  typedef std::unordered_map<LabelType, LabelSetMeasures> MapType;
   typedef typename MapType::iterator MapIterator;
   typedef typename MapType::const_iterator MapConstIterator;
 
@@ -166,27 +166,27 @@ public:
 protected:
   LabelOverlapMeasuresImageFilter();
   ~LabelOverlapMeasuresImageFilter(){};
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const ITK_OVERRIDE;
 
   /**
    * Pass the input through unmodified. Do this by setting the output to the
    * source this by setting the output to the source image in the
    * AllocateOutputs() method.
    */
-  void AllocateOutputs();
+  void AllocateOutputs() ITK_OVERRIDE;
 
-  void BeforeThreadedGenerateData();
+  void BeforeThreadedGenerateData() ITK_OVERRIDE;
 
-  void AfterThreadedGenerateData();
+  void AfterThreadedGenerateData() ITK_OVERRIDE;
 
   /** Multi-thread version GenerateData. */
-  void ThreadedGenerateData( const RegionType&, int );
+  virtual void ThreadedGenerateData( const RegionType&, ThreadIdType ) ITK_OVERRIDE;
 
   // Override since the filter needs all the data for the algorithm
-  void GenerateInputRequestedRegion();
+  void GenerateInputRequestedRegion() ITK_OVERRIDE;
 
   // Override since the filter produces all of its output
-  void EnlargeOutputRequestedRegion( DataObject *data );
+  void EnlargeOutputRequestedRegion( DataObject *data ) ITK_OVERRIDE;
 
 private:
   LabelOverlapMeasuresImageFilter( const Self& ); //purposely not implemented
@@ -195,7 +195,7 @@ private:
   std::vector<MapType>                            m_LabelSetMeasuresPerThread;
   MapType                                         m_LabelSetMeasures;
 
-  SimpleFastMutexLock                             m_Mutex;
+  std::mutex                                      m_Mutex;
 
 }; // end of class
 

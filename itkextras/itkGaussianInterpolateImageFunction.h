@@ -90,7 +90,7 @@ public:
     }
 
   /** Set input */
-  virtual void SetInputImage(const TInputImage *img)
+  virtual void SetInputImage(const TInputImage *img) ITK_OVERRIDE
     {
     // Call parent method
     Superclass::SetInputImage(img);
@@ -117,7 +117,7 @@ public:
    * ImageFunction::IsInsideBuffer() can be used to check bounds before
    * calling the method. */
   virtual OutputType EvaluateAtContinuousIndex( 
-    const ContinuousIndexType & index ) const
+    const ContinuousIndexType & index ) const ITK_OVERRIDE
     {
     return EvaluateAtContinuousIndex(index, NULL);
     }
@@ -199,10 +199,22 @@ public:
 
     }
 
+  /** This is definition from ITKv4 Compatible mode. Change this in the future when needed*/
+  virtual typename InputImageType::SizeType
+  GetRadius() const ITK_OVERRIDE
+  {
+    const InputImageType * input = this->GetInputImage();
+    if (!input)
+    {
+      itkExceptionMacro("Input image required!");
+    }
+    return input->GetLargestPossibleRegion().GetSize();
+  }
+
 protected:
   GaussianInterpolateImageFunction() {}
   ~GaussianInterpolateImageFunction(){};
-  void PrintSelf(std::ostream& os, Indent indent) const
+  void PrintSelf(std::ostream& os, Indent indent) const ITK_OVERRIDE
     { this->Superclass::PrintSelf(os,indent); }
 
 private:

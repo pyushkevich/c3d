@@ -14,14 +14,14 @@ endif(COMMAND cmake_policy)
 INCLUDE(CMake/PYVersion.cmake)
 
 # Set the semantic version and version date
-VERSION_VARS(1 4 0 "" "20220519" "May 19, 2022")
+VERSION_VARS(1 4 1 "" "20240318" "March 18, 2024")
 
 # Enable languages
 ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
 
 # Specify the C++ standard
-SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Option allowing to build c3d as a subproject of another project
@@ -72,6 +72,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ITKLabelVoting
     ITKLevelSets
     ITKMathematicalMorphology
+    ITKNIFTI
     ITKRegistrationCommon
     ITKSmoothing
     ITKStatistics

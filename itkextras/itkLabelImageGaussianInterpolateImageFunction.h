@@ -97,7 +97,7 @@ public:
     }
 
   /** Set input */
-  virtual void SetInputImage(const TInputImage *img)
+  virtual void SetInputImage(const TInputImage *img) ITK_OVERRIDE
     {
     // Call parent method
     Superclass::SetInputImage(img);
@@ -124,7 +124,7 @@ public:
    * ImageFunction::IsInsideBuffer() can be used to check bounds before
    * calling the method. */
   virtual OutputType EvaluateAtContinuousIndex( 
-    const ContinuousIndexType & index ) const
+    const ContinuousIndexType & index ) const override
     {
       // The bound variables for x, y, z
       int i0[VDim], i1[VDim];
@@ -170,11 +170,11 @@ public:
         
         double wtest;
         OutputType V = it.Get();
-        WeightIter it = wm.find(V);
-        if(it != wm.end())
+        WeightIter wit = wm.find(V);
+        if(wit != wm.end())
           {
-          it->second += w;
-          wtest = it->second;
+          wit->second += w;
+          wtest = wit->second;
           }
         else
           {
@@ -194,10 +194,22 @@ public:
       return vmax;
     }
 
+  /** This is definition from ITKv4 Compatible mode. Change this in the future when needed*/
+  virtual typename InputImageType::SizeType
+  GetRadius() const ITK_OVERRIDE
+  {
+    const InputImageType * input = this->GetInputImage();
+    if (!input)
+    {
+      itkExceptionMacro("Input image required!");
+    }
+    return input->GetLargestPossibleRegion().GetSize();
+  }
+
 protected:
   LabelImageGaussianInterpolateImageFunction() {}
   ~LabelImageGaussianInterpolateImageFunction(){};
-  void PrintSelf(std::ostream& os, Indent indent) const
+  void PrintSelf(std::ostream& os, Indent indent) const ITK_OVERRIDE
     { this->Superclass::PrintSelf(os,indent); }
 
 private:

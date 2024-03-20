@@ -158,7 +158,7 @@ ExportPatches<TPixel, VDim>
   typedef vnl_matrix_fixed<double, VDim+1, VDim+1> Mat44;
   Mat44 R;
   Mat44 D = mask->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix();
-  Mat44 Dinv = vnl_inverse<double>(D);
+  Mat44 Dinv = vnl_inverse<double>(D.as_matrix());
 
   R.set_identity();
 
