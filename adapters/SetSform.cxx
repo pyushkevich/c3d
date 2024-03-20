@@ -70,7 +70,7 @@ SetSform<TPixel, VDim>
   itk::Matrix<double,VDim+1,VDim+1> matrix;
   MyReadMatrix<VDim>(fn_tran.c_str(), matrix);
   vnl_matrix<double> mat(VDim+1,VDim+1,0.0);
-  mat.update( matrix.GetVnlMatrix());
+  mat.update( matrix.GetVnlMatrix().as_matrix());
 
   // Set the matrix
   img->SetVoxelSpaceToRASPhysicalSpaceMatrix( mat );
