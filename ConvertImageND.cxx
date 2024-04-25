@@ -3417,7 +3417,7 @@ ImageConverter<TPixel, VDim>
 ::WriteMultiple(int argc, char *argv[], int n_comp, const char *command)
 {
   // Check if the argument is a printf pattern
-  char buffer[(FILENAME_MAX+1)*n_comp];
+  char buffer[PATH_MAX];
   sprintf(buffer, argv[1],0);
   if (strcmp(buffer, argv[1]))
     {
@@ -3452,7 +3452,7 @@ ImageConverter<TPixel, VDim>
     // Determine the starting position
     int pstart = m_ImageStack.size() - nfiles * n_comp;
 
-    for(size_t j = pstart; j < pstart+n_comp; j++)
+    for(size_t j = pstart; j < pstart+nfiles; j++)
       {
       WriteImage<TPixel, VDim> adapter(this);
       if(n_comp == 1)
