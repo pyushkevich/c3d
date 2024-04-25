@@ -3542,7 +3542,7 @@ ImageConverter<TPixel, VDim>
 ::WriteMultiple(int argc, char *argv[], int n_comp, const char *command)
 {
   // Check if the argument is a printf pattern
-  int buffer_size = (FILENAME_MAX+1)*n_comp;
+  int buffer_size = PATH_MAX;
   std::unique_ptr<char[]> buffer(new char[buffer_size]);
   snprintf(buffer.get(), buffer_size, argv[1],0);
   if (strcmp(buffer.get(), argv[1]))
@@ -3578,7 +3578,7 @@ ImageConverter<TPixel, VDim>
     // Determine the starting position
     int pstart = m_ImageStack.size() - nfiles * n_comp;
 
-    for(size_t j = pstart; j < pstart+n_comp; j++)
+    for(size_t j = pstart; j < pstart+nfiles; j++)
       {
       WriteImage<TPixel, VDim> adapter(this);
       if(n_comp == 1)
