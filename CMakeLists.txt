@@ -79,6 +79,7 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ITKTransform
     ITKTransformFactory
     ITKImageIO
+    ITKNIFTI
     ITKTransformIO)
 
   # Add the remote modules
