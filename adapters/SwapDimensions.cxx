@@ -91,7 +91,7 @@ ValidCoordinateOrientationFlags GetOrientationFlagFromString(const std::string &
     return emap[code];
 
   else
-    return itk::SpatialOrientationEnums::ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID;
+    return ValidCoordinateOrientationFlags::ITK_COORDINATE_ORIENTATION_INVALID;
 }
 
 template <class TPixel, unsigned int VDim>
@@ -115,7 +115,7 @@ public:
     {
     // Convert the orientation code to an ITK 
     ValidCoordinateOrientationFlags oflag = GetOrientationFlagFromString(code);
-    if(oflag == itk::SpatialOrientationEnums::ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID)
+    if(oflag == ValidCoordinateOrientationFlags::ITK_COORDINATE_ORIENTATION_INVALID)
       throw ConvertException("Orientation flag %s is not valid", code.c_str());
 
     // Create the filter
