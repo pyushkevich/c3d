@@ -221,7 +221,7 @@ void quart_print(MatrixType &mat )
 
 
   // QR decomposition
-  vnl_qr<double> qr(A);
+  vnl_qr<double> qr(A.as_matrix());
   vnl_matrix_fixed<double, 3, 3> m = qr.Q(), R = qr.R(), F;
 
   F.set_identity();
@@ -350,7 +350,7 @@ void irtk_write(MatrixStack &vmat, const char *fname)
   Mat33 A = M.extract(3,3);
   
   // QR decomposition
-  vnl_qr<double> qr(A);
+  vnl_qr<double> qr(A.as_matrix());
   Mat33 Q = qr.Q(), R = qr.R();
 
   // Compute the flip matrix so that the scales are positive

@@ -157,8 +157,8 @@ ResliceImage<TPixel, VDim>
   *c->verbose << "  Affine Transform: " << endl;
   vnl_matrix<double> amat(VDim+1, VDim+1, 0); 
   vnl_vector<double> atmp(VDim+1, 0); 
-  amat.update(atran->GetMatrix().GetVnlMatrix(), 0, 0);
-  atmp.update(atran->GetOffset().GetVnlVector(), 0);
+  amat.update(atran->GetMatrix().GetVnlMatrix().as_ref(), 0, 0);
+  atmp.update(atran->GetOffset().GetVnlVector().as_ref(), 0);
   amat.set_column(VDim, atmp);
   c->PrintMatrix(*c->verbose, amat, "%12.5f ", "    ");
 

@@ -180,7 +180,7 @@ PrintImageInfo<TPixel, VDim>
     c->sout() << " bb = {[" << bb0 << "], [" << bb1 << "]}; ";
     c->sout() << " vox = " << image->GetSpacing() << "; ";
     c->sout() << " range = [" << iMin << ", " << iMax << "]; ";
-    c->sout() << " orient = " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix()) << endl;
+    c->sout() << " orient = " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix().as_ref()) << endl;
     c->sout() << endl;
     }
   else
@@ -191,14 +191,14 @@ PrintImageInfo<TPixel, VDim>
     c->sout() << "  Voxel Spacing      : " << image->GetSpacing() << endl;
     c->sout() << "  Intensity Range    : [" << iMin << ", " << iMax << "]" << endl;
     c->sout() << "  Mean Intensity     : " << iMean << endl;
-    c->sout() << "  Canon. Orientation : " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix()) << endl;
+    c->sout() << "  Canon. Orientation : " << GetRAICodeFromDirectionMatrix(image->GetDirection().GetVnlMatrix().as_ref()) << endl;
     c->sout() << "  Direction Cos Mtx. : " << endl;
-    c->PrintMatrix(c->sout(), image->GetDirection().GetVnlMatrix());
+    c->PrintMatrix(c->sout(), image->GetDirection().GetVnlMatrix().as_ref());
 
     // Print NIFTI s-form matrix (check against freesurfer's MRIinfo)
     c->sout() << "  Voxel->RAS x-form  : " << endl;
     c->PrintMatrix(c->sout(), 
-      image->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix(), "%12.5f ", "    ");
+      image->GetVoxelSpaceToRASPhysicalSpaceMatrix().GetVnlMatrix().as_ref(), "%12.5f ", "    ");
 
     //
     // Print metadata
@@ -209,8 +209,7 @@ PrintImageInfo<TPixel, VDim>
       {
       // Get the metadata as a generic object
       string key = itMeta->first, v_string;
-      itk::SpatialOrientation::ValidCoordinateOrientationFlags v_oflags = 
-        itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_INVALID;
+      auto v_oflags = itk::SpatialOrientationEnums::ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID;
 
       if(itk::ExposeMetaData<string>(mdd, key, v_string))
         {

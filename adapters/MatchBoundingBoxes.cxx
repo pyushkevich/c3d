@@ -45,7 +45,7 @@ MatchBoundingBoxes<TPixel, VDim>
   // bounding boxes of the two images are exactly the same
   // O1 - S1 * D * [0.5] = O2 - S2 * D * [0.5]
 
-  vnl_matrix<double> dir = t->GetDirection().GetVnlMatrix();
+  vnl_matrix<double> dir = t->GetDirection().GetVnlMatrix().as_matrix();
   vnl_vector<double> v(VDim); v.fill(0.5);
   vnl_vector<double> Dv = dir * v;
   vnl_vector<double> orig(VDim), spc(VDim);

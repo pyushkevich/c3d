@@ -26,8 +26,8 @@ namespace itk {
 
 #if defined(__GNUC__) && (__GNUC__ <= 2) //NOTE: This class needs a mutex for gnu 2.95
 /** Used for mutex locking */
-#define LOCK_HASHMAP this->m_Mutex.Lock()
-#define UNLOCK_HASHMAP this->m_Mutex.Unlock()
+#define LOCK_HASHMAP this->m_Mutex.lock()
+#define UNLOCK_HASHMAP this->m_Mutex.unlock()
 #else
 #define LOCK_HASHMAP
 #define UNLOCK_HASHMAP
@@ -90,7 +90,7 @@ void
 LabelOverlapMeasuresImageFilter<TLabelImage>
 ::BeforeThreadedGenerateData()
 {
-  int numberOfThreads = this->GetNumberOfThreads();
+  int numberOfThreads = this->GetNumberOfWorkUnits();
 
   // Resize the thread temporaries
   this->m_LabelSetMeasuresPerThread.resize( numberOfThreads );
@@ -111,7 +111,7 @@ LabelOverlapMeasuresImageFilter<TLabelImage>
 ::AfterThreadedGenerateData()
 {
   // Run through the map for each thread and accumulate the set measures.
-  for( int n = 0; n < this->GetNumberOfThreads(); n++ )
+  for( int n = 0; n < this->GetNumberOfWorkUnits(); n++ )
     {
     // iterate over the map for this thread
     for( MapConstIterator threadIt = this->m_LabelSetMeasuresPerThread[n].begin();
@@ -146,7 +146,7 @@ template<class TLabelImage>
 void
 LabelOverlapMeasuresImageFilter<TLabelImage>
 ::ThreadedGenerateData( const RegionType& outputRegionForThread,
-  int threadId )
+  ThreadIdType threadId )
 {
   ImageRegionConstIterator<LabelImageType> ItS( this->GetSourceImage(),
     outputRegionForThread );
