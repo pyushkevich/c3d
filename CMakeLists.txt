@@ -1,12 +1,13 @@
-PROJECT(CONVERT3D)
-
 # CMake compatibility code
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 if(COMMAND cmake_policy)
   CMAKE_POLICY(SET CMP0003 NEW)
   CMAKE_POLICY(SET CMP0077 NEW)
   CMAKE_POLICY(SET CMP0042 NEW)
+  CMAKE_POLICY(SET CMP0057 NEW)
 endif(COMMAND cmake_policy)
+
+PROJECT(CONVERT3D)
 
 #--------------------------------------------------------------------------------
 # VERSION
