@@ -2,11 +2,12 @@
 function(get_git_branch RESULTNAME)
 
   # Find Git and its libraries
+  SET(${RESULTNAME} "unknown")
   if(NOT GIT_FOUND)
     find_package(Git QUIET)
   endif(NOT GIT_FOUND)
 
-  if(GIT_FOUND)
+  if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
 
     # Call git to get branch id
     execute_process(
@@ -17,18 +18,19 @@ function(get_git_branch RESULTNAME)
 
     set(${RESULTNAME} ${SNAP_VERSION_GIT_BRANCH} PARENT_SCOPE)
 
-  endif(GIT_FOUND)
+  endif()
 
 endfunction()
 
 function(get_git_commit_date GITSHA RESULTNAME)
 
   # Find Git and its libraries
+  SET(${RESULTNAME} "unknown")
   if(NOT GIT_FOUND)
     find_package(Git QUIET)
   endif(NOT GIT_FOUND)
 
-  if(GIT_FOUND)
+  if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
 
     # Call git to get branch id
     execute_process(
@@ -39,6 +41,6 @@ function(get_git_commit_date GITSHA RESULTNAME)
 
     set(${RESULTNAME} ${SNAP_VERSION_GIT_DATE} PARENT_SCOPE)
 
-  endif(GIT_FOUND)
+  endif()
 
 endfunction()
