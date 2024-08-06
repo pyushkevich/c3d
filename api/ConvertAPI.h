@@ -28,6 +28,7 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <itkSmartPointer.h>
 
 namespace itk {
   template <class TPixel, unsigned int VDim> class Image;
@@ -73,6 +74,7 @@ public:
 
   /** Standard ITK image - used to pass data in and out of the API */
   typedef itk::Image<TPixel, VDim> ImageType;
+  typedef itk::SmartPointer<ImageType> ImagePointer;
 
   ConvertAPI();
   ~ConvertAPI();
@@ -82,16 +84,29 @@ public:
    * the '-push' command during the call to Execute. This class will hold on to this
    * image until it is destroyed.
    */
- void AddImage(const char *varname, ImageType *image); 
+ void AddImage(const char *varname, ImageType *image);
+
+ /**
+  * Push an image onto the c3d stack, without assigning as a variable
+  */
+ void PushImage(ImageType *image);
 
  /**
   * Redirect the output to a file or string
   */
  void RedirectOutput(std::ostream &sout, std::ostream &serr);
 
-  /** 
+ /**
+  * Execute command but without variadic parameters
+  */
+ void ExecuteNoFormatting(const char *command);
+
+  /**
    * Execute a command in c3d. This is just like a regular command-line, and the 
    * output will be captured to the provided stream.
+   *
+   * The user needs to be careful because the command is passed through vsnprintf
+   * command, so experssions with the % symbol will undergo substitution
    *
    * Return Value: if an exception is caught during command execution, this will
    * return false, and you can access the error text using GetError()
@@ -107,7 +122,24 @@ public:
    * Get a variable created by C3D during command execution, for example using
    * '-as' or '-popas' commands
    */
-  ImageType *GetImage(const char *varname);
+  ImagePointer GetImage(const char *varname);
+
+  /**
+   * Get an image based on its position on the stack. Negative indexes are
+   * accepted, -1 will give the last image on the stack, -2 will give the
+   * second from the last image, etc.
+   */
+  ImagePointer PeekImage(int pos);
+
+  /**
+   * Pop an image from the stack
+   */
+  ImagePointer PopImage();
+
+  /**
+   * Get the stack size
+   */
+  unsigned int GetStackSize();
 
 private:
 

@@ -1,7 +1,7 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.15)
 PROJECT(CONVERT3D)
 
 # CMake compatibility code
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 if(COMMAND cmake_policy)
   CMAKE_POLICY(SET CMP0003 NEW)
   CMAKE_POLICY(SET CMP0077 NEW)
@@ -162,6 +162,15 @@ IF(INSTALL_CLI)
 
   # Install the API header
   INSTALL(FILES api/ConvertAPI.h DESTINATION ${INC_INSTALL_PATH})
+
+  EXPORT(EXPORT Convert3DTargets
+         FILE "${CMAKE_CURRENT_BINARY_DIR}/Convert3DTargets.cmake"
+         NAMESPACE Convert3D::)
+
+  INSTALL(EXPORT Convert3DTargets
+          FILE Convert3DTargets.cmake
+          NAMESPACE Convert3D::
+          DESTINATION ${CONVERT3D_BINARY_DIR})
 
 ENDIF(INSTALL_CLI)
 
@@ -359,18 +368,27 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       NO_CHECK_REQUIRED_COMPONENTS_MACRO
       PATH_VARS Convert3D_INCLUDE_DIRS)
 
+    # Also generate a config file for the build tree
+    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ConfigBuildTree.cmake.in
+    #   "${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake"
+    #   @ONLY)
+
+  #configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+    #  ${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake
+    #  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Convert3D
+    #  PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+
+
     # generate the version file for the config file
     write_basic_package_version_file(
       "${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfigVersion.cmake"
       VERSION "${CONVERT3D_VERSION_FULL}"
-      COMPATIBILITY AnyNewerVersion
-    )
+      COMPATIBILITY AnyNewerVersion)
 
     # install the configuration file
     install(FILES
       ${CMAKE_CURRENT_BINARY_DIR}/Convert3DConfig.cmake
-      DESTINATION ${LIB_INSTALL_PATH}/cmake/Convert3D
-      )
+      DESTINATION ${LIB_INSTALL_PATH}/cmake/Convert3D)
 
   ENDIF(INSTALL_CLI)
 

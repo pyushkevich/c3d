@@ -170,6 +170,16 @@ ConvertAPI<TPixel,VDim>
 }
 
 template<class TPixel, unsigned int VDim>
+void ConvertAPI<TPixel, VDim>::PushImage(ImageType *image)
+{
+  typedef typename ConverterType::ImageType InternalImage;
+  typename InternalImage::Pointer img_ras = InternalImage::New();
+  img_ras->Graft(image);
+
+  m_Converter->PushImage(img_ras);
+}
+
+template<class TPixel, unsigned int VDim>
 void
 ConvertAPI<TPixel,VDim>
 ::RedirectOutput(ostream &sout, ostream &serr)
@@ -178,11 +188,70 @@ ConvertAPI<TPixel,VDim>
 }
 
 template <class TPixel, unsigned int VDim>
-typename ConvertAPI<TPixel,VDim>::ImageType *
+typename ConvertAPI<TPixel,VDim>::ImagePointer
 ConvertAPI<TPixel,VDim>
 ::GetImage(const char *varname)
 {
   return m_Converter->GetVariable(varname);
+}
+
+template<class TPixel, unsigned int VDim>
+typename ConvertAPI<TPixel, VDim>::ImagePointer
+ConvertAPI<TPixel, VDim>
+::PeekImage(int pos)
+{
+  if(pos < 0)
+    pos = m_Converter->GetStackSize() + pos;
+  if(pos < 0 || pos >= m_Converter->GetStackSize())
+    throw ConvertAPIException("Invalid stack index in ConvertAPI::GetImage");
+  return m_Converter->PeekImage(pos);
+}
+
+template<class TPixel, unsigned int VDim>
+typename ConvertAPI<TPixel, VDim>::ImagePointer
+ConvertAPI<TPixel, VDim>
+::PopImage()
+{
+  if(m_Converter->GetStackSize() < 1)
+    throw ConvertAPIException("Empty stack in ConvertAPI::PopImage");
+  return m_Converter->PopImage();
+}
+
+template<class TPixel, unsigned int VDim>
+unsigned int
+ConvertAPI<TPixel, VDim>
+::GetStackSize()
+{
+  return m_Converter->GetStackSize();
+}
+
+template<class TPixel, unsigned int VDim>
+void
+ConvertAPI<TPixel, VDim>
+::ExecuteNoFormatting(const char *command)
+{
+  int argc = 0;
+  char **argv = split_commandline(command, &argc);
+
+  if(!argv)
+    throw ConvertAPIException("Error parsing the command line expression");
+
+  try
+  {
+    m_Converter->ProcessCommandList(argc, argv);
+  }
+  catch (StackAccessException &)
+  {
+    throw ConvertAPIException("Not enough images on the stack");
+  }
+  catch (std::exception &exc)
+  {
+    throw ConvertAPIException(exc.what());
+  }
+  catch (...)
+  {
+    throw ConvertAPIException("Unknown exception in ConvertAPI");
+  }
 }
 
 template <class TPixel, unsigned int VDim>
@@ -197,28 +266,7 @@ ConvertAPI<TPixel,VDim>
   vsnprintf(buffer, 8192, cmdline, args);
   va_end (args);
 
-  int argc = 0;
-  char **argv = split_commandline(buffer, &argc);
-
-  if(!argv)
-    throw ConvertAPIException("Error parsing the command line expression");
-  
-  try 
-    {
-    m_Converter->ProcessCommandList(argc, argv);
-    }
-  catch (StackAccessException &)
-    {
-    throw ConvertAPIException("Not enough images on the stack");
-    }
-  catch (std::exception &exc)
-    {
-    throw ConvertAPIException(exc.what());
-    }
-  catch (...)
-    {
-    throw ConvertAPIException("Unknown exception in ConvertAPI");
-    }
+  this->Execute(buffer);
 }
 
 template class ConvertAPI<double, 2>;
