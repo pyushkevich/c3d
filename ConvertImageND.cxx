@@ -3417,19 +3417,20 @@ ImageConverter<TPixel, VDim>
 ::WriteMultiple(int argc, char *argv[], int n_comp, const char *command)
 {
   // Check if the argument is a printf pattern
-  char buffer[(FILENAME_MAX+1)*n_comp];
-  snprintf(buffer, sizeof(buffer), argv[1],0);
-  if (strcmp(buffer, argv[1]))
+  int buffer_size = (FILENAME_MAX+1)*n_comp;
+  std::unique_ptr<char[]> buffer(new char[buffer_size]);
+  snprintf(buffer.get(), buffer_size, argv[1],0);
+  if (strcmp(buffer.get(), argv[1]))
     {
     // A pattern is specified. For each image on the stack, use pattern
     for(size_t i = 0; i < m_ImageStack.size(); i+= n_comp)
       {
       WriteImage<TPixel, VDim> adapter(this);
-      snprintf(buffer, sizeof(buffer), argv[1], i / n_comp);
+      snprintf(buffer.get(), buffer_size, argv[1], i / n_comp);
       if(n_comp == 1)
-        adapter(buffer, true, i);
+        adapter(buffer.get(), true, i);
       else 
-        adapter.WriteMultiComponent(buffer, n_comp, i);
+        adapter.WriteMultiComponent(buffer.get(), n_comp, i);
       }
     return 1;
     }
