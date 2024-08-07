@@ -44,9 +44,11 @@ MACRO(VERSION_VARS MAJOR MINOR PATCH QUALIFIER DATE FMT_DATE)
   get_git_head_revision(GIT_REFSPEC ${PROJECT_NAME}_VERSION_GIT_SHA1)
 
   # Get the current git branch
-  include(GitBranch)
-  get_git_branch(${PROJECT_NAME}_VERSION_GIT_BRANCH)
-  get_git_commit_date(${${PROJECT_NAME}_VERSION_GIT_SHA1} ${PROJECT_NAME}_VERSION_GIT_TIMESTAMP)
+  IF(GIT_REFSPEC)
+    include(GitBranch)
+    get_git_branch(${PROJECT_NAME}_VERSION_GIT_BRANCH)
+    get_git_commit_date(${${PROJECT_NAME}_VERSION_GIT_SHA1} ${PROJECT_NAME}_VERSION_GIT_TIMESTAMP)
+  ENDIF()
 
   # Print the Git information
   MESSAGE(STATUS "${PROJECT_NAME} Version: ${${PROJECT_NAME}_VERSION_FULL} Released ${${PROJECT_NAME}_VERSION_RELEASE_DATE_FORMATTED}")
