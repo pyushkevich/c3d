@@ -75,6 +75,7 @@
 #include "MomentsFeatures.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
+#include "NonLocalMeansUpsample.h"
 #include "NormalizedCrossCorrelation.h"
 #include "NormalizeLocalWindow.h"
 #include "OtsuThreshold.h"
@@ -413,6 +414,11 @@ ImageConverter<TPixel,VDim>
 ::ImageConverter()
   : os_out(&std::cout), os_err(&std::cerr), verbose(&devnull)
 {
+  // Disable multithreading
+  m_SystemNumberOfThreads = itk::MultiThreaderBase::GetGlobalMaximumNumberOfThreads();
+  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(1);
+  itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(1);
+
   // Initialize to defaults
   m_TypeId = "float";
   m_Background = 0.0;
@@ -1360,6 +1366,15 @@ ImageConverter<TPixel, VDim>
     adapter("NCOR", fnf.c_str(), fnm.c_str());
     return nret;
     }
+
+  else if (cmd == "-nlm-upsample")
+  {
+    NonLocalMeansUpsample<TPixel, VDim> adapter(this);
+    auto radius = this->ReadSizeVector(argv[1]);
+    adapter(radius);
+    return 1;
+  }
+
   else if (cmd == "-nmi" || cmd == "-normalized-mutual-info")
     {
     ApplyMetric<TPixel, VDim> adapter(this);
@@ -2301,6 +2316,19 @@ ImageConverter<TPixel, VDim>
     return 0;
     }
 
+  else if (cmd == "-threads")
+    {
+    int nthreads = atoi(argv[1]);
+    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(
+      nthreads == 0 ? m_SystemNumberOfThreads : nthreads);
+    return 1;
+    }
+
+  else if (cmd == "-threads-all")
+    {
+    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(m_SystemNumberOfThreads);
+    return 0;
+    }
 
   // Thresholding
   else if (cmd == "-threshold" || cmd == "-thresh")
@@ -2570,9 +2598,7 @@ int
 ImageConverter<TPixel, VDim>
 ::ProcessCommandLine(int argc, char *argv[])
 {
-  // Disable multithreading
-  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(1);
-  itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(1);
+
 
   // The last command
   std::string lastCommand;

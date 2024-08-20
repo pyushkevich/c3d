@@ -235,6 +235,9 @@ public:
   // Number of iterations for various algorithms
   size_t m_Iterations;
 
+  // Number of threads that the system reports
+  size_t m_SystemNumberOfThreads;
+
   // The orientation and coordinate tolerances overwriting the ITK defaults in ImageToImageFilterCommon
   double m_Tolerance;
 

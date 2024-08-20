@@ -1128,6 +1128,16 @@ Syntax: `-ncc <radius_vector>`
 
 Computes normalized cross-correlation between two images that occupy the same physical space. Each voxel in the resulting image is the cross-correlation of patches of given radius surrounding the voxel in the two input images. This is different from **-ncor**, which computes a global cross-correlation metric value. 
 
+#### -nlm-upsample: Non-local Means Upsampling
+
+Syntax: `-nlm-upsample <upsample_vector>`
+
+Applies the [non-local means super-resolution algorithm by Manjon et al. (2010)](Manjon2010) to the last image on the stack. The image will be upsampled by the factors specified in each dimension. Unlike linear or cubic interpolation, which smooths the image, the non-local means algorithm recovers high-frequency information from the features of the input image. **Note: Only available in 3D**.
+
+    c3d gray.nii.gz -nlm-upsample 2x2x2 -o sr.nii.gz
+
+[Manjon2010] Manjón JV, Coupé P, Buades A, Fonov V, Collins DL, Robles M (2010). Non-local MRI upsampling. Medical Image Analysis
+
 #### -nmi, -normalized-mutual-info: Compute mutual informaiton metric
 
 Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
@@ -1681,6 +1691,11 @@ These options specify whether use the SPM extension to the Analyze (.hdr,.img) f
 
     c3d -spm in.hdr out.img.gz
 
+#### -threads, -threads-all
+
+Syntax: `-threads <integer>` or `-threads-all`
+
+Set the maximum number of threads available to the ITK algorithms. By default only one thread is made available to facilitate running many parallel c3d jobs in a high-performance computing environment. Setting the number of threads to a greater number may speed up execution on multi-core computers. The command `-threads-all` makes all threads available to ITK. Like all c3d commands, this command only affects the commands that come later on the command line.
 
 #### -type: Specify pixel type for image output
 
