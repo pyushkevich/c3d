@@ -2319,14 +2319,17 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-threads")
     {
     int nthreads = atoi(argv[1]);
-    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(
-      nthreads == 0 ? m_SystemNumberOfThreads : nthreads);
+    if(nthreads == 0)
+      nthreads = m_SystemNumberOfThreads;
+    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(nthreads);
+    itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(nthreads);
     return 1;
     }
 
   else if (cmd == "-threads-all")
     {
     itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(m_SystemNumberOfThreads);
+    itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(m_SystemNumberOfThreads);
     return 0;
     }
 

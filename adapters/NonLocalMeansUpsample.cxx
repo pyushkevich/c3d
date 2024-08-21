@@ -49,21 +49,12 @@
 #include "NonLocalMeansUpsample.h"
 
 #include <iostream>
-#include <string>
 #include "math.h"
 #include <cstdlib>
 #include "itkResampleImageFilter.h"
 #include "itkMeanImageFilter.h"
 #include "itkBSplineInterpolateImageFunction.h"
 #include "itkNoiseImageFilter.h"
-
-/* Multithreading stuff*/
-#ifdef _WIN32
-#  include <windows.h>
-#  include <process.h>
-#else
-#  include <pthread.h>
-#endif
 
 #define pi 3.1415926535
 
@@ -291,12 +282,6 @@ NLMUpsampleProblem<TFloat>::ThreadFunc(void * pArguments)
     }
   }
 
-#ifdef _WIN32
-  _endthreadex(0);
-#else
-  pthread_exit(0);
-#endif
-
   return 0;
 }
 
@@ -324,7 +309,7 @@ NLMUpsampleProblem<TFloat>::PatchCorrection(TFloat *           ima,
 
   /*Declarations*/
   TFloat off, media;
-  int    ini, fin, i, j, k, ii, jj, kk, ni, nj, nk, indice, Nthreads, rc, ft;
+  int    ini, fin, i, j, k, ii, jj, kk, ni, nj, nk, indice, rc, ft;
   bool   salir;
 
   // start computation
