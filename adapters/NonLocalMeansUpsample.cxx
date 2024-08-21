@@ -699,8 +699,7 @@ NLMUpsampleProblem<TFloat>::main_loop(ImageType *input, UpsampleParameters param
 
   // perform iteration
   int      maxiter = 1000;
-  TFloat   mean[maxiter];
-  TFloat   mean_down[maxiter];
+  std::vector<TFloat> mean(maxiter), mean_down(maxiter);
   TFloat   tol = 1.2;
   int      down = 0;
   int      ii = 1, iii = 1;
