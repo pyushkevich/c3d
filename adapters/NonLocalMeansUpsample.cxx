@@ -317,14 +317,6 @@ NLMUpsampleProblem<TFloat>::PatchCorrection(TFloat *           ima,
   fac[2] = param.lf_z;
   int nelement = dims[2] * dims[1] * dims[0];
 
-  // multi thread
-  myargument * ThreadArgs;
-#ifdef _WIN32
-  HANDLE * ThreadList; /* Handles to the worker threads*/
-#else
-  pthread_t * ThreadList;
-#endif
-
   // allocate memory for intermediate matrices
   TFloat * tmp = new TFloat[nelement];
   TFloat * medias = new TFloat[nelement];
@@ -396,95 +388,33 @@ NLMUpsampleProblem<TFloat>::PatchCorrection(TFloat *           ima,
   /*th=0.6*h;  //3/sqrt(27) */
 
   // start multi-thread computation
-  // Nthreads=dims[2]<8?dims[2]:8;
-  int MaxThreadN = (int)(itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads() * 0.8);
-  if (MaxThreadN < 1)
-  {
-    MaxThreadN = 1;
-  }
-  // int MaxThreadN = 8;
-  Nthreads = dims[2] < MaxThreadN ? dims[2] : MaxThreadN;
-  // Nthreads = (int) (itk::MultiThreader::GetGlobalMaximumNumberOfThreads() * 0.5);
+  itk::MultiThreaderBase::Pointer mt = itk::MultiThreaderBase::New();
+  itk::ImageRegion<3>             full_region;
+  for (int d = 0; d < 3; d++)
+    full_region.SetSize(d, dims[d]);
+  
+  mt->ParallelizeImageRegion<3>(
+    full_region,
+    [dims, ima, fima, medias, pesos, v, f, h](const itk::ImageRegion<3> & thread_region) 
+      { 
+      myargument ta;
+      ta.cols = dims[0];
+      ta.rows = dims[1];
+      ta.slices = dims[2];
+      ta.in_image = ima;
+      ta.out_image = fima;
+      ta.mean_image = medias;
+      ta.pesos = pesos;
+      ta.ini = thread_region.GetIndex(2);
+      ta.fin = thread_region.GetIndex(2) + thread_region.GetSize(2);
+      ta.radio = v;
+      ta.f = f;
+      ta.sigma = h;
+      ThreadFunc(&ta);
+    },
+    nullptr);
 
-#ifdef _WIN32
 
-  // Reserve room for handles of threads in ThreadList
-  ThreadList = (HANDLE *)malloc(Nthreads * sizeof(HANDLE));
-  ThreadArgs = (myargument *)malloc(Nthreads * sizeof(myargument));
-
-  for (i = 0; i < Nthreads; i++)
-  {
-    // Make Thread Structure
-    ini = (i * dims[2]) / Nthreads;
-    fin = ((i + 1) * dims[2]) / Nthreads;
-
-    ThreadArgs[i].cols = dims[0];
-    ThreadArgs[i].rows = dims[1];
-    ThreadArgs[i].slices = dims[2];
-    ThreadArgs[i].in_image = ima;
-    ThreadArgs[i].out_image = fima;
-    ThreadArgs[i].mean_image = medias;
-    ThreadArgs[i].pesos = pesos;
-    ThreadArgs[i].ini = ini;
-    ThreadArgs[i].fin = fin;
-    ThreadArgs[i].radio = v;
-    ThreadArgs[i].f = f;
-    ThreadArgs[i].sigma = h;
-
-    ThreadList[i] = (HANDLE)_beginthreadex(NULL, 0, &ThreadFunc, &ThreadArgs[i], 0, NULL);
-  }
-
-  for (i = 0; i < Nthreads; i++)
-  {
-    WaitForSingleObject(ThreadList[i], INFINITE);
-  }
-  for (i = 0; i < Nthreads; i++)
-  {
-    CloseHandle(ThreadList[i]);
-  }
-
-#else
-
-  /* Reserve room for handles of threads in ThreadList*/
-  ThreadList = (pthread_t *)calloc(Nthreads, sizeof(pthread_t));
-  ThreadArgs = (myargument *)calloc(Nthreads, sizeof(myargument));
-
-  for (i = 0; i < Nthreads; i++)
-  {
-    /* Make Thread Structure */
-    ini = (i * dims[2]) / Nthreads;
-    fin = ((i + 1) * dims[2]) / Nthreads;
-
-    ThreadArgs[i].cols = dims[0];
-    ThreadArgs[i].rows = dims[1];
-    ThreadArgs[i].slices = dims[2];
-    ThreadArgs[i].in_image = ima;
-    ThreadArgs[i].out_image = fima;
-    ThreadArgs[i].mean_image = medias;
-    ThreadArgs[i].pesos = pesos;
-    ThreadArgs[i].ini = ini;
-    ThreadArgs[i].fin = fin;
-    ThreadArgs[i].radio = v;
-    ThreadArgs[i].f = f;
-    ThreadArgs[i].sigma = h;
-  }
-  for (i = 0; i < Nthreads; i++)
-  {
-    if (pthread_create(&ThreadList[i], NULL, ThreadFunc, &ThreadArgs[i]))
-    {
-      printf("Threads cannot be created\n");
-      exit(1);
-    }
-  }
-
-  for (i = 0; i < Nthreads; i++)
-  {
-    pthread_join(ThreadList[i], NULL);
-  }
-
-#endif
-  free(ThreadArgs);
-  free(ThreadList);
 
   for (i = 0; i < dims[0] * dims[1] * dims[2]; i++)
     fima[i] /= pesos[i];
