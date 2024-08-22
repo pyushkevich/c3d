@@ -83,16 +83,16 @@ struct ThreadArgument
   int      rows;
   int      cols;
   int      slices;
-  double * in_image;
-  double * out_image;
-  double * mean_image;
-  double * pesos;
+  TFloat * in_image;
+  TFloat * out_image;
+  TFloat * mean_image;
+  TFloat * pesos;
   int      ini;
   int      fin;
   int      radio;
   int      f;
   /*int th;*/
-  double * sigma;
+  TFloat * sigma;
 };
 
 

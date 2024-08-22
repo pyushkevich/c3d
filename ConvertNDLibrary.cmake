@@ -89,6 +89,7 @@ SET(SOURCES
   adapters/MomentsFeatures.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
+  adapters/NonLocalMeansDenoise.cxx
   adapters/NonLocalMeansUpsample.cxx
   adapters/NormalizeLocalWindow.cxx
   adapters/NormalizedCrossCorrelation.cxx

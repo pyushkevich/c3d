@@ -1128,6 +1128,16 @@ Syntax: `-ncc <radius_vector>`
 
 Computes normalized cross-correlation between two images that occupy the same physical space. Each voxel in the resulting image is the cross-correlation of patches of given radius surrounding the voxel in the two input images. This is different from **-ncor**, which computes a global cross-correlation metric value. 
 
+#### -nlm-denoise: Non-local Means Denoising
+
+Syntax: `-nlm-denoise`
+
+Applies the [non-local means image denoising algorithm by Manjon et al. (2009)](Manjon2009) to the last image on the stack. **Note: Only available in 3D**.
+
+    c3d gray.nii.gz -nlm-denoise 2x2x2 -o denoised.nii.gz
+
+[Manjon2009] Manjón JV, Coupé P, Collins DL, Robles M (2009). [Adaptive non-local means denoising of MR images with spatially varying noise levels.](https://doi.org/10.1002/jmri.22003) JMRI. 
+
 #### -nlm-upsample: Non-local Means Upsampling
 
 Syntax: `-nlm-upsample <upsample_vector>`
@@ -1136,7 +1146,7 @@ Applies the [non-local means super-resolution algorithm by Manjon et al. (2010)]
 
     c3d gray.nii.gz -nlm-upsample 2x2x2 -o sr.nii.gz
 
-[Manjon2010] Manjón JV, Coupé P, Buades A, Fonov V, Collins DL, Robles M (2010). Non-local MRI upsampling. Medical Image Analysis
+[Manjon2010] Manjón JV, Coupé P, Buades A, Fonov V, Collins DL, Robles M (2010). [Non-local MRI upsampling](https://doi.org/10.1016/j.media.2010.05.010). Medical Image Analysis.
 
 #### -nmi, -normalized-mutual-info: Compute mutual informaiton metric
 

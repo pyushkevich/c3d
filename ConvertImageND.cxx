@@ -40,7 +40,6 @@
 #include "ComputeMoments.h"
 #include "ComputeOverlaps.h"
 #include "ConnectedComponents.h"
-#include "ConvertAdapter.h"
 #include "Convolution.h"
 #include "CoordinateMap.h"
 #include "CopyTransform.h"
@@ -75,6 +74,7 @@
 #include "MomentsFeatures.h"
 #include "MRFVote.h"
 #include "MultiplyImages.h"
+#include "NonLocalMeansDenoise.h"
 #include "NonLocalMeansUpsample.h"
 #include "NormalizedCrossCorrelation.h"
 #include "NormalizeLocalWindow.h"
@@ -1366,6 +1366,13 @@ ImageConverter<TPixel, VDim>
     adapter("NCOR", fnf.c_str(), fnm.c_str());
     return nret;
     }
+
+  else if (cmd == "-nlm-denoise")
+  {
+    NonLocalMeansDenoise<TPixel, VDim> adapter(this);
+    adapter();
+    return 0;
+  }
 
   else if (cmd == "-nlm-upsample")
   {

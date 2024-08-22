@@ -14,7 +14,7 @@ endif(COMMAND cmake_policy)
 INCLUDE(CMake/PYVersion.cmake)
 
 # Set the semantic version and version date
-VERSION_VARS(1 4 1 "" "20240318" "March 18, 2024")
+VERSION_VARS(1 4 2 "" "20240822" "August 22, 2024")
 
 # Enable languages
 ENABLE_LANGUAGE(C)
