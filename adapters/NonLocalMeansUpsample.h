@@ -37,7 +37,7 @@ public:
 
   NonLocalMeansUpsample(Converter *c) : c(c) {}
 
-  void operator() (SizeType factor, int search_radius = 1, int patch_radius = 1);
+  void operator() (SizeType factor, int search_radius = 3, int patch_radius = 1);
 
 private:
   Converter *c;
