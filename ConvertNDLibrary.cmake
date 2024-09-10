@@ -65,6 +65,7 @@ SET(SOURCES
   adapters/ExtractSlice.cxx
   adapters/ExtrudeSegmentation.cxx
   adapters/FastMarching.cxx
+  adapters/FastMarchingMorphology.cxx
   adapters/FillBackgroundWithNeighborhoodNoise.cxx
   adapters/FlipImage.cxx
   adapters/HaralickFeatures.cxx

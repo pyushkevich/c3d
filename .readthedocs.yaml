@@ -5,3 +5,6 @@ build:
     python: latest
 sphinx:
   configuration: doc/conf.py
+python:
+  install:
+    requirements: doc/requirements.txt
