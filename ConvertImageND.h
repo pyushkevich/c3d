@@ -62,6 +62,7 @@ public:
   typedef vnl_vector_fixed<double, VDim> RealVector;
   typedef vnl_vector_fixed<int, VDim> IntegerVector;
   typedef std::map<TPixel, vnl_vector_fixed<double, 4> > LabelToRGBAMap;
+  typedef std::vector<TPixel> LabelVector;
 
   // Complex stuff
   typedef std::complex<TPixel> ComplexPixel;
@@ -131,6 +132,16 @@ public:
    */
   RealVector ReadRealSize(const char *vec);
   TPixel ReadIntensityValue(const char *vec);
+
+  /**
+   * Read a list of "labels", i.e., intensity values. Currently we support a list of
+   * comma-separated entries, each entry can be a number or a range of numbers using
+   * the colon specification, e.g., 1:5,8
+   */
+  LabelSet ReadLabelSet(const char *text);
+
+  /** Append a label set to another */
+  static LabelSet MergeLabelSets(const LabelSet &a, const LabelSet &b);
 
   void PrintManual(std::ostream &out);
   void PrintCommandListing(std::ostream &out);

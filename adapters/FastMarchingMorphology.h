@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   C3D: Command-line companion tool to ITK-SNAP
-  Module:    ConvertAdapter.h
+  Module:    %fn%.h
   Language:  C++
   Website:   itksnap.org/c3d
   Copyright (c) 2014 Paul A. Yushkevich
@@ -23,42 +23,26 @@
 
 =========================================================================*/
 
-#ifndef __ConvertAdapter_h_
-#define __ConvertAdapter_h_
+#ifndef __FastMarchingMorphology_h_
+#define __FastMarchingMorphology_h_
 
-#include "ConvertImageND.h"
+#include "ConvertAdapter.h"
 
-// Common typedefs for all child classes
-#define CONVERTER_STANDARD_TYPEDEFS \
-  typedef ImageConverter<TPixel, VDim> Converter; \
-  typedef typename Converter::ImageType ImageType; \
-  typedef typename Converter::UnorientedImageType UnorientedImageType; \
-  typedef typename Converter::ImagePointer ImagePointer; \
-  typedef typename Converter::SizeType SizeType; \
-  typedef typename Converter::IndexType IndexType; \
-  typedef typename Converter::IntegerVector IntegerVector; \
-  typedef typename Converter::RealVector RealVector; \
-  typedef typename Converter::RegionType RegionType; \
-  typedef typename Converter::ComplexPixel ComplexPixel; \
-  typedef typename Converter::ComplexImageType ComplexImageType; \
-  typedef typename Converter::Iterator Iterator; \
-  typedef typename Converter::ConstIterator ConstIterator; \
-  typedef typename Converter::LabelSet LabelSet;
-
-/**
- * Parent class for all adapters
- */
 template<class TPixel, unsigned int VDim>
-class ConvertAdapter
+class FastMarchingMorphology : public ConvertAdapter<TPixel, VDim>
 {
 public:
-
+  // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
-  ConvertAdapter() {}
+  FastMarchingMorphology(Converter *c) : c(c) {}
 
-protected:
+  void operator() (const LabelSet &active, const LabelSet &target, double newlabel, double radius);
+
+private:
+  Converter *c;
 
 };
 
 #endif
+

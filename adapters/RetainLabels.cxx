@@ -30,8 +30,8 @@ template <class TPixel, unsigned int VDim>
 class RetainLabelsUnaryFunctor
 {
 public:
-  RetainLabelsUnaryFunctor(const std::vector<int> &retain_list, TPixel bkg)
-    : m_RetainList(retain_list), m_HaveLast(false), m_Background(bkg) {}
+  RetainLabelsUnaryFunctor(const std::vector<double> &retain_list, TPixel bkg, bool mask, TPixel mask_value)
+    : m_RetainList(retain_list), m_HaveLast(false), m_Background(bkg), m_Mask(mask), m_MaskValue(mask_value) {}
 
   RetainLabelsUnaryFunctor()
     : m_HaveLast(false), m_Background(0.0) {}
@@ -54,7 +54,7 @@ public:
       {
       if(p_int == m_RetainList[i])
         {
-        m_LastReplacement = pixel;
+        m_LastReplacement = m_Mask ? m_MaskValue : pixel;
         return m_LastReplacement;
         }
       }
@@ -76,22 +76,29 @@ public:
 
 protected:
   
-  std::vector<int> m_RetainList;
-  TPixel m_LastPixel, m_LastReplacement, m_Background;
-  bool m_HaveLast;
+  std::vector<double> m_RetainList;
+  TPixel m_LastPixel, m_LastReplacement, m_Background, m_MaskValue;
+  bool m_HaveLast, m_Mask;
 };
 
 template <class TPixel, unsigned int VDim>
 void
 RetainLabels<TPixel, VDim>
-::operator() (const std::vector<int> &retainList)
+::operator() (const RetainLabels<TPixel, VDim>::LabelSet &retain, bool mask, double mask_value)
 {
   // Get image from stack
   ImagePointer img = c->PopImage();
 
   // Create the functor
+  *c->verbose << (mask ? "Masking label(s) " : "Retaining label(s) ");
+  for (auto &l : retain)
+    *c->verbose << l << " ";
+  if(mask)
+    *c->verbose << "with label " << mask_value << " ";
+  *c->verbose << "in #" << c->m_ImageStack.size() << std::endl;
+
   typedef RetainLabelsUnaryFunctor<TPixel, VDim> FunctorType;
-  FunctorType functor(retainList, c->m_Background);
+  FunctorType functor(retain, c->m_Background, mask, mask_value);
 
   // Create the filter
   typedef itk::UnaryFunctorImageFilter<ImageType, ImageType, FunctorType> FilterType;

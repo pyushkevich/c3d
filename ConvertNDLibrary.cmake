@@ -50,6 +50,7 @@ SET(SOURCES
   adapters/BinaryMathOperation.cxx
   adapters/Canny.cxx
   adapters/ClipImageIntensity.cxx
+  adapters/CompositeImages.cxx
   adapters/ComputeFFT.cxx
   adapters/ComputeMoments.cxx
   adapters/ComputeOverlaps.cxx

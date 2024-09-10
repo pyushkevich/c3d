@@ -36,6 +36,7 @@
 #include "BinaryMathOperation.h"
 #include "Canny.h"
 #include "ClipImageIntensity.h"
+#include "CompositeImages.h"
 #include "ComputeFFT.h"
 #include "ComputeMoments.h"
 #include "ComputeOverlaps.h"
@@ -51,6 +52,7 @@
 #include "ExtractSlice.h"
 #include "ExtrudeSegmentation.h"
 #include "FastMarching.h"
+#include "FastMarchingMorphology.h"
 #include "FlipImage.h"
 #include "FillBackgroundWithNeighborhoodNoise.h"
 #include "GeneralLinearModel.h"
@@ -133,6 +135,8 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <regex>
+
 
 // Support for regular expressions via KWSYS in ITK
 #include <itksys/RegularExpression.hxx>
@@ -155,7 +159,7 @@ using namespace itksys;
 extern const char *Convert3DVersionInfo;
 
 // Helper function: read a double, throw exception if unreadable
-double myatof(char *str)
+double myatof(const char *str)
 {
   char *end = 0;
   double d = strtod(str, &end);
@@ -164,7 +168,7 @@ double myatof(char *str)
   return d;
 };
 
-long myatol(char *str)
+long myatol(const char *str)
 {
   char *end = 0;
   double d = strtol(str, &end, 10);
@@ -712,6 +716,12 @@ ImageConverter<TPixel, VDim>
     return np;
     }
 
+  else if (cmd == "-composite")
+    {
+    CompositeImages<TPixel, VDim>(this)();
+    return 0;
+    }
+
   else if (cmd == "-compress")
     {
     m_UseCompression = true;
@@ -909,6 +919,17 @@ ImageConverter<TPixel, VDim>
     double stop_value = atof(argv[1]);
     adapter(stop_value);
     return 1;
+    }
+
+  else if (cmd == "-fm-dilate" || cmd == "-fmd")
+    {
+    LabelSet active = ReadLabelSet(argv[1]);
+    LabelSet target = ReadLabelSet(argv[2]);
+    long newlabel = myatol(argv[3]);
+    double radius = myatof(argv[4]);
+    FastMarchingMorphology<TPixel, VDim> adapter(this);
+    adapter(active, target, newlabel, radius);
+    return 4;
     }
 
   else if (cmd == "-foreach")
@@ -1848,20 +1869,28 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-retain-labels")
     {
     // Parse the labels
-    std::vector<int> vRetain;
+    LabelSet ls_retain;
+
+    // For backward compatibility, space-separated labels are also allowed
+    int spec_len = 0;
+    std::regex re(R"((-?\\d+(:-?\\d+(:-?\\d+)?)?)(,-?\\d+(:-?\\d+(:-?\\d+)?)?)*)");
     for(int i = 1; i < argc; i++)
       {
-      try
-        { vRetain.push_back((int) myatol(argv[i])); }
-      catch(...)
-        { break; }
+      if(std::regex_match(argv[i], re))
+        {
+        ls_retain = MergeLabelSets(ls_retain, ReadLabelSet(argv[i]));
+        spec_len++;
+        }
       }
+
+    if(spec_len == 0 || ls_retain.size() == 0)
+      throw ConvertException("No labels specified for the -retain-labels command");
 
     // Replace the intensities with values supplie
     RetainLabels<TPixel, VDim> adapter(this);
-    adapter(vRetain);
+    adapter(ls_retain);
 
-    return vRetain.size();
+    return spec_len;
     }
 
   else if (cmd == "-rf-apply")
@@ -2899,6 +2928,65 @@ ImageConverter<TPixel, VDim>
     }
 
   return val;
+}
+
+template <class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel, VDim>::LabelSet
+ImageConverter<TPixel, VDim>
+::ReadLabelSet(const char * text)
+{
+  std::set<long> ls;
+
+  // Label specification may include comma-separated labels, labels separated
+  // by a dash, special tokens like 'bg', 'fg', 'all', 'min', 'max'. Parsing
+  // some of these expressions requires knowing all labels available in the
+  // last image on the stack.
+  for(auto tk : split_string(text, ","))
+  {
+    // Check for colon specification
+    auto colon_split = split_string(tk, ":");
+    if(colon_split.size() == 1)
+    {
+      long l = myatol(tk.c_str());
+      ls.insert(l);
+    }
+    else if(colon_split.size() > 1)
+    {
+      long r0 = myatol(colon_split[0].c_str());
+      long r1 = myatol(colon_split[colon_split.size()-1].c_str());
+      long rs = colon_split.size() == 3 ? myatol(colon_split[1].c_str()) : 1;
+      long n_labels = (r1 - r0) / rs;
+      if(r0 > r1 || rs <= 0)
+        throw ConvertException("Invalid label range specification %s", tk.c_str());
+      if((r1 - r0) / rs > 256 * 256)
+        throw ConvertException("Label range specification %s is too large", tk.c_str());
+      for(long l = r0; l <= r1; l++)
+        ls.insert(l);
+    }
+    else
+      throw ConvertException("Invalid label range specification %s", tk.c_str());
+  }
+
+  return LabelSet(ls.begin(), ls.end());
+}
+
+template <class TPixel, unsigned int VDim>
+typename ImageConverter<TPixel, VDim>::LabelSet
+ImageConverter<TPixel, VDim>
+::MergeLabelSets(const LabelSet &a, const LabelSet &b)
+{
+  // Use sets of integers for merging
+  std::set<long> ls;
+  for(auto &item : a)
+    ls.insert((long) item);
+  for(auto &item : b)
+    ls.insert((long) item);
+
+  LabelSet result;
+  for(auto &item : ls)
+    result.push_back((double) item);
+
+  return result;
 }
 
 template<class TPixel, unsigned int VDim>
