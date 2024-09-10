@@ -4,16 +4,9 @@
 
 ### What's New?
 
-*   **-cos**,**-sin**,**-atan2** commands 
-*   **-align-landmarks** command 
-*   **-color-map** command 
-*   **-min**, **-max** commands 
-*   **-accum**, **-endaccum** loop structure 
-*   **-tile** command, great for stacking TIFFs into a 3D volume 
-*   **-test-xxx** set of commands 
-*   **-holefill** command 
-*   New **c4d** command 
-*   **-slice** command extended to support range of slices (e.g., *5:10*, *0:-1*, *0:2:-1*) 
+*   **-fast-marching** and **-fm-dilate** commands
+*   **-composite** command
+*   New label set specification
 
 ### About convert3d 
 
@@ -378,6 +371,14 @@ Clips image intensities, so that the values below *iMin* are converted to *iMin*
     c3d mri.img -clip 1000 8000 -o mriclip01.img          // Clips below and above
     c3d mri.img -clip -inf 8000 -o mriclip02.img          // Clips above only
     c3d mri.img -clip -inf 95% -o mriclip03.img           // Clips at 95th percentile
+
+#### -composite: Composite one image onto another
+
+Syntax: `-composite`
+
+Takes two images, A and B from the stack and for each pixel, returns the value from A if B is background at that pixel, or B if B is not background.
+
+    c3d a.nii b.nii -composite -o c.nii
 
 #### -cos: Voxelwise cosine 
 
