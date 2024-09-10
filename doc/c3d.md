@@ -4,16 +4,9 @@
 
 ### What's New?
 
-*   **-cos**,**-sin**,**-atan2** commands 
-*   **-align-landmarks** command 
-*   **-color-map** command 
-*   **-min**, **-max** commands 
-*   **-accum**, **-endaccum** loop structure 
-*   **-tile** command, great for stacking TIFFs into a 3D volume 
-*   **-test-xxx** set of commands 
-*   **-holefill** command 
-*   New **c4d** command 
-*   **-slice** command extended to support range of slices (e.g., *5:10*, *0:-1*, *0:2:-1*) 
+*   **-fast-marching** and **-fm-dilate** commands
+*   **-composite** command
+*   New label set specification
 
 ### About convert3d 
 
@@ -378,6 +371,14 @@ Clips image intensities, so that the values below *iMin* are converted to *iMin*
     c3d mri.img -clip 1000 8000 -o mriclip01.img          // Clips below and above
     c3d mri.img -clip -inf 8000 -o mriclip02.img          // Clips above only
     c3d mri.img -clip -inf 95% -o mriclip03.img           // Clips at 95th percentile
+
+#### -composite: Composite one image onto another
+
+Syntax: `-composite`
+
+Takes two images, A and B from the stack and for each pixel, returns the value from A if B is background at that pixel, or B if B is not background.
+
+    c3d a.nii b.nii -composite -o c.nii
 
 #### -cos: Voxelwise cosine 
 
@@ -933,6 +934,20 @@ Syntax `-fast-marching <stopping_value>`
 This command executes the Fast Marching algorithm with the last image on the stack as the initialization and the penultimate image on the stack as the speed image. All non-zero voxels in the initialization image are treated as points with arrival time 1. The fast marching algorithm propagates through image space at a speed modulated by the speed image (which must have non-negative values, typically between 0 and 1). The output of this filter is the arrival time at all points reached by fast marching before hitting the stopping value.
 
     c3d prob_map.nii seed.nii -fm 20.0 -o arrival.nii
+
+#### -fm-dilate: Fast marching-based label dilation
+
+Syntax `-fm-dilate <source_label> <target_labels> <new_label> <radius>`
+
+This command uses fast marching to dilate a label (`source_label`) in a label image over one or more target labels (`target_labels`). Unlike the `-dilate` command, fast marching dilation only marches over pixels with the target labels. The pixels within dilation radius (`radius`) from the source label will be relabeled with the `new_label` value. This command can be used for various tasks, such as filling holes in a segmentation, marking pixels on the boundary between two labels, etc. The same effect can be accomplished using just the `-fm` command and some arithmetic, but the `-fm-dilate` command is a convenient shorthand.
+
+This command will dilate label 5 over the background label (0) by radius of 1:
+
+    c3d seg.nii -fm-dilate 5 0 5 1.0 -o seg2.nii
+
+This command dilates label 5 over labels 0,1 and 4 by radius 1.5, marking the new pixels with label 6
+
+    c3d seg.nii -fm-dilate 5 0,1,4 6 1.5 -o seg2.nii
 
 #### -fft: Fast Fourier transform
 
