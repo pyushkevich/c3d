@@ -1873,7 +1873,7 @@ ImageConverter<TPixel, VDim>
 
     // For backward compatibility, space-separated labels are also allowed
     int spec_len = 0;
-    std::regex re(R"((-?\\d+(:-?\\d+(:-?\\d+)?)?)(,-?\\d+(:-?\\d+(:-?\\d+)?)?)*)");
+    std::regex re(R"((-?\d+(:-?\d+(:-?\d+)?)?)(,-?\d+(:-?\d+(:-?\d+)?)?)*)");
     for(int i = 1; i < argc; i++)
       {
       if(std::regex_match(argv[i], re))
@@ -1881,6 +1881,7 @@ ImageConverter<TPixel, VDim>
         ls_retain = MergeLabelSets(ls_retain, ReadLabelSet(argv[i]));
         spec_len++;
         }
+      else break;
       }
 
     if(spec_len == 0 || ls_retain.size() == 0)
