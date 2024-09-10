@@ -934,6 +934,20 @@ This command executes the Fast Marching algorithm with the last image on the sta
 
     c3d prob_map.nii seed.nii -fm 20.0 -o arrival.nii
 
+#### -fm-dilate: Fast marching-based label dilation
+
+Syntax `-fm-dilate <source_label> <target_labels> <new_label> <radius>`
+
+This command uses fast marching to dilate a label (`source_label`) in a label image over one or more target labels (`target_labels`). Unlike the `-dilate` command, fast marching dilation only marches over pixels with the target labels. The pixels within dilation radius (`radius`) from the source label will be relabeled with the `new_label` value. This command can be used for various tasks, such as filling holes in a segmentation, marking pixels on the boundary between two labels, etc. The same effect can be accomplished using just the `-fm` command and some arithmetic, but the `-fm-dilate` command is a convenient shorthand.
+
+This command will dilate label 5 over the background label (0) by radius of 1:
+
+    c3d seg.nii -fm-dilate 5 0 5 1.0 -o seg2.nii
+
+This command dilates label 5 over labels 0,1 and 4 by radius 1.5, marking the new pixels with label 6
+
+    c3d seg.nii -fm-dilate 5 0,1,4 6 1.5 -o seg2.nii
+
 #### -fft: Fast Fourier transform
 
 Syntax `-fft`
