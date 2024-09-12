@@ -161,6 +161,7 @@ ExtractSlice<TPixel, VDim>
       piece = piece.substr(0, piece.size()-1);
       double percent_pos = atof(piece.c_str());
       slicepos = (percent_pos / 100.0) * (size[slicedir] -1);
+      *c->verbose << "Calculated position in percent: " << percent_pos << "% of " << size[slicedir] << " to be image plane position: " << slicepos << endl;
       }
     else
       {
@@ -224,6 +225,7 @@ ExtractSlice<TPixel, VDim>
   for(double pos = pos_first; pos <= pos_last; pos+=pos_step)
     {
     int i = (int)(0.5+pos);  // round to integer
+    *c->verbose << "Calculated image plane position: " << pos << ", which is rounded to slice: " << i << endl;
     slice_extraction_list.push_back(i);
     }
   }
