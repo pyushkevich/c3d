@@ -137,9 +137,11 @@ ExtractSlice<TPixel, VDim>
   // 3. 20%     // slice at 20% of the stack
   // 4. 12:-4   // range, every slice
   // 5. 12:3:-4 // range, every third slice
+  // 6. 9:7.5:39 // range, equals: -slice 9 17 24 32 39
+  // 7. 40%:5%:60% // range, equals: -slice 40% 45% 50% 55% 60%
   
   // Split the string on the ':'
-  std::vector< std::vector<int> > pos_lists;
+  std::vector< std::vector<double> > pos_lists;
   std::string position;
   std::stringstream source_all(positions);
   while(std::getline(source_all, position, ','))
@@ -148,21 +150,22 @@ ExtractSlice<TPixel, VDim>
 
   std::string piece;
   std::stringstream source(position);
-  std::vector<int> pos_list;
+  std::vector<double> pos_list;
   while(std::getline(source, piece, ':'))
     {
-    int slicepos;
+    double slicepos;
 
     // Process the percentage
     if(piece[piece.size()-1] == '%')
       {
       piece = piece.substr(0, piece.size()-1);
       double percent_pos = atof(piece.c_str());
-      slicepos = (int)(0.5 + (percent_pos / 100.0) * (size[slicedir] -1));
+      slicepos = (percent_pos / 100.0) * (size[slicedir] -1);
+      *c->verbose << "Calculated position in percent: " << percent_pos << "% of " << size[slicedir] << " to be image plane position: " << slicepos << endl;
       }
     else
       {
-      slicepos = atoi(piece.c_str());
+      slicepos = atof(piece.c_str());
       }
 
     pos_list.push_back(slicepos);
@@ -173,10 +176,10 @@ ExtractSlice<TPixel, VDim>
   std::vector<int> slice_extraction_list;
   for(int l= 0; l < pos_lists.size(); l++)
   {
-  std::vector<int> pos_list = pos_lists[l];
+  std::vector<double> pos_list = pos_lists[l];
 
   // Now we have one, two or three numbers parsed
-  int pos_first, pos_step = 1, pos_last;
+  double pos_first, pos_step = 1, pos_last;
   if(pos_list.size() == 1)
     {
     pos_first = pos_last = pos_list[0];
@@ -219,8 +222,12 @@ ExtractSlice<TPixel, VDim>
       pos_first, pos_step, pos_last);
 
   // Store slice extration positions
-  for(int i = pos_first; i <= pos_last; i+=pos_step)
+  for(double pos = pos_first; pos <= pos_last; pos+=pos_step)
+    {
+    int i = (int)(0.5+pos);  // round to integer
+    *c->verbose << "Calculated image plane position: " << pos << ", which is rounded to slice: " << i << endl;
     slice_extraction_list.push_back(i);
+    }
   }
 
   // Take the last n_comp images on the stack

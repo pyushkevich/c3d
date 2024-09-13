@@ -37,7 +37,7 @@ public:
 
   RetainLabels(Converter *c) : c(c) {}
 
-  void operator() (const std::vector<int> &retainList);
+  void operator() (const LabelSet &retain, bool mask=false, double mask_value=0);
 
 private:
   Converter *c;

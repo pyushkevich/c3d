@@ -4,16 +4,9 @@
 
 ### What's New?
 
-*   **-cos**,**-sin**,**-atan2** commands 
-*   **-align-landmarks** command 
-*   **-color-map** command 
-*   **-min**, **-max** commands 
-*   **-accum**, **-endaccum** loop structure 
-*   **-tile** command, great for stacking TIFFs into a 3D volume 
-*   **-test-xxx** set of commands 
-*   **-holefill** command 
-*   New **c4d** command 
-*   **-slice** command extended to support range of slices (e.g., *5:10*, *0:-1*, *0:2:-1*) 
+*   **-fast-marching** and **-fm-dilate** commands
+*   **-composite** command
+*   New label set specification
 
 ### About convert3d 
 
@@ -378,6 +371,14 @@ Clips image intensities, so that the values below *iMin* are converted to *iMin*
     c3d mri.img -clip 1000 8000 -o mriclip01.img          // Clips below and above
     c3d mri.img -clip -inf 8000 -o mriclip02.img          // Clips above only
     c3d mri.img -clip -inf 95% -o mriclip03.img           // Clips at 95th percentile
+
+#### -composite: Composite one image onto another
+
+Syntax: `-composite`
+
+Takes two images, A and B from the stack and for each pixel, returns the value from A if B is background at that pixel, or B if B is not background.
+
+    c3d a.nii b.nii -composite -o c.nii
 
 #### -cos: Voxelwise cosine 
 
@@ -934,6 +935,20 @@ This command executes the Fast Marching algorithm with the last image on the sta
 
     c3d prob_map.nii seed.nii -fm 20.0 -o arrival.nii
 
+#### -fm-dilate: Fast marching-based label dilation
+
+Syntax `-fm-dilate <source_label> <target_labels> <new_label> <radius>`
+
+This command uses fast marching to dilate a label (`source_label`) in a label image over one or more target labels (`target_labels`). Unlike the `-dilate` command, fast marching dilation only marches over pixels with the target labels. The pixels within dilation radius (`radius`) from the source label will be relabeled with the `new_label` value. This command can be used for various tasks, such as filling holes in a segmentation, marking pixels on the boundary between two labels, etc. The same effect can be accomplished using just the `-fm` command and some arithmetic, but the `-fm-dilate` command is a convenient shorthand.
+
+This command will dilate label 5 over the background label (0) by radius of 1:
+
+    c3d seg.nii -fm-dilate 5 0 5 1.0 -o seg2.nii
+
+This command dilates label 5 over labels 0,1 and 4 by radius 1.5, marking the new pixels with label 6
+
+    c3d seg.nii -fm-dilate 5 0,1,4 6 1.5 -o seg2.nii
+
 #### -fft: Fast Fourier transform
 
 Syntax `-fft`
@@ -1127,6 +1142,26 @@ Interpolate sparsely drawn segmentations. The axis parameter can be -1 to interp
 Syntax: `-ncc <radius_vector>`
 
 Computes normalized cross-correlation between two images that occupy the same physical space. Each voxel in the resulting image is the cross-correlation of patches of given radius surrounding the voxel in the two input images. This is different from **-ncor**, which computes a global cross-correlation metric value. 
+
+#### -nlm-denoise: Non-local Means Denoising
+
+Syntax: `-nlm-denoise`
+
+Applies the [non-local means image denoising algorithm by Manjon et al. (2009)](Manjon2009) to the last image on the stack. **Note: Only available in 3D**.
+
+    c3d gray.nii.gz -nlm-denoise 2x2x2 -o denoised.nii.gz
+
+[Manjon2009] Manjón JV, Coupé P, Collins DL, Robles M (2009). [Adaptive non-local means denoising of MR images with spatially varying noise levels.](https://doi.org/10.1002/jmri.22003) JMRI. 
+
+#### -nlm-upsample: Non-local Means Upsampling
+
+Syntax: `-nlm-upsample <upsample_vector>`
+
+Applies the [non-local means super-resolution algorithm by Manjon et al. (2010)](Manjon2010) to the last image on the stack. The image will be upsampled by the factors specified in each dimension. Unlike linear or cubic interpolation, which smooths the image, the non-local means algorithm recovers high-frequency information from the features of the input image. **Note: Only available in 3D**.
+
+    c3d gray.nii.gz -nlm-upsample 2x2x2 -o sr.nii.gz
+
+[Manjon2010] Manjón JV, Coupé P, Buades A, Fonov V, Collins DL, Robles M (2010). [Non-local MRI upsampling](https://doi.org/10.1016/j.media.2010.05.010). Medical Image Analysis.
 
 #### -nmi, -normalized-mutual-info: Compute mutual informaiton metric
 
@@ -1681,6 +1716,11 @@ These options specify whether use the SPM extension to the Analyze (.hdr,.img) f
 
     c3d -spm in.hdr out.img.gz
 
+#### -threads, -threads-all
+
+Syntax: `-threads <integer>` or `-threads-all`
+
+Set the maximum number of threads available to the ITK algorithms. By default only one thread is made available to facilitate running many parallel c3d jobs in a high-performance computing environment. Setting the number of threads to a greater number may speed up execution on multi-core computers. The command `-threads-all` makes all threads available to ITK. Like all c3d commands, this command only affects the commands that come later on the command line.
 
 #### -type: Specify pixel type for image output
 

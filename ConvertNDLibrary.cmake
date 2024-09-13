@@ -50,6 +50,7 @@ SET(SOURCES
   adapters/BinaryMathOperation.cxx
   adapters/Canny.cxx
   adapters/ClipImageIntensity.cxx
+  adapters/CompositeImages.cxx
   adapters/ComputeFFT.cxx
   adapters/ComputeMoments.cxx
   adapters/ComputeOverlaps.cxx
@@ -65,6 +66,7 @@ SET(SOURCES
   adapters/ExtractSlice.cxx
   adapters/ExtrudeSegmentation.cxx
   adapters/FastMarching.cxx
+  adapters/FastMarchingMorphology.cxx
   adapters/FillBackgroundWithNeighborhoodNoise.cxx
   adapters/FlipImage.cxx
   adapters/HaralickFeatures.cxx
@@ -89,6 +91,8 @@ SET(SOURCES
   adapters/MomentsFeatures.cxx
   adapters/MRFVote.cxx
   adapters/MultiplyImages.cxx
+  adapters/NonLocalMeansDenoise.cxx
+  adapters/NonLocalMeansUpsample.cxx
   adapters/NormalizeLocalWindow.cxx
   adapters/NormalizedCrossCorrelation.cxx
   adapters/OverlayLabelImage.cxx
