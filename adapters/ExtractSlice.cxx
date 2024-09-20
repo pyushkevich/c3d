@@ -102,6 +102,72 @@ ExtractSlice<TPixel, VDim>
   c->m_ImageStack.push_back(imnew);
 }
 
+std::string preprocess_positions(char* positions)
+{
+  std::string preprocessed_positions = "";
+  std::string position;
+  std::stringstream source_all(positions);
+  while(std::getline(source_all, position, ','))
+  {
+    std::string piece;
+    std::stringstream source(position);
+    std::vector<double> percent_pos_list;
+    while(std::getline(source, piece, ':'))
+    {
+      if(piece[piece.size()-1] == '%')
+      {
+        double percent_pos = atof(piece.c_str());
+        percent_pos_list.push_back(percent_pos);
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    std::string preprocessed_position = "";
+    if (percent_pos_list.size() == 3)
+    {
+      /*
+        If all 3 places in the s:i:e (start:increment:end) are in percent, then it
+        should be converted to a comma separated list of percents prior (preprocessing)
+        to avoid floating point rounding errors. Ensuring that the following two
+        commands gives the same output:
+
+          c3d -verbose -create 240x240x48 0.958333x0.958333x3mm -slice z 40%:5%:60% -foreach -type uchar -endfor -oo sie-z%02d.png
+
+          c3d -verbose -create 240x240x48 0.958333x0.958333x3mm -slice z 40%,45%,50%,55%,60% -foreach -type uchar -endfor -oo csl-z%02d.png
+      */
+      double percent_start = percent_pos_list[0];
+      double percent_inc = percent_pos_list[1];
+      double percent_end = percent_pos_list[2];
+      for(double precent=percent_start; precent <= percent_end; precent+=percent_inc)
+      {
+        if (precent > percent_start)
+          preprocessed_position += ",";
+
+        std::ostringstream ss;
+        ss << precent;
+        std::string s(ss.str());
+
+        preprocessed_position += s + "%";
+      }
+    }
+    else
+    {
+      /*
+        Default case, where input is copied to output and no preprocessing is applied
+      */
+      preprocessed_position = position;
+    }
+
+    if (preprocessed_positions != "")
+      preprocessed_positions += ",";
+    preprocessed_positions += preprocessed_position;
+  }
+  return preprocessed_positions;
+}
+
 template <class TPixel, unsigned int VDim>
 void
 ExtractSlice<TPixel, VDim>
@@ -139,11 +205,15 @@ ExtractSlice<TPixel, VDim>
   // 5. 12:3:-4 // range, every third slice
   // 6. 9:7.5:39 // range, equals: -slice 9 17 24 32 39
   // 7. 40%:5%:60% // range, equals: -slice 40% 45% 50% 55% 60%
-  
+
+  std::string preprocessed_positions = preprocess_positions(positions);
+  if (positions != preprocessed_positions)
+    *c->verbose << "Preprocessed positions string: " << positions << " into: " << preprocessed_positions << endl;
+
   // Split the string on the ':'
   std::vector< std::vector<double> > pos_lists;
   std::string position;
-  std::stringstream source_all(positions);
+  std::stringstream source_all(preprocessed_positions);
   while(std::getline(source_all, position, ','))
   {
   *c->verbose << "Processing slice string: " << position << endl;
