@@ -24,6 +24,7 @@
 =========================================================================*/
 
 #include "ConvertImageND.h"
+#include "strto.h"
 
 #include "AddImages.h"
 #include "AlignByLandmarks.h"
@@ -157,35 +158,6 @@ unsigned char c3d_md[] = {
 using namespace itksys;
 
 extern const char *Convert3DVersionInfo;
-
-// Helper function: read a double, throw exception if unreadable
-double myatof(const char *str)
-{
-  char *end = 0;
-  double d = strtod(str, &end);
-  if (*end != 0)
-    throw "strtod conversion failed";
-  return d;
-};
-
-long myatol(const char *str)
-{
-  char *end = 0;
-  double d = strtol(str, &end, 10);
-  if (*end != 0)
-    throw "strtol conversion failed";
-  return d;
-};
-
-unsigned long myatoul(const char *cstr)
-{
-  char *end = 0;
-  unsigned long ul = strtoul(cstr, &end, 10);
-  if (*end != 0)
-    throw "strtoul conversion failed";
-  return ul;
-}
-
 
 std::string str_to_lower(const char *input)
 {
@@ -925,8 +897,8 @@ ImageConverter<TPixel, VDim>
     {
     LabelSet active = ReadLabelSet(argv[1]);
     LabelSet target = ReadLabelSet(argv[2]);
-    long newlabel = myatol(argv[3]);
-    double radius = myatof(argv[4]);
+    long newlabel = strto<long>(argv[3]);
+    double radius = strto<double>(argv[4]);
     FastMarchingMorphology<TPixel, VDim> adapter(this);
     adapter(active, target, newlabel, radius);
     return 4;
@@ -1303,7 +1275,7 @@ ImageConverter<TPixel, VDim>
       else if (!strcmp(argv[i], "-use-distance-transform"))
         use_distance_transform = true;
       else try
-        { axis = myatol(argv[i]); i++; break; }
+        { axis = strto<long>(argv[i]); i++; break; }
       catch(...)
         { break; }
       }
@@ -1740,7 +1712,7 @@ ImageConverter<TPixel, VDim>
     // Read all integer arguments
     for(int i = 1; i < argc; i++)
       try 
-        { pos.push_back((int) myatol(argv[i])); }
+        { pos.push_back((int) strto<long>(argv[i])); }
       catch(...)
         { break; }
 
@@ -1968,7 +1940,7 @@ ImageConverter<TPixel, VDim>
     for(int i = 1; i < argc; i++)
       {
       try
-        { vReplace.push_back(myatof(argv[i])); }
+        { vReplace.push_back(strto<double>(argv[i])); }
       catch(...)
         { break; }
       }
@@ -2180,7 +2152,7 @@ ImageConverter<TPixel, VDim>
       }
       
       if (is_unsigned_short(t.c_str()))
-        labelsToSmooth.push_back((unsigned short)myatoul(t.c_str()));
+        labelsToSmooth.push_back((unsigned short)strto<unsigned long>(t.c_str()));
       else
         throw ConvertException("%s is not a valid label type", t.c_str());
     }
@@ -2220,7 +2192,7 @@ ImageConverter<TPixel, VDim>
     for(int i = 1; i < argc; i++)
       {
       try
-        { v_labels.push_back(myatof(argv[i])); }
+        { v_labels.push_back(strto<double>(argv[i])); }
       catch(...)
         { break; }
       }
@@ -2948,14 +2920,14 @@ ImageConverter<TPixel, VDim>
     auto colon_split = split_string(tk, ":");
     if(colon_split.size() == 1)
     {
-      long l = myatol(tk.c_str());
+      long l = strto<long>(tk.c_str());
       ls.insert(l);
     }
     else if(colon_split.size() > 1)
     {
-      long r0 = myatol(colon_split[0].c_str());
-      long r1 = myatol(colon_split[colon_split.size()-1].c_str());
-      long rs = colon_split.size() == 3 ? myatol(colon_split[1].c_str()) : 1;
+      long r0 = strto<long>(colon_split[0].c_str());
+      long r1 = strto<long>(colon_split[colon_split.size()-1].c_str());
+      long rs = colon_split.size() == 3 ? strto<long>(colon_split[1].c_str()) : 1;
       long n_labels = (r1 - r0) / rs;
       if(r0 > r1 || rs <= 0)
         throw ConvertException("Invalid label range specification %s", tk.c_str());
