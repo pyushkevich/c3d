@@ -117,7 +117,8 @@ std::string preprocess_positions(const std::string positions)
     {
       if(piece[piece.size()-1] == '%')
       {
-        double percent_pos = strto<double>(piece);
+        std::string value_str = piece.substr(0, piece.size()-1);
+        double percent_pos = strto<double>(value_str);
         percent_pos_list.push_back(percent_pos);
       }
       else
