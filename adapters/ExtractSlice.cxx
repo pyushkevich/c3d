@@ -234,6 +234,11 @@ ExtractSlice<TPixel, VDim>
       slicepos = (percent_pos / 100.0) * (size[slicedir] -1);
       *c->verbose << "Calculated position in percent: " << percent_pos << "% of " << size[slicedir] << " to be image plane position: " << slicepos << endl;
       }
+    else if(piece[piece.size()-3] == 'v' && piece[piece.size()-2] == 'o' && piece[piece.size()-1] == 'x')
+      {
+      piece = piece.substr(0, piece.size()-3);
+      slicepos = strto<double>(piece);
+      }
     else
       {
       slicepos = strto<double>(piece);
