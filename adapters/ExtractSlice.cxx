@@ -25,6 +25,7 @@
 
 #include "ExtractSlice.h"
 #include "ExtractRegion.h"
+#include "strto.h"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -116,7 +117,7 @@ std::string preprocess_positions(const std::string positions)
     {
       if(piece[piece.size()-1] == '%')
       {
-        double percent_pos = atof(piece.c_str());
+        double percent_pos = strto<double>(piece);
         percent_pos_list.push_back(percent_pos);
       }
       else
@@ -229,13 +230,13 @@ ExtractSlice<TPixel, VDim>
     if(piece[piece.size()-1] == '%')
       {
       piece = piece.substr(0, piece.size()-1);
-      double percent_pos = atof(piece.c_str());
+      double percent_pos = strto<double>(piece);
       slicepos = (percent_pos / 100.0) * (size[slicedir] -1);
       *c->verbose << "Calculated position in percent: " << percent_pos << "% of " << size[slicedir] << " to be image plane position: " << slicepos << endl;
       }
     else
       {
-      slicepos = atof(piece.c_str());
+      slicepos = strto<double>(piece);
       }
 
     pos_list.push_back(slicepos);
