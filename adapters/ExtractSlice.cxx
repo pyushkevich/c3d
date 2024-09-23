@@ -102,7 +102,7 @@ ExtractSlice<TPixel, VDim>
   c->m_ImageStack.push_back(imnew);
 }
 
-std::string preprocess_positions(char* positions)
+std::string preprocess_positions(const std::string positions)
 {
   std::string preprocessed_positions = "";
   std::string position;
