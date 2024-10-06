@@ -161,22 +161,25 @@ IF(INSTALL_CLI)
   # Install the executables
   INSTALL(TARGETS c2d c3d c4d c3d_affine_tool DESTINATION ${CLI_INSTALL_PATH} COMPONENT Runtime)
 
-  # Install the libraries
-  INSTALL(TARGETS cnd_driver cnd_api cnd_maxflow
-          DESTINATION ${LIB_INSTALL_PATH}
-          EXPORT Convert3DTargets)
+  IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
 
-  # Install the API header
-  INSTALL(FILES api/ConvertAPI.h DESTINATION ${INC_INSTALL_PATH})
+    # Install the libraries
+    INSTALL(TARGETS cnd_driver cnd_api cnd_maxflow
+            DESTINATION ${LIB_INSTALL_PATH}
+            EXPORT Convert3DTargets)
 
-  EXPORT(EXPORT Convert3DTargets
-         FILE "${CMAKE_CURRENT_BINARY_DIR}/Convert3DTargets.cmake"
-         NAMESPACE Convert3D::)
+    # Install the API header
+    INSTALL(FILES api/ConvertAPI.h DESTINATION ${INC_INSTALL_PATH})
 
-  INSTALL(EXPORT Convert3DTargets
-          FILE Convert3DTargets.cmake
-          NAMESPACE Convert3D::
-          DESTINATION ${CONVERT3D_BINARY_DIR})
+    EXPORT(EXPORT Convert3DTargets
+          FILE "${CMAKE_CURRENT_BINARY_DIR}/Convert3DTargets.cmake"
+          NAMESPACE Convert3D::)
+
+    INSTALL(EXPORT Convert3DTargets
+            FILE Convert3DTargets.cmake
+            NAMESPACE Convert3D::
+            DESTINATION ${CONVERT3D_BINARY_DIR})
+  ENDIF()
 
 ENDIF(INSTALL_CLI)
 
