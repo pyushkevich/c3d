@@ -1149,7 +1149,7 @@ Syntax: `-nlm-denoise`
 
 Applies the [non-local means image denoising algorithm by Manjon et al. (2009)](Manjon2009) to the last image on the stack. **Note: Only available in 3D**.
 
-    c3d gray.nii.gz -nlm-denoise 2x2x2 -o denoised.nii.gz
+    c3d gray.nii.gz -nlm-denoise -o denoised.nii.gz
 
 [Manjon2009] Manjón JV, Coupé P, Collins DL, Robles M (2009). [Adaptive non-local means denoising of MR images with spatially varying noise levels.](https://doi.org/10.1002/jmri.22003) JMRI. 
 
