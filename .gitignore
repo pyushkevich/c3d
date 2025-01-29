@@ -17,3 +17,7 @@ CTestConfig.cmake.user*
 
 # Sphinx
 doc/_*
+
+
+# build directory
+build/

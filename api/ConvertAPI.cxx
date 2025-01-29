@@ -266,7 +266,7 @@ ConvertAPI<TPixel,VDim>
   vsnprintf(buffer, 8192, cmdline, args);
   va_end (args);
 
-  this->Execute(buffer);
+  this->ExecuteNoFormatting(buffer);
 }
 
 template class ConvertAPI<double, 2>;
