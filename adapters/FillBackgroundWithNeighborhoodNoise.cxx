@@ -64,7 +64,7 @@ public:
     { this->SetInput(image); }
 
   void DynamicThreadedGenerateData(
-    const OutputImageRegionType & outputRegionForThread) ITK_OVERRIDE
+    const OutputImageRegionType & outputRegionForThread) override
     {
     StatisticsImageType *stats = 
       dynamic_cast<StatisticsImageType *>(itk::ProcessObject::GetInput("statistics"));

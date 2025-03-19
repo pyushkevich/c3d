@@ -82,7 +82,7 @@ protected:
   LineFunctorImageFilter();
   ~LineFunctorImageFilter() {}
 
-  void DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread) ITK_OVERRIDE;
+  void DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread) override;
 
 private:
   LineFunctorImageFilter(const Self &);         // purposely not implemented
