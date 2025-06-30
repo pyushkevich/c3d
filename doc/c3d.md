@@ -1104,9 +1104,13 @@ Compute the mutual information metric between the last two images on the stack. 
 
 #### -mmi, -mattes-mutual-info: Compute mutual informaiton metric
 
-Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
+Syntax: `-mmi [movtransform.mat] [reftransform.mat]`
 
 Compute the Mattes mutual information metric between the last two images on the stack. See documentation for **-msq**.
+    
+    # An example of using this command to compute the mutual information metric between two images, *ref.nii* and *mov.nii*, is as follows:
+    c3d ref.nii mov.nii -mmi
+
 
 #### -mci, -morphological-contour-interpolation: Interpolate labels
 
