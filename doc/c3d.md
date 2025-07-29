@@ -1127,9 +1127,13 @@ Compute the mutual information metric between the last two images on the stack. 
 
 #### -mmi, -mattes-mutual-info: Compute mutual informaiton metric
 
-Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
+Syntax: `-mmi [movtransform.mat] [reftransform.mat]`
 
 Compute the Mattes mutual information metric between the last two images on the stack. See documentation for **-msq**.
+    
+    # An example of using this command to compute the mutual information metric between two images, *ref.nii* and *mov.nii*, is as follows:
+    c3d ref.nii mov.nii -mmi
+
 
 #### -mci, -morphological-contour-interpolation: Interpolate labels
 
@@ -1149,7 +1153,7 @@ Syntax: `-nlm-denoise`
 
 Applies the [non-local means image denoising algorithm by Manjon et al. (2009)](Manjon2009) to the last image on the stack. **Note: Only available in 3D**.
 
-    c3d gray.nii.gz -nlm-denoise 2x2x2 -o denoised.nii.gz
+    c3d gray.nii.gz -nlm-denoise -o denoised.nii.gz
 
 [Manjon2009] Manjón JV, Coupé P, Collins DL, Robles M (2009). [Adaptive non-local means denoising of MR images with spatially varying noise levels.](https://doi.org/10.1002/jmri.22003) JMRI. 
 
