@@ -3578,14 +3578,19 @@ ImageConverter<TPixel, VDim>
     // Determine the starting position
     int pstart = m_ImageStack.size() - nfiles * n_comp;
 
-    for(size_t j = pstart; j < pstart+n_comp; j++)
-      {
+    // Iterate over the files
+    for(unsigned int j = 0; j < nfiles; j++)
+    {
+      // Starting image to write
+      unsigned int k = pstart + j * n_comp;
+
+      // Write the image
       WriteImage<TPixel, VDim> adapter(this);
       if(n_comp == 1)
-        adapter(argv[j+1], true, j);
+        adapter(argv[j+1], true, k);
       else
-        adapter.WriteMultiComponent(argv[j+1], n_comp, j*n_comp);
-      }
+        adapter.WriteMultiComponent(argv[j+1], n_comp, k);
+    }
 
     return nfiles;
     }
