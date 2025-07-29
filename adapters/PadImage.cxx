@@ -70,9 +70,20 @@ PadImage<TPixel, VDim>
   padFilter->Update();
   ImagePointer output = padFilter->GetOutput();
 
-  *c->verbose << "  Input region: " << output->GetBufferedRegion() << endl;
-  *c->verbose << "  Input origin: " << output->GetOrigin() << endl;
+  // Fix the origin and index of the image. The pad filter leaves a non-zero
+  // index which is not consistent with how c3d works, which assumes that all
+  // images on the stack have zero index.
+  itk::Point<double, VDim> origin_adj;
+  auto output_region = output->GetBufferedRegion();
+  auto output_index = output_region.GetIndex();
+  output->TransformIndexToPhysicalPoint(output_index, origin_adj);
+  output->SetOrigin(origin_adj);
+  output_index.Fill(0);
+  output_region.SetIndex(output_index);
+  output->SetRegions(output_region);
 
+  *c->verbose << "  Output region: " << output->GetBufferedRegion() << endl;
+  *c->verbose << "  Output origin: " << output->GetOrigin() << endl;
 
   // Put result on stack
   c->m_ImageStack.pop_back();
