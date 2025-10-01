@@ -214,7 +214,17 @@ ConvertAPI<TPixel, VDim>
 {
   if(m_Converter->GetStackSize() < 1)
     throw ConvertAPIException("Empty stack in ConvertAPI::PopImage");
+#if ITK_VERSION_MAJOR >= 5
   return m_Converter->PopImage();
+#else
+  // when building against ITK versions less than 5 the code
+  //  return m_Converter->PopImage();
+  // results in the following compiler error being generated:
+  //  "could not convert 'ImageConverter<TPixel, VDim>::PopImage()'
+  //   from 'ImageConverter<double, 4u>::ImagePointer'
+  //   to 'ConvertAPI<double, 4u>::ImagePointer'"
+  throw ConvertException("build with ITK version < 5, unsupported operation: ConvertAPI::PopImage");
+#endif
 }
 
 template<class TPixel, unsigned int VDim>
