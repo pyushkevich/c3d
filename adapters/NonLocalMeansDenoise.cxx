@@ -46,7 +46,9 @@
 #include <string>
 #include "math.h"
 #include <cstdlib>
+#if ITK_VERSION_MAJOR >= 5
 #include <itkMultiThreaderBase.h>
+#endif
 
 
 #define pi 3.1415926535
@@ -885,6 +887,7 @@ typename NLMDenoiseProblem<TFloat>::ImagePointer
     }
   }
 
+#if ITK_VERSION_MAJOR >= 5
   // Threaded portion of the code
   itk::MultiThreaderBase::Pointer mt = itk::MultiThreaderBase::New();
   itk::ImageRegion<3>             full_region;
@@ -914,6 +917,9 @@ typename NLMDenoiseProblem<TFloat>::ImagePointer
       ThreadFunc(&ta);
     },
     nullptr);
+#else
+  throw ConvertException("build with ITK version < 5, unsupported operation: NonLocalMeansDenoise");
+#endif
 
   // correction?
   if(rician)

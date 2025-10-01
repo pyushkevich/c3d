@@ -29,7 +29,7 @@
 #include "itkSpatialOrientation.h"
 #include <nifti1_io.h>
 
-#if (ITK_VERSION_MAJOR <= 5) and (ITK_VERSION_MINOR < 4)
+#if (ITK_VERSION_MAJOR < 5) or ((ITK_VERSION_MAJOR == 5) and (ITK_VERSION_MINOR < 4))
 using ValidCoordinateOrientations=itk::SpatialOrientation::ValidCoordinateOrientationFlags;
 #else
 using ValidCoordinateOrientations=itk::SpatialOrientationEnums::ValidCoordinateOrientations;
