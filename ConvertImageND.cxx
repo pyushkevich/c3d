@@ -1382,7 +1382,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-nlm-upsample")
   {
     NonLocalMeansUpsample<TPixel, VDim> adapter(this);
-    auto radius = this->ReadSizeVector(argv[1]);
+    SizeType radius = this->ReadSizeVector(argv[1]);
     adapter(radius);
     return 1;
   }
@@ -2924,10 +2924,10 @@ ImageConverter<TPixel, VDim>
   // by a dash, special tokens like 'bg', 'fg', 'all', 'min', 'max'. Parsing
   // some of these expressions requires knowing all labels available in the
   // last image on the stack.
-  for(auto tk : split_string(text, ","))
+  for(std::string tk : split_string(text, ","))
   {
     // Check for colon specification
-    auto colon_split = split_string(tk, ":");
+    std::vector<std::string> colon_split = split_string(tk, ":");
     if(colon_split.size() == 1)
     {
       long l = strto<long>(tk.c_str());
@@ -2960,13 +2960,13 @@ ImageConverter<TPixel, VDim>
 {
   // Use sets of integers for merging
   std::set<long> ls;
-  for(auto &item : a)
+  for(double item : a)
     ls.insert((long) item);
-  for(auto &item : b)
+  for(double item : b)
     ls.insert((long) item);
 
   LabelSet result;
-  for(auto &item : ls)
+  for(long item : ls)
     result.push_back((double) item);
 
   return result;

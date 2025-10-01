@@ -22,7 +22,7 @@ ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
 
 # Specify the C++ standard
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Option allowing to build c3d as a subproject of another project

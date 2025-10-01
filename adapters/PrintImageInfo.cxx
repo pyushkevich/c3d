@@ -215,7 +215,7 @@ PrintImageInfo<TPixel, VDim>
       {
       // Get the metadata as a generic object
       string key = itMeta->first, v_string;
-      auto v_oflags = ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID;
+      ValidCoordinateOrientations v_oflags = ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID;
 
       if(itk::ExposeMetaData<string>(mdd, key, v_string))
         {
