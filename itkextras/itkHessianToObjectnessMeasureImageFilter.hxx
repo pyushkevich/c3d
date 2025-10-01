@@ -123,7 +123,7 @@ HessianToObjectnessMeasureImageFilter< TInputImage, TOutputImage >
     EigenValueArrayType sortedAbsEigenValues;
     for ( unsigned int i = 0; i < ImageDimension; i++ )
       {
-      sortedAbsEigenValues[i] = vnl_math::abs(sortedEigenValues[i]);
+      sortedAbsEigenValues[i] = std::abs(sortedEigenValues[i]);
       }
 
     // initialize the objectness measure

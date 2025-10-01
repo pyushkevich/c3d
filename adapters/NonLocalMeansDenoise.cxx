@@ -926,7 +926,7 @@ typename NLMDenoiseProblem<TFloat>::ImagePointer
       {
         SNR=means[i]/sqrt(variances[i]);
         bias[i]=2*(variances[i]/Epsi(SNR));
-        if(isnan(bias[i])) bias[i]=0;
+        if(std::isnan(bias[i])) bias[i]=0;
       }
     }
   }
