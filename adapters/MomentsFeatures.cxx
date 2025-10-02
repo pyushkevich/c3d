@@ -113,7 +113,11 @@ MomentsFeatures<TPixel, VDim>
   typename EigenValueFilterType::Pointer eigen = EigenValueFilterType::New();
   eigen->SetInput(tensor);
   eigen->SetDimension(VDim);
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   eigen->OrderEigenValuesBy(itk::EigenValueOrderEnum::OrderByValue);
+#else
+  eigen->OrderEigenValuesBy(EigenValueFilterType::FunctorType::OrderByValue);
+#endif
    
   // Update the eigen filter
   eigen->Update();

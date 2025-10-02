@@ -27,7 +27,11 @@
 
 #include "itkInPlaceImageFilter.h"
 #include "itkImageLinearIteratorWithIndex.h"
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
 #include "itkTotalProgressReporter.h"
+#else
+#include "itkProgressReporter.h"
+#endif
 
 template <class TInputImage, class TOutputImage, class TFunction>
 class LineFunctorImageFilter 
@@ -82,7 +86,13 @@ protected:
   LineFunctorImageFilter();
   ~LineFunctorImageFilter() {}
 
+#if ITK_VERSION_MAJOR >= 5
   void DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread) override;
+#else
+  void ThreadedGenerateData(
+    const OutputImageRegionType & outputRegionForThread,
+    itk::ThreadIdType threadId) override;
+#endif
 
 private:
   LineFunctorImageFilter(const Self &);         // purposely not implemented
@@ -106,7 +116,13 @@ LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
 template< typename TInputImage, typename TOutputImage, typename TFunction  >
 void
 LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
+#if ITK_VERSION_MAJOR >= 5
 ::DynamicThreadedGenerateData(const OutputImageRegionType & outputRegionForThread)
+#else
+::ThreadedGenerateData(
+    const OutputImageRegionType & outputRegionForThread,
+    itk::ThreadIdType threadId)
+#endif
 {
   // Get the image
   InputImageType *input = const_cast<InputImageType *>(this->GetInput());
@@ -129,7 +145,14 @@ LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
   int line_length = outputRegionForThread.GetSize(0);
 
   // Progress
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
   itk::TotalProgressReporter progress(this, output->GetRequestedRegion().GetNumberOfPixels());
+#else
+  const size_t numberOfLinesToProcess = outputRegionForThread.GetNumberOfPixels() / line_length;
+#if ITK_VERSION_MAJOR < 5
+  itk::ProgressReporter progress( this, threadId, numberOfLinesToProcess );
+#endif
+#endif
 
   // Start iterating over lines
   while(!itOutput.IsAtEnd())
@@ -142,7 +165,13 @@ LineFunctorImageFilter< TInputImage, TOutputImage, TFunction >
 
     itInput.NextLine();
     itOutput.NextLine();
+#if (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR >= 1) || ITK_VERSION_MAJOR > 5
     progress.Completed(line_length);
+#else
+#if ITK_VERSION_MAJOR < 5
+    progress.CompletedPixel();
+#endif
+#endif
     }
 }
 

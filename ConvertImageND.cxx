@@ -384,6 +384,15 @@ struct ConvertAlgorithmParameters
     }
 };
 
+void SetNumberOfThreads(const unsigned int numThreads)
+{
+#if ITK_VERSION_MAJOR >= 5
+  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(numThreads);
+  itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(numThreads);
+#else
+  itk::MultiThreader::SetGlobalDefaultNumberOfThreads(numThreads);
+#endif
+}
 
 template<class TPixel, unsigned int VDim>
 ImageConverter<TPixel,VDim>
@@ -391,9 +400,12 @@ ImageConverter<TPixel,VDim>
   : os_out(&std::cout), os_err(&std::cerr), verbose(&devnull)
 {
   // Disable multithreading
+#if ITK_VERSION_MAJOR >= 5
   m_SystemNumberOfThreads = itk::MultiThreaderBase::GetGlobalMaximumNumberOfThreads();
-  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(1);
-  itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(1);
+#else
+  m_SystemNumberOfThreads = itk::MultiThreader::GetGlobalDefaultNumberOfThreads();
+#endif
+  SetNumberOfThreads(1);
 
   // Initialize to defaults
   m_TypeId = "float";
@@ -1370,7 +1382,7 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-nlm-upsample")
   {
     NonLocalMeansUpsample<TPixel, VDim> adapter(this);
-    auto radius = this->ReadSizeVector(argv[1]);
+    SizeType radius = this->ReadSizeVector(argv[1]);
     adapter(radius);
     return 1;
   }
@@ -2330,15 +2342,13 @@ ImageConverter<TPixel, VDim>
     int nthreads = atoi(argv[1]);
     if(nthreads == 0)
       nthreads = m_SystemNumberOfThreads;
-    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(nthreads);
-    itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(nthreads);
+    SetNumberOfThreads(nthreads);
     return 1;
     }
 
   else if (cmd == "-threads-all")
     {
-    itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads(m_SystemNumberOfThreads);
-    itk::MultiThreaderBase::SetGlobalDefaultNumberOfThreads(m_SystemNumberOfThreads);
+    SetNumberOfThreads(m_SystemNumberOfThreads);
     return 0;
     }
 
@@ -2852,7 +2862,7 @@ ImageConverter<TPixel, VDim>
       for(size_t i = 0; i < n; i++, q++)
         {
         // We don't include nans and if FGQUANTILE, background values
-        if (!vnl_math::isnan(*q))
+        if (!std::isnan(*q))
           if (m_PercentIntensityMode == PIM_QUANTILE || *q != m_Background)
             {*p = *q; ++p;}
         }
@@ -2914,10 +2924,10 @@ ImageConverter<TPixel, VDim>
   // by a dash, special tokens like 'bg', 'fg', 'all', 'min', 'max'. Parsing
   // some of these expressions requires knowing all labels available in the
   // last image on the stack.
-  for(auto tk : split_string(text, ","))
+  for(std::string tk : split_string(text, ","))
   {
     // Check for colon specification
-    auto colon_split = split_string(tk, ":");
+    std::vector<std::string> colon_split = split_string(tk, ":");
     if(colon_split.size() == 1)
     {
       long l = strto<long>(tk.c_str());
@@ -2950,13 +2960,13 @@ ImageConverter<TPixel, VDim>
 {
   // Use sets of integers for merging
   std::set<long> ls;
-  for(auto &item : a)
+  for(double item : a)
     ls.insert((long) item);
-  for(auto &item : b)
+  for(double item : b)
     ls.insert((long) item);
 
   LabelSet result;
-  for(auto &item : ls)
+  for(long item : ls)
     result.push_back((double) item);
 
   return result;

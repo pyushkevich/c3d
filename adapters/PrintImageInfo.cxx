@@ -29,7 +29,7 @@
 #include "itkSpatialOrientation.h"
 #include <nifti1_io.h>
 
-#if (ITK_VERSION_MAJOR <= 5) and (ITK_VERSION_MINOR < 4)
+#if (ITK_VERSION_MAJOR < 5) or ((ITK_VERSION_MAJOR == 5) and (ITK_VERSION_MINOR < 4))
 using ValidCoordinateOrientations=itk::SpatialOrientation::ValidCoordinateOrientationFlags;
 #else
 using ValidCoordinateOrientations=itk::SpatialOrientationEnums::ValidCoordinateOrientations;
@@ -215,7 +215,7 @@ PrintImageInfo<TPixel, VDim>
       {
       // Get the metadata as a generic object
       string key = itMeta->first, v_string;
-      auto v_oflags = ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID;
+      ValidCoordinateOrientations v_oflags = ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_INVALID;
 
       if(itk::ExposeMetaData<string>(mdd, key, v_string))
         {

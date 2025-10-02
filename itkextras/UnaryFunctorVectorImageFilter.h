@@ -94,8 +94,14 @@ protected:
 
   void GenerateOutputInformation() ITK_OVERRIDE;
   
+#if ITK_VERSION_MAJOR >= 5
   void DynamicThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread) ITK_OVERRIDE;
+#else
+  void ThreadedGenerateData(
+    const OutputImageRegionType & outputRegionForThread,
+    itk::ThreadIdType threadId) ITK_OVERRIDE;
+#endif
 
 private:
   UnaryFunctorVectorImageFilter(const Self &);  //purposely not implemented
