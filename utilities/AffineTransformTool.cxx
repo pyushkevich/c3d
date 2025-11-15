@@ -440,10 +440,25 @@ void itk_write(MatrixStack &vmat, const char *fname)
   wrt->Update();
 }
 
+double read_digit(ifstream &fin)
+{
+  std::string val;
+  fin >> val;
+  try 
+    {
+    return std::stod(val);
+    }
+  catch(const std::exception &exc)
+    {
+    throw ConvertException("Invalid number in matrix: %s", val.c_str());
+    }
+}
+  
 void ras_read(MatrixStack &vmat, const char *fname, unsigned int dim)
 {
   MatrixType mat;
   ifstream fin(fname);
+  std::string val;
 
   if(dim == 3)
     {
@@ -451,7 +466,7 @@ void ras_read(MatrixStack &vmat, const char *fname, unsigned int dim)
     for(size_t i = 0; i < 4; i++)
       for(size_t j = 0; j < 4; j++)
         if(fin.good())
-          fin >> mat[i][j];
+          mat[i][j] = read_digit(fin);
         else
           throw ConvertException("Unable to read 16 elements from matrix %s", fname);
     }
@@ -461,7 +476,7 @@ void ras_read(MatrixStack &vmat, const char *fname, unsigned int dim)
     double inval[9];
     for(size_t i = 0; i < 9; i++)
       if(fin.good())
-        fin >> inval[i];
+        inval[i] = read_digit(fin);
       else
         throw ConvertException("Unable to read 9 elements from matrix %s", fname);
 
