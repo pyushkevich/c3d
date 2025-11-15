@@ -51,8 +51,25 @@ RFApply<TPixel, VDim>
 
   // Read the classifier object from disk
   ifstream in_file(train_file);
+  if(in_file.fail())
+    throw ConvertException("Unable to open Random Forest classifier file %s", train_file);
   classifier->Read(in_file);
   in_file.close();
+
+  // Report what we are doing
+  *c->verbose << "Applying Random Forest classifier " << train_file << std::endl;
+  *c->verbose << "  Using " << features.size() << " images as features" << std::endl;
+  *c->verbose << "  Classifier generates " << classifier->GetClassToLabelMapping().size() << " posteriors" << std::endl;
+
+  // Check the number of trees in the forest
+  auto *forest = classifier->GetForest();
+  if(forest->trees_.size() < 1)
+    throw ConvertException("Random Forest has invalid number of trees: %d", forest->trees_.size());
+  auto *tree = forest->trees_[0];
+  if(tree->nodes_.size() < 1)
+    throw ConvertException("Random Forest has invalid number of nodes per tree: %d", tree->nodes_.size());
+  *c->verbose << "  Classifier has " << forest->trees_.size()
+              << " trees with " << tree->nodes_.size() << " nodes per tree." << std::endl;
 
   // Create the filter for this label (TODO: this is wasting computation)
   typename FilterType::Pointer filter = FilterType::New();
@@ -69,6 +86,7 @@ RFApply<TPixel, VDim>
 
   // Run the filter for this set of weights
   filter->Update();
+  *c->verbose << "  Generated " << filter->GetNumberOfIndexedOutputs() << " posterior images" << std::endl;
 
   // Append all the outputs to the stack
   for(int k = 0; k < filter->GetNumberOfIndexedOutputs(); k++)
