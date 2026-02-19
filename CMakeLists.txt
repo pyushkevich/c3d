@@ -15,7 +15,7 @@ PROJECT(CONVERT3D)
 INCLUDE(CMake/PYVersion.cmake)
 
 # Set the semantic version and version date
-VERSION_VARS(1 4 4 "" "20250729" "July 29, 2025")
+VERSION_VARS(1 4 6 "" "20260219" "February 19, 2026")
 
 # Enable languages
 ENABLE_LANGUAGE(C)
