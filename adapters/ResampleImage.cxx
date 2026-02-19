@@ -84,6 +84,19 @@ ResampleImage<TPixel, VDim>
   c->m_ImageStack.push_back(fltSample->GetOutput());
 }
 
+template <class TPixel, unsigned int VDim>
+typename ResampleImage<TPixel, VDim>::SizeType
+ResampleImage<TPixel, VDim>::ComputeSizeFromTargetSpacing(const RealVector &target_spacing)
+{
+  auto *img = c->m_ImageStack.back();
+  SizeType sz = img->GetBufferedRegion().GetSize();
+  for(size_t i = 0; i < VDim; i++)
+  {
+    sz[i] = static_cast<size_t>(((0.5 + sz[i]) * img->GetSpacing()[i]) / target_spacing[i]);
+  }
+  return sz;
+}
+
 // Invocations
 template class ResampleImage<double, 2>;
 template class ResampleImage<double, 3>;

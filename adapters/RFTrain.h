@@ -27,6 +27,7 @@
 #define __RFTrain_h_
 
 #include "ConvertAdapter.h"
+#include "RandomForestClassifier.h"
 
 template <class TPixel, unsigned int VDim>
 struct RFParameters
@@ -55,9 +56,15 @@ public:
   // Parameters
   typedef RFParameters<TPixel, VDim> ParametersType;
 
+  // Classifier type
+  typedef RandomForestClassifier<TPixel, TPixel, VDim> RFClassifierType;
+
   RFTrain(Converter *c) : c(c) {}
 
   void operator() (const char * train_file, const ParametersType &param);
+
+  void TrainClassifier(const ParametersType & param, RFClassifierType * cls);
+  void ExportClassifier(RFClassifierType * cls, const char * file);
 
 private:
   Converter *c;

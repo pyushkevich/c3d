@@ -39,6 +39,8 @@ public:
 
   void operator() (SizeType &size);
 
+  SizeType ComputeSizeFromTargetSpacing(const RealVector &target_spacing);
+
 private:
   Converter *c;
 

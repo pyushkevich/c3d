@@ -113,6 +113,7 @@
 #include "ThresholdImage.h"
 #include "TileImages.h"
 #include "TrimImage.h"
+#include "TrimNeckOnBrainMRI.h"
 #include "TustisonWellComposedness.h"
 #include "UnaryMathOperation.h"
 #include "UpdateMetadataKey.h"
@@ -377,6 +378,9 @@ struct ConvertAlgorithmParameters
 
   // Random forest parameters
   RFParameters<TPixel, VDim> m_RandomForest;
+
+  // Neck trimming parameters
+  TrimNeckOnBrainMRIParameters m_TrimNeckOnBrainMRI;
 
   ConvertAlgorithmParameters()
     {
@@ -1360,6 +1364,30 @@ ImageConverter<TPixel, VDim>
     return nret;
     }
 
+  else if (cmd == "-neck-trim")
+  {
+    if constexpr (VDim == 3)
+    {
+      TrimNeckOnBrainMRI<TPixel> adapter(this);
+      adapter(m_Param->m_TrimNeckOnBrainMRI);
+      return 0;
+    }
+    else
+      throw ConvertException("-neck-trim command is only supported for 3D images");
+  }
+
+  else if (cmd == "-neck-trim-head-height")
+  {
+    m_Param->m_TrimNeckOnBrainMRI.HeadHeight = atof(argv[1]);
+    return 1;
+  }
+
+  else if (cmd == "-neck-trim-top-clearance")
+  {
+    m_Param->m_TrimNeckOnBrainMRI.ClearanceHeight = atof(argv[1]);
+    return 1;
+  }
+
   else if (cmd == "-nlm-denoise")
   {
     NonLocalMeansDenoise<TPixel, VDim> adapter(this);
@@ -1992,12 +2020,8 @@ ImageConverter<TPixel, VDim>
   else if (cmd == "-resample-mm")
     {
     RealVector vox = ReadRealSize(argv[1]);
-    SizeType sz = m_ImageStack.back()->GetBufferedRegion().GetSize();
-    for(size_t i = 0; i < VDim; i++)
-      {
-      sz[i] = static_cast<size_t>(((0.5 + sz[i]) * m_ImageStack.back()->GetSpacing()[i]) / vox[i]);
-      }
     ResampleImage<TPixel, VDim> adapter(this);
+    SizeType sz = adapter.ComputeSizeFromTargetSpacing(vox);
     adapter(sz);
     return 1;
     }
@@ -3400,6 +3424,20 @@ ImageConverter<TPixel, VDim>
 
   this->os_out = &sout;
   this->os_err = &serr;
+}
+
+template <class TPixel, unsigned int VDim>
+RFParameters<TPixel, VDim> *
+ImageConverter<TPixel, VDim>::GetRandomForestParameters()
+{
+  return &this->m_Param->m_RandomForest;
+}
+
+template <class TPixel, unsigned int VDim>
+LevelSetParameters *
+ImageConverter<TPixel, VDim>::GetLevelSetParameters()
+{
+  return &this->m_Param->m_LevelSet;
 }
 
 

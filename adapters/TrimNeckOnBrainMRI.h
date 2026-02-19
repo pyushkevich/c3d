@@ -23,28 +23,35 @@
 
 =========================================================================*/
 
-#ifndef __RFApply_h_
-#define __RFApply_h_
+#ifndef __TrimNeckOnBrainMRI_h_
+#define __TrimNeckOnBrainMRI_h_
 
 #include "ConvertAdapter.h"
-#include "RandomForestClassifier.h"
 
-template<class TPixel, unsigned int VDim>
-class RFApply : public ConvertAdapter<TPixel, VDim>
+/**
+ * Neck trimming parameters
+ */
+struct TrimNeckOnBrainMRIParameters
+{
+  // Height of the head that should be captured (from superior to inferior, mm)
+  double HeadHeight = 180;
+
+  // Clearance above head that should be captured (mm)
+  double ClearanceHeight = 10;
+};
+
+template<class TPixel>
+class TrimNeckOnBrainMRI : public ConvertAdapter<TPixel, 3>
 {
 public:
   // Common typedefs
+  static constexpr int VDim = 3;
   CONVERTER_STANDARD_TYPEDEFS
 
-  // Classifier type
-  typedef RandomForestClassifier<TPixel, TPixel, VDim> RFClassifierType;
+  TrimNeckOnBrainMRI(Converter *c) : c(c) {}
 
-  RFApply(Converter *c) : c(c) {}
-
-  void operator() (const char *train_file);
-
-  void ImportClassifier(const char * file, RFClassifierType * cls);
-  void ApplyClassifier(RFClassifierType * cls, const char *name = nullptr);
+  void
+  operator()(const TrimNeckOnBrainMRIParameters & param);
 
 private:
   Converter *c;

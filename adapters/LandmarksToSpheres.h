@@ -35,9 +35,17 @@ public:
   // Common typedefs
   CONVERTER_STANDARD_TYPEDEFS
 
+  // Landmark representation
+  typedef itk::Point<double, VDim> PointType;
+  typedef std::pair<PointType, double> Landmark;
+  typedef std::vector<Landmark> LandmarkList;
+
   LandmarksToSpheres(Converter *c) : c(c) {}
 
   void operator() (const char *fnland, double radius);
+
+  LandmarkList ReadLandmarks(const char *fnland);
+  void RasterizeLandmarks(const LandmarkList &landmarks, double radius);
 
 private:
   Converter *c;

@@ -1147,6 +1147,20 @@ Syntax: `-ncc <radius_vector>`
 
 Computes normalized cross-correlation between two images that occupy the same physical space. Each voxel in the resulting image is the cross-correlation of patches of given radius surrounding the voxel in the two input images. This is different from **-ncor**, which computes a global cross-correlation metric value. 
 
+#### -neck-trim: Trim away neck on brain MRI image
+
+Syntax: `-neck-trim`
+
+Computes a slab in a brain MRI that excludes the neck. This addresses a common source of error in brain MRI registration and segmentation algorithms, where some scans include a lot more of the participant's neck than expected. The command takes as input a brain MRI image (typically a T1-MRI) and outputs a binary mask of the slab that includes the brain and leaves out most of the neck. This mask can then be used to trim the MRI image as in the example below.
+
+The parameters to this command are the height of the head (`-neck-trim-head-height`, default 180) and amount of clearance to leave at the top of the image (`-neck-trim-top-clearance`, default 10). Both are specified in millimeters, and are sensible settings for human adults. If changing these settings, the commands should come before the main `-neck-trim` command.
+
+    # Command to compute the slab and trim away neck region
+    c3d t1_mri.nii.gz -as T1 -neck-trim -o slab_mask.nii.gz \
+        -push T1 -reslice-identity -trim 0vox -o t1_mri_trimmed.nii.gz
+        
+The second line in the example above uses the mask calculated by the `-neck-trim` command to remove parts of the image outside of the slab, resulting in an MRI scan of height 190mm. 
+
 #### -nlm-denoise: Non-local Means Denoising
 
 Syntax: `-nlm-denoise`

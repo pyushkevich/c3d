@@ -47,6 +47,10 @@ template <class TPixel, unsigned int VDim> class ConvertAdapter;
 template <class TPixel, unsigned int VDim> struct ConvertAlgorithmParameters;
 class Documentation;
 
+template <class TPixel, unsigned int VDim> struct RFParameters;
+struct LevelSetParameters;
+struct TrimNeckOnMRIParameters;
+
 template<class TPixel, unsigned int VDim>
 class ImageConverter
 {
@@ -157,6 +161,12 @@ public:
   // this can be overridden here. Verbose will point to the sout stream when
   // user supplies the -verbose flag
   void RedirectOutput(ostream &sout, ostream &serr);
+
+  // Get the random forest parameters
+  RFParameters<TPixel, VDim> *GetRandomForestParameters();
+
+  // Get the level set parameters
+  LevelSetParameters *GetLevelSetParameters();
 
 private:
 
