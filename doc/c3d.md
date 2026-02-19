@@ -1157,7 +1157,7 @@ The parameters to this command are the height of the head (`-neck-trim-head-heig
 
     # Command to compute the slab and trim away neck region
     c3d t1_mri.nii.gz -as T1 -neck-trim -o slab_mask.nii.gz \
-        -push T1 -reslice-identity -trim 0vox -o t1_mri_trimmed.nii.gz
+        -trim 0vox -push T1 -reslice-identity -o t1_mri_trimmed.nii.gz
         
 The second line in the example above uses the mask calculated by the `-neck-trim` command to remove parts of the image outside of the slab, resulting in an MRI scan of height 190mm. 
 
