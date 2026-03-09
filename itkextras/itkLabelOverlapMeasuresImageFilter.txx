@@ -39,7 +39,9 @@ LabelOverlapMeasuresImageFilter<TLabelImage>
 {
   // this filter requires two input images
   this->SetNumberOfRequiredInputs( 2 );
+#if ITK_VERSION_MAJOR >= 5
   this->DynamicMultiThreadingOff();
+#endif
 }
 
 template<class TLabelImage>

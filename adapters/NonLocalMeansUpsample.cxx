@@ -372,6 +372,7 @@ NLMUpsampleProblem<TFloat>::PatchCorrection(TFloat *           ima,
   }
   /*th=0.6*h;  //3/sqrt(27) */
 
+#if ITK_VERSION_MAJOR >= 5
   // start multi-thread computation
   itk::MultiThreaderBase::Pointer mt = itk::MultiThreaderBase::New();
   itk::ImageRegion<3>             full_region;
@@ -398,6 +399,9 @@ NLMUpsampleProblem<TFloat>::PatchCorrection(TFloat *           ima,
       ThreadFunc(&ta);
     },
     nullptr);
+#else
+  throw ConvertException("build with ITK version < 5, unsupported operation: NonLocalMeansUpsample");
+#endif
 
 
 

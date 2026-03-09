@@ -38,7 +38,9 @@ OneDimensionalInPlaceAccumulateFilter<TInputImage>
   m_ComponentOffsetFront = m_ComponentOffsetBack = 0;
   m_Splitter = SplitterType::New();
   this->InPlaceOn();
+#if ITK_VERSION_MAJOR >= 5
   this->DynamicMultiThreadingOff();
+#endif
 }
 
 template <class TInputImage>

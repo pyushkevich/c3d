@@ -22,7 +22,7 @@ ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(CXX)
 
 # Specify the C++ standard
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Option allowing to build c3d as a subproject of another project
@@ -31,9 +31,6 @@ MARK_AS_ADVANCED(CONVERT3D_BUILD_AS_SUBPROJECT)
 
 # Options corresponding to remote ITK modules
 OPTION(CONVERT3D_USE_ITK_REMOTE_MODULES "Use remote modules from ITK" ON)
-IF(CONVERT3D_USE_ITK_REMOTE_MODULES)
-  ADD_DEFINITIONS(-DCONVERT3D_USE_ITK_REMOTE_MODULES)
-ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
 
 # For some reason in some builds this is not being set
 IF(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
@@ -84,13 +81,37 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
     ITKStatistics
     ITKThresholding
     ITKTransform
+    )
+
+  # Add ITK version specific modules
+  FIND_PACKAGE(ITK "4.7" CONFIG REQUIRED)
+  MESSAGE(STATUS "ITK")
+  MESSAGE(STATUS "  Version: ${ITK_VERSION}")
+  IF(ITK_VERSION VERSION_LESS "4.13")
+    FOREACH(mod IN LISTS ITK_MODULES_ENABLED)
+      IF(${mod} MATCHES "IO")
+        LIST(APPEND ITK_MODULE_LIST ${mod})
+      ENDIF()
+    ENDFOREACH()
+  ELSE(ITK_VERSION VERSION_LESS "4.13")
+  SET(ITK_MODULE_LIST ${ITK_MODULE_LIST}
     ITKTransformFactory
     ITKImageIO
     ITKNIFTI
     ITKTransformIO)
+  ENDIF(ITK_VERSION VERSION_LESS "4.13")
+
+  IF(ITK_VERSION VERSION_LESS "4.11")
+    IF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+      SET(CONVERT3D_USE_ITK_REMOTE_MODULES OFF)
+      MESSAGE(WARNING "CONVERT3D_USE_ITK_REMOTE_MODULES has been automatically disabled because ITK version is less than 4.11 which introduced the MorphologicalContourInterpolation that it requires, see:
+      https://github.com/KitwareMedical/ITKMorphologicalContourInterpolation")
+    ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+  ENDIF(ITK_VERSION VERSION_LESS "4.11")
 
   # Add the remote modules
   IF(CONVERT3D_USE_ITK_REMOTE_MODULES)
+    ADD_DEFINITIONS(-DCONVERT3D_USE_ITK_REMOTE_MODULES)
     SET(ITK_MODULE_LIST ${ITK_MODULE_LIST} 
       MorphologicalContourInterpolation)
   ENDIF(CONVERT3D_USE_ITK_REMOTE_MODULES)
