@@ -24,7 +24,6 @@
 =========================================================================*/
 
 #include "VoxelwiseRegression.h"
-#include "vnl/vnl_file_matrix.h"
 #include "vnl/vnl_rank.h"
 #include "vnl/algo/vnl_matrix_inverse.h"
 
