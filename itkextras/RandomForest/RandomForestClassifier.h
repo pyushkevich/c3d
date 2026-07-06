@@ -54,28 +54,28 @@ public:
     }
 
   // Get the random forest
-  itkGetMacro(Forest, RandomForestType *)
+  itkGetMacro(Forest, RandomForestType *);
 
   // Get the patch radius
-  itkGetMacro(PatchRadius, const SizeType &)
-  itkSetMacro(PatchRadius, SizeType)
+  itkGetMacro(PatchRadius, const SizeType &);
+  itkSetMacro(PatchRadius, SizeType);
 
   /** Whether coordinates of the voxels are used as features */
-  itkGetMacro(UseCoordinateFeatures, bool)
-  itkSetMacro(UseCoordinateFeatures, bool)
+  itkGetMacro(UseCoordinateFeatures, bool);
+  itkSetMacro(UseCoordinateFeatures, bool);
 
   // Set the bias parameter (adjusts the mapping of FG probability to speed)
-  itkGetMacro(BiasParameter, double)
-  itkSetMacro(BiasParameter, double)
+  itkGetMacro(BiasParameter, double);
+  itkSetMacro(BiasParameter, double);
 
   // Get a reference to the valid label state
-  itkGetMacro(ValidLabel, bool &)
+  itkGetMacro(ValidLabel, bool &);
 
   // Get a reference to the class index to label mapping
-  itkGetMacro(ClassToLabelMapping, MappingType &)
+  itkGetMacro(ClassToLabelMapping, MappingType &);
 
   // Get a reference to the class weights array
-  itkGetMacro(ClassWeights, WeightArray &)
+  itkGetMacro(ClassWeights, WeightArray &);
 
   // Set the weight for a class
   void SetClassWeight(size_t class_id, double weight)

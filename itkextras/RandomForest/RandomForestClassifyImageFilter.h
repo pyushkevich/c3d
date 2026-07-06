@@ -66,7 +66,7 @@ public:
    */
   void SetGenerateClassProbabilities(bool flag);
 
-  itkGetMacro(GenerateClassProbabilities, bool)
+  itkGetMacro(GenerateClassProbabilities, bool);
 
   /** Get the current classifier */
   itkGetMacro(Classifier, ClassifierType *);

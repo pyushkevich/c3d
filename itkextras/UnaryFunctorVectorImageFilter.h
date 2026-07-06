@@ -47,7 +47,7 @@ public:
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
-  itkOverrideGetNameOfClassMacro(UnaryFunctorVectorImageFilter)
+  itkOverrideGetNameOfClassMacro(UnaryFunctorVectorImageFilter);
 
   itkNewMacro(Self);
   /** Some typedefs. */

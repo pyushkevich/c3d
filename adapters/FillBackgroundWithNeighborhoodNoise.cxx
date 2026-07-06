@@ -50,7 +50,7 @@ public:
   typedef typename OutputImageType::RegionType OutputImageRegionType;
   typedef typename OutputImageType::PixelType OutputPixelType;
 
-  itkOverrideGetNameOfClassMacro(StatisticsToGaussianNoiseImageFilter)
+  itkOverrideGetNameOfClassMacro(StatisticsToGaussianNoiseImageFilter);
 
   itkNewMacro(Self);
   void SetStatisticsImage(StatisticsImageType *image) 

@@ -45,7 +45,7 @@ public:
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
-  itkOverrideGetNameOfClassMacro(OneDimensionalInPlaceAccumulateFilter)
+  itkOverrideGetNameOfClassMacro(OneDimensionalInPlaceAccumulateFilter);
 
   itkNewMacro(Self);
   /** Some convenient typedefs. */
@@ -62,11 +62,11 @@ public:
   /** ImageDimension constant */
   itkStaticConstMacro(OutputImageDimension, unsigned int, TInputImage::ImageDimension);
 
-  itkGetMacro(Radius, int)
-  itkSetMacro(Radius, int)
+  itkGetMacro(Radius, int);
+  itkSetMacro(Radius, int);
 
-  itkGetMacro(Dimension, int)
-  itkSetMacro(Dimension, int)
+  itkGetMacro(Dimension, int);
+  itkSetMacro(Dimension, int);
 
   /**
    * Set the range of components in the input image that will be processed by the
@@ -77,8 +77,8 @@ public:
    */
   void SetComponentRange(int num_ignored_at_start, int num_ignored_at_end);
 
-  itkGetMacro(ComponentOffsetFront, int)
-  itkGetMacro(ComponentOffsetBack, int)
+  itkGetMacro(ComponentOffsetFront, int);
+  itkGetMacro(ComponentOffsetBack, int);
 
 protected:
 
