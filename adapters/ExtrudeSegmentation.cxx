@@ -39,7 +39,7 @@ public:
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
-  itkTypeMacro(LineFunctorImageFilter, itk::InPlaceImageFilter)
+  itkOverrideGetNameOfClassMacro(LineFunctorImageFilter)
 
   itkNewMacro(Self)
 

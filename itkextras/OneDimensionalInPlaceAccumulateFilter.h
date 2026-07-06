@@ -45,7 +45,7 @@ public:
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
-  itkTypeMacro(OneDimensionalInPlaceAccumulateFilter, itk::InPlaceImageFilter)
+  itkOverrideGetNameOfClassMacro(OneDimensionalInPlaceAccumulateFilter)
 
   itkNewMacro(Self)
 

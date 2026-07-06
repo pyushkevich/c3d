@@ -51,7 +51,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(VoxBoCUBImageIO, Superclass);
+  itkOverrideGetNameOfClassMacro(VoxBoCUBImageIO);
 
   /*-------- This part of the interfaces deals with reading data. ----- */
 
