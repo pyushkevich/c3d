@@ -49,8 +49,7 @@ public:
 
   itkOverrideGetNameOfClassMacro(UnaryFunctorVectorImageFilter)
 
-  itkNewMacro(Self)
-
+  itkNewMacro(Self);
   /** Some typedefs. */
   typedef TFunction FunctorType;
 

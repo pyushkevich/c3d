@@ -47,8 +47,7 @@ public:
 
   itkOverrideGetNameOfClassMacro(OneDimensionalInPlaceAccumulateFilter)
 
-  itkNewMacro(Self)
-
+  itkNewMacro(Self);
   /** Some convenient typedefs. */
   typedef TInputImage                                  InputImageType;
   typedef TInputImage                                  OutputImageType;

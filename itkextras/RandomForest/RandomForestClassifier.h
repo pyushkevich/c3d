@@ -26,8 +26,7 @@ public:
   typedef itk::SmartPointer<Self> Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
-  itkNewMacro(Self)
-  
+  itkNewMacro(Self);  
   // typedefs
   typedef TPixel GreyType;
   typedef TLabel LabelType;

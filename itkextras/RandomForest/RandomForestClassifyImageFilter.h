@@ -40,8 +40,7 @@ public:
   typedef itk::SmartPointer<const Self>                    ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self)
-
+  itkNewMacro(Self);
   /** Image dimension. */
   itkStaticConstMacro(ImageDimension, unsigned int,
                       TInputImage::ImageDimension);

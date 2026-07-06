@@ -52,8 +52,7 @@ public:
 
   itkOverrideGetNameOfClassMacro(StatisticsToGaussianNoiseImageFilter)
 
-  itkNewMacro(Self) 
-
+  itkNewMacro(Self);
   void SetStatisticsImage(StatisticsImageType *image) 
     { itk::ProcessObject::SetInput("statistics", image); }
 
