@@ -136,7 +136,7 @@ public:
   itkStaticConstMacro(ImageDimension, unsigned int, TScalarImage::ImageDimension);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacroNoParent(ImageCollectionConstIteratorWithIndex);
+  itkVirtualGetNameOfClassMacro(ImageCollectionConstIteratorWithIndex);
 
   /** Index typedef support. */
   typedef typename TScalarImage::IndexType         IndexType;
