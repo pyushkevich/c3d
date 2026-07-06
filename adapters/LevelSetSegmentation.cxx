@@ -93,7 +93,7 @@ public:
   typedef typename InputImageType::PixelType InputPixelType;
 
   // Standard ITK Macros
-  itkTypeMacro(MyLevelSetFilter, itk::SegmentationLevelSetFilter);
+  itkOverrideGetNameOfClassMacro(MyLevelSetFilter);
   itkNewMacro(Self);
 
 protected:
