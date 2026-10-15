@@ -48,7 +48,7 @@ public:
   itkNewMacro( Self );
 
   /** Runtime information support. */
-  itkTypeMacro( LabelOverlapMeasuresImageFilter, ImageToImageFilter );
+  itkOverrideGetNameOfClassMacro(LabelOverlapMeasuresImageFilter);
 
   /** Image related typedefs. */
   typedef TLabelImage                                   LabelImageType;

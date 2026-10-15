@@ -24,7 +24,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(OrientedRASImage, Image);
+  itkOverrideGetNameOfClassMacro(OrientedRASImage);
 
   /** Index typedef support. An index is used to access pixel values. */
   typedef typename Superclass::IndexType  IndexType;
