@@ -18,7 +18,7 @@ The simplest way to use **convert3d** is to convert images between formats. Here
     c3d hello.cub -o hello.img
     c3d float.img -type short -o short.img
 
-**Convert3d** works in a way like a [Revese Polish notation][2] calculator. This means that actions must be preceeded by their inputs: instead of writing 'a + b', we must write 'a b +'. In our case, the inputs are image files, and the actions are specified on the command line. For example, to add a pair of images, we would issue the following command: 
+**Convert3d** works in a way like a [Reverse Polish notation][2] calculator. This means that actions must be preceded by their inputs: instead of writing 'a + b', we must write 'a b +'. In our case, the inputs are image files, and the actions are specified on the command line. For example, to add a pair of images, we would issue the following command: 
 
     c3d input1.img input2.img -add -o output.img
 
@@ -28,7 +28,7 @@ The behavior of **convert3d** commands can be affected by options. For example, 
 
     c3d input.img -interpolation Cubic -resample 50x30x40vox -o output.img
 
-All image processing is done in double-precision reals. However you can use the **-type** option to save as any data type. By default, image intensities are rounded to the nearest integer (not rounded down) when saving as a integral data type. 
+All image processing is done in double-precision reals. However you can use the **-type** option to save as any data type. By default, image intensities are rounded to the nearest integer (not rounded down) when saving as an integral data type. 
 
 ### Command autocompletion for Bash users
 
@@ -74,7 +74,7 @@ To apply some arithmetic to the image, do the following
 
 To resample and Gaussian blur an image the following command is used 
 
-    c3d input.hdr -interpolation Linear -resample 256x256x192 
+    c3d input.hdr -interpolation Linear -resample 256x256x192 \
         -smooth 3vox -o output.img.gz
 
 To compute **a+2b** with a pair of images, do 
@@ -99,8 +99,8 @@ When applying spatial transformations to ML images, one may choose to use neares
 
 However, this causes some aliasing of the results. It is sometimes useful to assume that labels are *fuzzy*, and to apply linear or cubic interpolation to the fuzzy labels. Here is how we can apply an affine transformation to a ML image this way: 
 
-    c3d ref.img -popas ref ml.img -split -foreach -smooth 3mm 
-      -insert ref 1 -reslice-matrix affine.mat -endfor -merge-o mltran.img
+    c3d ref.img -popas ref ml.img -split -foreach -smooth 3mm \
+      -insert ref 1 -reslice-matrix affine.mat -endfor -merge -o mltran.img
 
 This command is somewhat complex, mainly because the **-reslice-matrix** command requires a reference image as the first operand, and we have to use named images to insert it on the stack in the right place. 
 
@@ -114,7 +114,7 @@ will result in information printed for both images. At the end, `myimage.nii` wi
 
 #### -dicom-series-list: List image series in a DICOM directory
 
-Syntax: `-dicom-series-list <directory>
+Syntax: `-dicom-series-list <directory>`
 
 Prints out a table of DICOM series ids and corresponding image information to standard output.
 
@@ -123,7 +123,7 @@ Prints out a table of DICOM series ids and corresponding image information to st
 Syntax: `-dicom-series-read <directory> <series_id>`
 
 Imports a specific DICOM image series from a directory containing DICOM files. The **directory** parameter may also point to one of the DICOM files in the directory.
-The **seried_id** is a string identifier for the series that can be obtained by calling **-dicom-series-list**
+The **series_id** is a string identifier for the series that can be obtained by calling **-dicom-series-list**
 
 #### -info: Display brief image information        
 
@@ -165,7 +165,7 @@ Syntax: `-nomcs`
 
 Used to reverse the effect of previous **-mcs** command.
 
-#### -o: Output (write) last image on the stack to image file    
+#### -o, -output: Output (write) last image on the stack to image file    
 
 Syntax: `-o filename`
 
@@ -176,7 +176,6 @@ Write image, overriding an existing image. Without the **-o** option, **convert3
 The **-o** option can also be used to save an intermediate image in the stack: 
 
     c3d image1.img -threshold 1 10 1 0 -o thresh.img -resample 50% -o final.img
-
 
 #### -omc, -output-multicomponent: Output multiple images to single file
 
@@ -190,7 +189,7 @@ For 2D images, this command can be used to generate color PNG files:
 
     c3d image.nii -slice z 50% -colormap jet -type uchar -omc colorslice.png
 
-#### -oo: Output multiple images to multiple files 
+#### -oo, -output-multiple: Output multiple images to multiple files 
 
 Syntax: `-oo image_list` or `-oo image_spec`
 
@@ -206,7 +205,7 @@ The second way to use the **-oo** command is to supply a pattern for the output 
 
 will generate images *label00.nii*, *label01.nii*, *label02.nii* and so on. The image at the end of the stack will have the highest number, and the image at the beginning of the stack will have number 00. 
 
-#### -oomc: Output multiple multi-component images to multiple files
+#### -oomc, -output-multiple-multicomponent: Output multiple multi-component images to multiple files
 
 Syntax: `-oomc n_comp image_list` or `-oomc n_comp image_spec`
 
@@ -226,7 +225,7 @@ Apply a binary operation (such as addition or multiplication) to all the images 
 
     c3d image*.nii -accum -add -endaccum -o sum.nii
 
-#### -as: Assign image at the end of the stack to a variable
+#### -as, -set: Assign image at the end of the stack to a variable
 
 Syntax: `-as var`
 
@@ -240,6 +239,14 @@ Syntax: `-clear`
 
 Clears the image stack. Images assigned a name with the **-as** command will remain in memory. 
 
+#### -dup, -duplicate: Duplicate the last image on the stack
+
+Syntax: `-dup` 
+
+Duplicates the image at the end of the stack. This is equivalent to **-as var -push var**, but shorter. An example is when you want to pass an image as both arguments to a binary operator, e.g., computing the square of the image intensity: 
+
+    c3d input.img -dup -times -o square.img
+
 #### -foreach, -endfor: Loop commands over all images on the stack
 
 Syntax: `-foreach commands-list -endfor`
@@ -250,17 +257,27 @@ This command forces the commands between **-foreach** and **-endfor** to be appl
 
 #### -foreach-comp, -endfor: Loop commands over components of a multi-component image 
 
-Syntax `-foreach-comp <N> commands-list -endfor`
+Syntax: `-foreach-comp <N> commands-list -endfor`
 
 This command runs the list of commands separately for each component of a set of multi-component images loaded with -mcs. This makes it possible to perform component-wise operations on multi-component images. For example, it can be used to average several multi-component images. If the image stack contains images *x1* *y1* *z1* *x2* *y2* *z2*, then the operations will be run on *[x1,x2]*, *[y1,y2]*, *[z1,z2]*. For example, if multi_1.nii to multi_10.nii are three-component images, then the mean three-component image is given by
 
     c2d -mcs multi_*.nii -foreach-comp -mean -endfor -omc multi_mean.nii
 
-#### -insert: Insert image anywhere in the stack
+#### -insert, -ins: Insert image anywhere in the stack
 
 Syntax: `-insert var pos` 
 
 This command is similar to **-push**, but allows you to insert the image associated with 'var' at any position in the stack, counting from the end. When 'pos' is 0, the image is placed at the end of the stack (same as **-push**). When pos is one, the image is placed at the next-to-end position, and so on. 
+
+#### -pick: Select one or more images from the stack by index
+
+Syntax: `-pick [indices]` 
+
+Replaces the image stack with one or more selected images. Images can be specified using 0-based indexing (0 is the first image on the stack, etc) or negative indexing (-1 is the last image on the stack). 
+
+    c3d -mcs rgb.nii.gz -pick -1 -o blue.nii.gz
+    c3d -mcs rgb.nii.gz -pick 0 -o red.nii.gz
+    c3d -mcs rgb.nii.gz -pick -1 -2 -3 -omc bgr.nii.gz
 
 #### -pop: Remove last image from the stack
 
@@ -274,7 +291,7 @@ Syntax: `-popas var`
 
 Removes the last image from the stack, but also assigns it the name 'var', keeping the image in memory. Same as calling **-as** *var* followed by **-pop**. 
 
-#### -push: Place variable at the end of the stack
+#### -push, -get: Place variable at the end of the stack
 
 Syntax: `-push var`
 
@@ -294,7 +311,7 @@ The following three commands are equivalent:
     c3d a1.nii a2.nii a3.nii a4.nii b1.nii b2.nii b3.nii b4.nii -reorder 0.5 ...
     c3d a1.nii b1.nii a2.nii b2.nii a3.nii b3.nii a4.nii b4.nii ...
 
-The **-reorder** command us useful when you specify two sets of images using wildcards and then want to perform pairwise operations on the images. For example 
+The **-reorder** command is useful when you specify two sets of images using wildcards and then want to perform pairwise operations on the images. For example 
 
     c3d weight*.nii gray*.nii -reorder 0.5 -weighted-sum-voxelwise -o wsum.nii
 
@@ -302,27 +319,9 @@ is equivalent to the command
 
     c3d weight1.nii gray1.nii weight2.nii gray2.nii ... -weighted-sum-voxelwise -o wsum.nii
 
-#### -dup: Duplicate the last image on the stack
-
-Syntax: `-dup` 
-
-Duplicates the image at the end of the stack. This is equivalent to **-as var -push var**, but shorter. An example is when you want to pass an image as both arguments to a binary operator, e.g., computing the square of the image intensity: 
-
-    c3d input.img -dup -times -o square.img
-
-#### -pick: Select one or more images from the stack by index
-
-Syntax: `-pick [indices]` 
-
-Replaces the image stack with one or more selected images. Images can be specified using 0-based indexing (0 is the first image on the stack, etc) or negative indexing (-1 is the last image on the stack). 
-
-    c3d -mcs rgb.nii.gz -pick -1 -o blue.nii.gz
-    c3d -mcs rgb.nii.gz -pick 0 -o red.nii.gz
-    c3d -mcs pick -1 -2 -3 -omc bgr.nii.gz
-
 ### Commands: Voxelwise Calculations
 
-#### -abs: Voxelwise absolute value
+#### -abs, -fabs: Voxelwise absolute value
 
 Syntax: `-abs`
 
@@ -382,7 +381,7 @@ Takes two images, A and B from the stack and for each pixel, returns the value f
 
 #### -cos: Voxelwise cosine 
 
-Syntax: `-sin`
+Syntax: `-cos`
 
 Replaces the last image on the stack with the cosine trigonometric operation applied to all voxels. Input must be in radians.
 
@@ -394,17 +393,9 @@ Divides one image by another. For instance to compute C = A / B, use the command
 
     c3d A.img B.img -divide -o C.img
 
-Divison may generate infinite and not-a-number (NaN) values if B contains zeros. You can use **-replace** to get rid of these values
+Division may generate infinite and not-a-number (NaN) values if B contains zeros. You can use **-replace** to get rid of these values
 
     c3d A.img B.img -divide -replace inf 1000 -inf -1000 NaN 0 -o C2.img
-
-#### -exp: Voxelwise natural exponent
-
-Syntax: `-exp`
-
-Computes exponent of each voxel in the last image on the stack.
-
-    c3d input.img -exp -o output.img
 
 #### -erf: Standard error function
 
@@ -413,6 +404,14 @@ Syntax: `-erf mu sigma`
 Computes the standard error function. This is useful for applying soft thresholds. The function computes y = erf((x - mu)/sigma). 
 
     c3d input.img -erf 5 2 -o erf.img
+
+#### -exp: Voxelwise natural exponent
+
+Syntax: `-exp`
+
+Computes exponent of each voxel in the last image on the stack.
+
+    c3d input.img -exp -o output.img
 
 #### -floor: Round down image intensities
 
@@ -438,7 +437,7 @@ Syntax: `-log10`
 
 Computes base 10 logarithm of each voxel in the last image on the stack.
 
-#### -max: Voxel-wise maximum of two images
+#### -max, -maximum: Voxel-wise maximum of two images
 
 Syntax: `-max`
 
@@ -447,15 +446,6 @@ Computes the voxel-wise maximum of two images. Can be used with the **-accum** c
     c3d i1.nii i2.nii -max -o max12.nii
     c3d i1.nii i2.nii i3.nii i4.nii -accum -max -endaccum -o max1234.nii
 
-#### -min: Voxel-wise minimum of two images
-
-Syntax: `-min`
-
-Computes the voxel-wise minimum of two images. Can be used with the **-accum** command to compute minimum of all images. 
-
-    c3d i1.nii i2.nii -min -o min12.nii
-    c3d i1.nii i2.nii i3.nii i4.nii -accum -min -endaccum -o min1234.nii
-
 #### -mean: Mean of all images on the stack    
 
 Syntax: `-mean `
@@ -463,6 +453,15 @@ Syntax: `-mean `
 Computes the mean of all the images on the stack. All images on the stack are replaced with the mean image.
 
     c3d image_*.nii -mean -o mean.nii
+
+#### -min, -minimum: Voxel-wise minimum of two images
+
+Syntax: `-min`
+
+Computes the voxel-wise minimum of two images. Can be used with the **-accum** command to compute minimum of all images. 
+
+    c3d i1.nii i2.nii -min -o min12.nii
+    c3d i1.nii i2.nii i3.nii i4.nii -accum -min -endaccum -o min1234.nii
 
 #### -multiply, -times: Multiply two images
 
@@ -485,39 +484,39 @@ Combine with the **-dup** command to compute voxelwise square of the image
 
 Syntax: `-noise-gaussian <sigma>`
 
-Adds Gaussian noise to an image with zero mean and standard deviation sigma. Please see [Noise simulation article][15] by G. Lehmann for details.
+Adds Gaussian noise to an image with zero mean and standard deviation sigma. Please see [Noise simulation article][16] by G. Lehmann for details.
 
     c3d image.nii -noise-gaussian 5 -o noisy.nii
 
-#### -noise-poisson: Apply Poisson noise
+#### -noise-poisson, -noise-shot: Apply Poisson noise
 Syntax: `-noise-poisson <scale>`
 
-Applies Poisson (shot) noise to an image with given scale. Please see [Noise simulation article][15] by G. Lehmann for details.
+Applies Poisson (shot) noise to an image with given scale. Please see [Noise simulation article][16] by G. Lehmann for details.
 
     c3d image.nii -noise-poisson 5 -o noisy.nii
 
 #### -noise-salt-pepper: Apply salt and pepper noise
 Syntax: `-noise-salt-pepper <probability>`
 
-Applies salt and pepper noise to an image with given probability. Please see [Noise simulation article][15] by G. Lehmann for details.
+Applies salt and pepper noise to an image with given probability. Please see [Noise simulation article][16] by G. Lehmann for details.
 
     c3d image.nii -noise-salt-pepper 0.1 -o noisy.nii
 
-#### -noise-speckle: Apply Poisson noise
+#### -noise-speckle: Apply speckle noise
 Syntax: `-noise-speckle <sigma>`
 
-Applies Speckle noise to an image with given standard deviation. Please see [Noise simulation article][15] by G. Lehmann for details.
+Applies Speckle noise to an image with given standard deviation. Please see [Noise simulation article][16] by G. Lehmann for details.
 
     c3d image.nii -noise-speckle 5 -o noisy.nii
 
 #### -otsu: Otsu's thresholding
-Syntax: `-otsu [number of classes] [number of histogram bins]`
+Syntax: `-otsu [number of thresholds] [number of histogram bins]`
 
 Applies the classical [Otsu's thresholding algorithm](https://en.wikipedia.org/wiki/Otsu%27s_method) to classify voxels into different labels. If zero arguments are given the original itkOtsuThresholdImageFilter is used which separate image foreground from background. This filter returns an image of zeros (background) and ones (foreground).
 
     c3d image.nii -otsu -o otsu.nii
 
-If one or more arguments are used then the more general itkOtsuMultipleThresholdsImageFilter filter is utilized. If <number of thresholds> is set to 1 then the filter acts as the classical Otsu's binary thresholding described above (but outputs the inverse mask, see note below). If higher <number of thresholds> are input, then it returns an multilabel image of zeros (background) and not zero (foreground) divided into different label ids.
+If one or more arguments are used then the more general itkOtsuMultipleThresholdsImageFilter filter is utilized. If <number of thresholds> is set to 1 then the filter acts as the classical Otsu's binary thresholding described above (but outputs the inverse mask, see note below). If higher <number of thresholds> are input, then it returns a multilabel image of zeros (background) and not zero (foreground) divided into different label ids.
 
 For the itkOtsuMultipleThresholdsImageFilter the <number of histogram bins> can be set, if not set it defaults to 256.
 
@@ -559,24 +558,11 @@ Assuming that the input is a multi-label segmentation image, this command keeps 
 
 #### -rgb2hsv: Convert RGB image to HSV image
 
-Syntax `-rgb2hsv`
+Syntax: `-rgb2hsv`
 
-Takes the last three images on the stack and treats them as red, green, and blue channels. Outputs three images corresponding to hue, saturation, value. To read color images you need the ***-msc*** command.
+Takes the last three images on the stack and treats them as red, green, and blue channels. Outputs three images corresponding to hue, saturation, value. To read color images you need the **-mcs** command.
 
     c3d -mcs color.png -rgb2hsv -omc hsv.png
-
-#### -rms: Voxelwise vector norm
-
-Syntax: `-rms`
-
-Computes RMS (root mean square) of all images on the stack. The command takes the square of each image on the stack, adds all the squared images and takes the square root of the result. This is very useful for statistical operations. Images must have the same size. 
-
-    c3d img1.img img2.img img3.img img4.img -rms -o rms.img
-
-The equivalent of this command is
-
-    c3d img1.img img2.img img3.img img4.img -foreach -dup -times -endfor \
-        -accum -add -endaccum -sqrt -o rms.img
 
 #### -scale: Scale intensity by constant factor
 
@@ -616,14 +602,24 @@ Stretches the intensities in the image linearly, such that u1 maps to v1 and u2 
 
     c3d input.img -stretch 0.0 1.0 0 65535 -type ushort -o output.img
 
-#### -thresh, -threshold: binary thresholding
+#### -thresh, -threshold: Binary thresholding
 
-syntax: `-thresh <u1 u2 vin vout> `
+Syntax: `-thresh <u1 u2 vin vout> `
 
-thresholds the image, setting voxels whose intensity is in the range [u1,u2] to vin and all other voxels to vout. values *u1* and *u2* are intensity specifications (see below). this means that you can supply values **inf** and **-inf** for u1 and u2 to construct a one-sided threshold. you can also specify *u1* and *u2* as percentiles. 
+Thresholds the image, setting voxels whose intensity is in the range [u1,u2] to vin and all other voxels to vout. Values *u1* and *u2* are intensity specifications (see below). This means that you can supply values **inf** and **-inf** for u1 and u2 to construct a one-sided threshold. You can also specify *u1* and *u2* as percentiles. 
+
     c3d in.img -threshold -inf 128 1 0 -o out.img
     c3d in.img -threshold 64 128 1 0 -o out.img
     c3d in.img -threshold 20% 40% 1 0 -o out.img
+
+#### -voxel-integral, -voxel-int: Print volume integral of all voxel intensities
+
+Syntax: `-voxel-integral`
+
+Like **-voxel-sum**, but multiplies the sum of voxel intensities by voxel volume. This is useful for computing volumes of objects represented by binary images. The result is in the cube of the spacing units, i.e., in cubic millimeters (not milliliters) for images with spacing in millimeters. 
+
+    $ c3d image.img -voxel-integral 
+    Voxel Integral: 2341
 
 #### -voxel-sum: Print sum of all voxel intensities
 
@@ -634,16 +630,7 @@ Print the sum of all voxels in the image.
     $ c3d image.img -voxel-sum 
     Voxel Sum: 200923123
 
-#### -voxel-integral: Print volume integral of all voxel intensities
-
-Syntax: `-voxel-integral`
-
-Like **-voxel-sum**, but multiplies the sum of voxel intensities by voxel volume. This is useful for computing volumes of objects represented by binary images. The result is in 'ml'. 
-
-    $ c3d image.img -voxel-integral 
-    Voxel Integral: 2341
-
-#### -wsum, -weighted-sum: Weighed sum of images with constant weights
+#### -wsum, -weighted-sum: Weighted sum of images with constant weights
 
 Syntax: `-wsum weight1 weight2 ... weightN `
 
@@ -655,7 +642,7 @@ This command is particularly useful for combining components in a multicomponent
 
     c3d -mcs rgb.nii -wsum 0.29900 0.58700 0.11400 -o gray.nii
 
-#### -wsv, -weighed-sum-voxelwise: Weighed sum of images with spatially varying weights
+#### -wsv, -weighted-sum-voxelwise: Weighted sum of images with spatially varying weights
 
 Syntax: `-wsv `
 
@@ -669,7 +656,7 @@ The **-reorder** command can simplify loading the images:
 
 ### Commands: Image Header Manipulation
 
-#### -copy-transform: Copy header information 
+#### -copy-transform, -ct: Copy header information 
 
 Syntax: `-copy-transform`
 
@@ -717,11 +704,11 @@ Set the origin of the image by specifying the voxel coordinates of the center of
 
 #### -origin-voxel-coord: Set coordinate of specified voxel
 
-Syntax: `-origin-voxel-coord: <index> <vector>`
+Syntax: `-origin-voxel-coord <index> <vector>`
 
-This command updates the origin of the image such that the specifed voxel has the specified coordinate. For example, you can use the command to set the world coordinate (in NIFTI coordinate space) of the center voxel of the image, as follows:
+This command updates the origin of the image such that the specified voxel has the specified coordinate. For example, you can use the command to set the world coordinate (in NIFTI coordinate space) of the center voxel of the image, as follows:
 
-    c3d input.nii -origin-voxel-coord: 50% 10x10x5mm -o output.nii
+    c3d input.nii -origin-voxel-coord 50% 10x10x5mm -o output.nii
 
 #### -set-sform: Set the transform to physical space
 
@@ -739,12 +726,11 @@ Sets the voxel spacing of the image. This should always be a vector with positiv
 
 #### -swapdim: Reorder the coordinate axes of an image
 
-Syntax `-swapdim <code>`
+Syntax: `-swapdim <code>`
 
-This command reorders the image axes (columns, rows, slices) to achieve a desired transformation between voxel space and physical space. The image remains exactly the same in physical space, but the encoding of the voxels in memory and on disk is changed to obtain the desired transformation. The transformation is specified as a three-letter 'RAI' code, as in the '''-orient''' command.
+This command reorders the image axes (columns, rows, slices) to achieve a desired transformation between voxel space and physical space. The image remains exactly the same in physical space, but the encoding of the voxels in memory and on disk is changed to obtain the desired transformation. The transformation is specified as a three-letter 'RAI' code, as in the **-orient** command.
 
     c3d img.nii -swapdim ASL -info -o out.nii
-
 
 ### Commands: Image Processing
 
@@ -758,22 +744,30 @@ Executes the Perona-Malik anisotropic diffusion algorithm on the image. This smo
 
     c3d x.img -ad 0.1 100 -o ad.img
 
-#### -biascorr: Automatic MRI bias field correction
-
-Syntax: `-biascorr`
-
-Performs automatic bias field correction for MRI images. This feature uses the [N3 implementation in ITK by Dr. Tustison][4], based on the N3 algorithm by Sled et al. 
-
-    c3d mri.nii.gz -biascorr -o mricorr.nii.gz
-
 #### -alm, -align-landmarks: Align images based on landmark matching
 
 Syntax: `-alm dof outfile`
 
-Performs rigid or affine alignment between to sets of landmark images. A landmark image is an image where for every intensity value, the centroid of all voxels with that intensity represents a landmark. Landmarks can be created using the paintbrush tool in ITK-SNAP (they can be spheres, cubes, etc). The first image on the stack is the target/fixed/reference image, and the second is the moving image. The parameters are the degrees of freedom, which is a number (6 for rigid, 7 for rigid+scale, 12 for affine) and the output matrix file. In this example, we have images **fixed.nii* and **moving.nii** with corresponding landmark images. We use landmarks to align the moving image to the fixed:
+Performs rigid or affine alignment between two sets of landmark images. A landmark image is an image where for every intensity value, the centroid of all voxels with that intensity represents a landmark. Landmarks can be created using the paintbrush tool in ITK-SNAP (they can be spheres, cubes, etc). The first image on the stack is the target/fixed/reference image, and the second is the moving image. The parameters are the degrees of freedom, which is a number (6 for rigid, 7 for rigid+scale, 12 for affine) and the output matrix file. In this example, we have images **fixed.nii** and **moving.nii** with corresponding landmark images. We use landmarks to align the moving image to the fixed:
 
     c3d fixed_landmarks.nii moving_landmarks.nii -alm 6 rigid.mat
     c3d fixed.nii moving.nii -reslice-matrix rigid.mat -o moving_resliced_to_fixed.nii
+
+#### -antialias, -alias: Anti-alias a binary image
+
+Syntax: `-antialias <iso_surface_value>`
+
+Applies the ITK anti-aliasing filter for binary images, which turns a binary image into a smooth floating point image. The parameter is the intensity of the input image that marks the boundary of the object, e.g., 0.5 for an image of zeros and ones. The output is positive inside the object and negative outside, and its zero level approximates the boundary of the object. The maximum RMS error and the number of iterations are set with the **-rms** and **-iterations** options, which must come first.
+
+    c3d binary.nii -antialias 0.5 -o smooth.nii
+
+#### -biascorr, -n4, -n4-bias-correction: Automatic MRI bias field correction
+
+Syntax: `-biascorr`
+
+Performs automatic bias field correction for MRI images. This feature uses the [N4 algorithm in ITK by Dr. Tustison][4], an improved version of the N3 algorithm by Sled et al. 
+
+    c3d mri.nii.gz -biascorr -o mricorr.nii.gz
 
 #### -binarize: Convert image to binary
 
@@ -782,7 +776,7 @@ Syntax: `-binarize`
 Converts an image to binary by mapping all background values (the background is 0 by default and can be changed by the option **-background**) to 0 and all non-background values to 1. The **-binarize** command is shorthand for the **-threshold** command. 
 
     c3d test.img -binarize -o binary.img 
-    c3d -background 10 -binarize -o binary.img
+    c3d test.img -background 10 -binarize -o binary.img
     c3d test.img -threshold 10 10 0 1              // equivalent to above command
 
 #### -canny: Canny edge detector
@@ -802,7 +796,6 @@ Reports the centroid, in physical coordinates, of all foreground voxels in the i
     c3d labelimage.img -thresh 5 5 1 0 -centroid          // centroid of all voxels with label 5
     c3d labelimage.img -split -foreach -centroid -endfor  // centroids of all labels (including 0)
 
-
 #### -centroid-mark: Mark the centroid of foreground voxels
 
 Syntax: `-centroid-mark <label>`
@@ -812,38 +805,11 @@ Marks the centroid of the foreground voxels in an image. Unlike **-centroid**, t
     c3d binaryimage.nii -centroid-mark 1 -dilate 1 3x3x3
     c3d labelimage.nii -split -foreach -centroid-mark 1 -endfor -merge -o centers.nii
 
+#### -cmp, -coordinate-map-physical: Generate voxel coordinate maps (physical units)
 
-#### -color-map, -colormap: Convert scalar image to RGB using color map    
+Syntax: `-cmp`
 
-Syntax: `-color-map <ColormapName> [min max]`
-
-Converts a scalar image to a color (RGB) image using a specified color map. The output of the command are three images, containing the red, green and blue channels of the RGB image. The mapping uses the range of the input image, e.g., using the **jet** color map, the lowest intensity pixel in the image will be mapped to blue, and the highest intesnity pixel will be mapped to red. The admissible color maps are **hot,cool,spring,summer,autumn,winter,copper,jet,hsv,red,green,blue,grey,overunder**. The command can be used with the -omc command to write RGB images. The example below generates a PNG image from a slice in a scalar image. 
-
-    c3d scalar.nii.gz -slice z 50% -flip y -color-map jet -type uchar -omc colorslice.png
-
-By default the full image intensity range is mapped. The optional **min** and **max** parameters can be used to set the range of the color map. 
-
-    c3d scalar.nii.gz -slice z 50% -flip y -color-map jet 0 1 -type uchar -omc colorslice.png
-
-#### -conv: Convolution
-
-Syntax `-conv`
-
-Performs convolution between the last two images on the stack. The convolution is performed using the Fourier transform. The result is an image of the same dimensions as the first image. For more details, see ["FFT Based Convolution" by Gaetan Lehmann][Lehmann].
-
-    c3d image.nii kernel.nii -conv -o result.nii
-
-
-[Lehmann]: https://hdl.handle.net/10380/3154
-
-#### -comp, -connected-components: Compute connected components
-
-Syntax: `-comp`
-
-Computes the connected components of a binary image. Each connected component is assigned an integer index. Indices are ordered by the size of the component, so the component assigned index 1 is the largest. The background is assigned index 0. To select the largest connected component, combine the call to **-comp** with a call to **-threshold**. 
-
-    c3d binary.img -comp -o comp.img
-    c3d binary.img -comp -threshold 1 1 1 0 -o largest_comp.img
+This command is similar to **-cmv** (**-coordinate-map-voxel**), but the output will contain the physical coordinates of the voxels, in the NIFTI (RAS) coordinate frame. 
 
 #### -cmv, -coordinate-map-voxel: Generate voxel coordinate maps (voxel units)
 
@@ -860,11 +826,37 @@ One can use this command to split a brain segmentation image into a left hemisph
         -push MASK -replace 1 0 0 1 \
         -push SEG -times -o seg_right.nii.gz
 
-#### -cmp, -coordinate-map-physical: Generate voxel coordinate maps (voxel units)
+#### -color-map, -colormap: Convert scalar image to RGB using color map    
 
-Syntax: `-cmp`
+Syntax: `-color-map <ColormapName> [min max]`
 
-This command is similar to **-cmv** (**-coordinate-map-voxel**), but the output will contain the physical coordinates of the voxels, in the NIFTI (RAS) coordinate frame. 
+Converts a scalar image to a color (RGB) image using a specified color map. The output of the command are three images, containing the red, green and blue channels of the RGB image. The mapping uses the range of the input image, e.g., using the **jet** color map, the lowest intensity pixel in the image will be mapped to blue, and the highest intensity pixel will be mapped to red. The admissible color maps are **hot,cool,spring,summer,autumn,winter,copper,jet,hsv,red,green,blue,grey,overunder**. The command can be used with the -omc command to write RGB images. The example below generates a PNG image from a slice in a scalar image. 
+
+    c3d scalar.nii.gz -slice z 50% -flip y -color-map jet -type uchar -omc colorslice.png
+
+By default the full image intensity range is mapped. The optional **min** and **max** parameters can be used to set the range of the color map. 
+
+    c3d scalar.nii.gz -slice z 50% -flip y -color-map jet 0 1 -type uchar -omc colorslice.png
+
+#### -comp, -connected, -connected-components: Compute connected components
+
+Syntax: `-comp`
+
+Computes the connected components of a binary image. Each connected component is assigned an integer index. Indices are ordered by the size of the component, so the component assigned index 1 is the largest. The background is assigned index 0. To select the largest connected component, combine the call to **-comp** with a call to **-threshold**. 
+
+    c3d binary.img -comp -o comp.img
+    c3d binary.img -comp -threshold 1 1 1 0 -o largest_comp.img
+
+#### -conv: Convolution
+
+Syntax: `-conv`
+
+Performs convolution between the last two images on the stack. The convolution is performed using the Fourier transform. The result is an image of the same dimensions as the first image. For more details, see ["FFT Based Convolution" by Gaetan Lehmann][Lehmann].
+
+    c3d image.nii kernel.nii -conv -o result.nii
+
+
+[Lehmann]: https://hdl.handle.net/10380/3154
 
 #### -create: Generate blank image
 
@@ -921,37 +913,23 @@ In the above example, **-centroid-mark** transforms the lesion segmentation into
 
 #### -export-patches-aug, -xpa: data augmentation for deep learning
 
-Syntax `-export-patches-aug <N> <sigma_angle>`
+Syntax: `-export-patches-aug <N> <sigma_angle>`
 
-This command must precede the `-export-patches (-xp)` command and instructs this command to not only sample patches along the image axes but to also sample **N** randomly rotated patches. Rotation is around a uniformly distributed axis with a rotation angle distributed normally with teh standard deviation **sigma_angle**, specified in degrees. This kind of sampling is useful for data augmentation for machine learning algorithms.
+This command must precede the `-export-patches (-xp)` command and instructs this command to not only sample patches along the image axes but to also sample **N** randomly rotated patches. Rotation is around a uniformly distributed axis with a rotation angle distributed normally with the standard deviation **sigma_angle**, specified in degrees. This kind of sampling is useful for data augmentation for machine learning algorithms.
 
     c3d chan1.nii chan2.nii chan3.nii mask.nii -xpa 5 10 -xp samples.dat 4x4x4 100
 
 #### -fast-marching, -fm: Fast marching filter
 
-Syntax `-fast-marching <stopping_value>`
+Syntax: `-fast-marching <stopping_value>`
 
 This command executes the Fast Marching algorithm with the last image on the stack as the initialization and the penultimate image on the stack as the speed image. All non-zero voxels in the initialization image are treated as points with arrival time 1. The fast marching algorithm propagates through image space at a speed modulated by the speed image (which must have non-negative values, typically between 0 and 1). The output of this filter is the arrival time at all points reached by fast marching before hitting the stopping value.
 
     c3d prob_map.nii seed.nii -fm 20.0 -o arrival.nii
 
-#### -fm-dilate: Fast marching-based label dilation
-
-Syntax `-fm-dilate <source_label> <target_labels> <new_label> <radius>`
-
-This command uses fast marching to dilate a label (`source_label`) in a label image over one or more target labels (`target_labels`). Unlike the `-dilate` command, fast marching dilation only marches over pixels with the target labels. The pixels within dilation radius (`radius`) from the source label will be relabeled with the `new_label` value. This command can be used for various tasks, such as filling holes in a segmentation, marking pixels on the boundary between two labels, etc. The same effect can be accomplished using just the `-fm` command and some arithmetic, but the `-fm-dilate` command is a convenient shorthand.
-
-This command will dilate label 5 over the background label (0) by radius of 1:
-
-    c3d seg.nii -fm-dilate 5 0 5 1.0 -o seg2.nii
-
-This command dilates label 5 over labels 0,1 and 4 by radius 1.5, marking the new pixels with label 6
-
-    c3d seg.nii -fm-dilate 5 0,1,4 6 1.5 -o seg2.nii
-
 #### -fft: Fast Fourier transform
 
-Syntax `-fft`
+Syntax: `-fft`
 
 Computes the Fourier transform of a real-valued image at the end of the stack. The image is replaced by the real and imaginary components of the FFT. This command is only available if **convert3d** is compiled with the FFTW library support. 
 
@@ -964,6 +942,20 @@ Syntax: `-flip axes`
 Flips the image around specified axes. The parameter 'axes' may be any combination of characters 'x', 'y', and 'z'; the order does not matter. 
 
     c3d input.img -flip xy -o output.img
+
+#### -fm-dilate, -fmd: Fast marching-based label dilation
+
+Syntax: `-fm-dilate <source_label> <target_labels> <new_label> <radius>`
+
+This command uses fast marching to dilate a label (`source_label`) in a label image over one or more target labels (`target_labels`). Unlike the `-dilate` command, fast marching dilation only marches over pixels with the target labels. The pixels within dilation radius (`radius`) from the source label will be relabeled with the `new_label` value. This command can be used for various tasks, such as filling holes in a segmentation, marking pixels on the boundary between two labels, etc. The same effect can be accomplished using just the `-fm` command and some arithmetic, but the `-fm-dilate` command is a convenient shorthand.
+
+This command will dilate label 5 over the background label (0) by radius of 1:
+
+    c3d seg.nii -fm-dilate 5 0 5 1.0 -o seg2.nii
+
+This command dilates label 5 over labels 0,1 and 4 by radius 1.5, marking the new pixels with label 6
+
+    c3d seg.nii -fm-dilate 5 0,1,4 6 1.5 -o seg2.nii
 
 #### -glm: General linear model    
 
@@ -980,7 +972,7 @@ Applies voxel-wise general linear model to a set of images. More precisely, the 
 
 #### -grad, -gradient: Image gradient
 
-Syntax `-grad`
+Syntax: `-grad`
 
 Computes the gradient of the image. Each component of the gradient is placed on the stack in order (x,y,z). The gradient is computed in physical RAS coordinates, taking into account image spacing and orientation. In other words, the gradient is the vector in physical space orthogonal to the isocontours of the image. No smoothing is performed, so it is a good idea to smooth the image first before computing the gradient.
 
@@ -988,9 +980,9 @@ Computes the gradient of the image. Each component of the gradient is placed on 
 
 #### -hesseig, -hessian-eigenvalues: Compute eigenvalues of the Hessian matrix
 
-Syntax `-hesseig <scale>`
+Syntax: `-hesseig <scale>`
 
-Computes the Hessian matrix at every pixel of an image and the eigenvalues of the Hessian. Images of the eigenvalues (sorted by value) are placed on the stack. These images are useful as texture features. See also the '''-steig''' command. The scale determines the amount of Gaussian smoothing applied for computing the partial derivatives in the Hessian, and is in physical (mm) units.
+Computes the Hessian matrix at every pixel of an image and the eigenvalues of the Hessian. Images of the eigenvalues (sorted by value) are placed on the stack. These images are useful as texture features. See also the **-steig** command. The scale determines the amount of Gaussian smoothing applied for computing the partial derivatives in the Hessian, and is in physical (mm) units.
 
     c3d myimage.nii -hesseig 2.0 -oo eig%02d.nii.gz
 
@@ -998,54 +990,22 @@ Computes the Hessian matrix at every pixel of an image and the eigenvalues of th
 
 Syntax: `-hessobj <dimension> <min_scale> <max_scale>`
 
-Also known as the Frangi vesselness filter, this filter can be used to highlight tube-like, sheet-like and blob-like objects in the image. For details, see documentation to the [corresponging ITK class][HTOMIF]. 
+Also known as the Frangi vesselness filter, this filter can be used to highlight tube-like, sheet-like and blob-like objects in the image. For details, see documentation to the [corresponding ITK class][HTOMIF]. 
 
-Parameter `dimension` is an integer that determines the kind of features that are highlighed. Use 0 for blobs, 1 for tubes, 2 for pancakes, etc. The min and max scale parameters are floating point values, giving the scale of the features highlighted, in physical units. Typically, just one scale is used.
+Parameter `dimension` is an integer that determines the kind of features that are highlighted. Use 0 for blobs, 1 for tubes, 2 for pancakes, etc. The min and max scale parameters are floating point values, giving the scale of the features highlighted, in physical units. Typically, just one scale is used.
 
     # Detect vessel-like structures at scale 0.5mm
     c3d image.nii.gz -hessobj 1 0.5 0.5
 
- [HTOMIF] http://www.itk.org/Doxygen/html/classitk_1_1HessianToObjectnessMeasureImageFilter.html
+ [HTOMIF]: http://www.itk.org/Doxygen/html/classitk_1_1HessianToObjectnessMeasureImageFilter.html
 
-#### -holefill: Fill holes in binary image
+#### -holefill, -hf: Fill holes in binary image
 
-Syntax: `-holefill intensity_value [0|1] `
+Syntax: `-holefill <intensity_value> <0|1>`
 
 Apply the binary hole filling algorithm to a particular intensity value in the image. The input image is typically a binary image or a multi-label segmentation image. Holes (voxels not matching the specified intensity value that are completely contained by voxels matching this value) are filled. The second parameter specifies what type of topological connectivity is used to determine holes. The value 0 uses the default algorithm in ITK (face connectivity) and 1 uses the full connectivity variant (face, edge and vertex connectivity). For more details see the [ITK page for this algorithm][7]. 
 
     c3d segmentation.nii.gz -holefill 5 0 -type uchar -o filledlabel5.nii.gz 
-
-#### -lstat, -label-statistics: Display segmentation volumes and intensity statistics
-
-Syntax: `-lstat`
-
-Given a grayscale image and a multilabel (or binary) image, this command computes the statistics for every label in the latter, including volumes, average grayscale intensity, etc. For instance, if image *mri.nii* is a medical image and *seg.nii* is a multilabel segmentation of the image with labels 0, 1 and 4, the following command can be used to print the statistics of the intensity of *mri.nii* for each of the labels 
-
-    c3d mri.nii seg.nii -lstat
-
-The output contains the mean, standard deviation, maximum intensity and minimum intensity for each label. If you just need volumes from a multi-label image, use **-dup** command as follows:
-
-    c3d seg.nii -dup -lstat
-
-#### -lms, -landmarks-to-spheres: Generate image of spheres from landmark data
-
-Syntax: `-lm <landmark_file> <radius>`
-
-Reads a list of landmarks from a file and for each landmark draws a sphere with the landmark at the center. Spheres are drawn over the last image on the stack. Landmarks are specified in a file with four entries per line: *x y z value*, where *(x,y,z)* give the landmark position in physical units (mm) and value is the image value that the sphere will be filled with. The radius (for now) is specified in physical units (mm). The example below first creates a landmark file, and then calls c3d to create the spheres. Notice that the **-scale** command is first used to create a blank image of the same dimensions as the input image. 
-
-    echo 14.5 23.12 44.53 1 > landmarks.txt
-    echo 76.3 43.12 34.32 2 >> landmarks.txt
-    ...
-    c3d image.img -scale 0 -lms landmarks.txt 3 -o landspheres.img
-
-The command also supports an alternative format for the landmarks that allows specification in voxel
-units and percent
-
-    echo 50%x50%x50% 1 > landmarks.txt
-    echo 25x25x30vox 1 >> landmarks.txt
-    echo 10x10x45mm 2 >> landmarks.txt 
-    ...
-    c3d image.img -scale 0 -lms landmarks.txt 3 -o landspheres.img
 
 #### -laplacian, -laplace: Laplacian filter
 
@@ -1078,17 +1038,47 @@ Here is an example of segmenting the ventricles in an MRI image, where the ventr
 
 Another example of smoothing a binary image that is useful for cleaning up manual segmentations. Here the speed image is positive inside the binary object, and the initialization is negative inside the object. The command writes out both the level set image (whose 0-level set is the smoothed boundary of the binary object) and the smoothed binary object 
 
-    c3d binary.img -threshold 1 inf 1 -1 -binary.img 1 inf 1 -1 \
+    c3d binary.img -threshold 1 inf 1 -1 binary.img -threshold 1 inf -1 1 \
         -levelset-curvature 1.5 -levelset 100 -o levelset.img \
         -thresh -inf 0 1 0 -o smoothed_binary.img
 
-#### -mf, -mean-filter: Mean filter
+#### -lstat, -label-statistics: Display segmentation volumes and intensity statistics
 
-Syntax: `-mf <radius_vector>`
+Syntax: `-lstat`
 
-Applies the mean filter: the intensity of each voxel is replaced by the mean of the intensities in the neighborhood of size specified by the radius parameter. For example, the following code will apply the mean filter with the 5x5x5 neighborhood. 
+Given a grayscale image and a multilabel (or binary) image, this command computes the statistics for every label in the latter, including volumes, average grayscale intensity, etc. For instance, if image *mri.nii* is a medical image and *seg.nii* is a multilabel segmentation of the image with labels 0, 1 and 4, the following command can be used to print the statistics of the intensity of *mri.nii* for each of the labels 
 
-    c3d in.nii -mf 2x2x2 -o filtered.nii
+    c3d mri.nii seg.nii -lstat
+
+The output contains the mean, standard deviation, maximum intensity and minimum intensity for each label. If you just need volumes from a multi-label image, use **-dup** command as follows:
+
+    c3d seg.nii -dup -lstat
+
+#### -lts, -landmarks-to-spheres: Generate image of spheres from landmark data
+
+Syntax: `-lts <landmark_file> <radius>`
+
+Reads a list of landmarks from a file and for each landmark draws a sphere with the landmark at the center. Spheres are drawn over the last image on the stack. Landmarks are specified in a file with four entries per line: *x y z value*, where *(x,y,z)* give the landmark position in physical units (mm) and value is the image value that the sphere will be filled with. The radius (for now) is specified in physical units (mm). The example below first creates a landmark file, and then calls c3d to create the spheres. Notice that the **-scale** command is first used to create a blank image of the same dimensions as the input image. 
+
+    echo 14.5 23.12 44.53 1 > landmarks.txt
+    echo 76.3 43.12 34.32 2 >> landmarks.txt
+    ...
+    c3d image.img -scale 0 -lts landmarks.txt 3 -o landspheres.img
+
+The command also supports an alternative format for the landmarks that allows specification in voxel
+units and percent
+
+    echo 50%x50%x50% 1 > landmarks.txt
+    echo 25x25x30vox 1 >> landmarks.txt
+    echo 10x10x45mm 2 >> landmarks.txt 
+    ...
+    c3d image.img -scale 0 -lts landmarks.txt 3 -o landspheres.img
+
+#### -mci, -morphological-contour-interpolation: Interpolate labels
+
+Syntax: `-mci [-optimal-alignment] [-use-distance-transform] [axis]`
+
+Interpolate sparsely drawn segmentations. The axis parameter can be -1 to interpolate along all axes (the default) or an integer between 0 and 2 to specify a single axis.
 
 #### -median, -median-filter: Median filter
 
@@ -1103,6 +1093,28 @@ Applies the median filter: the intensity of each voxel is replaced by the median
 Syntax: `-merge`
 
 Works in conjunction with the **-split** command. Has similar behavior to **-vote**, except that label values are carried from the input to the **-split** command. 
+
+#### -mf, -mean-filter: Mean filter
+
+Syntax: `-mf <radius_vector>`
+
+Applies the mean filter: the intensity of each voxel is replaced by the mean of the intensities in the neighborhood of size specified by the radius parameter. For example, the following code will apply the mean filter with the 5x5x5 neighborhood. 
+
+    c3d in.nii -mf 2x2x2 -o filtered.nii
+
+#### -mi, -mutual-info: Compute mutual information metric
+
+Syntax: `-mi [movtransform.mat] [reftransform.mat]`
+
+Compute the mutual information metric between the last two images on the stack. See documentation for **-msq**.
+
+#### -mmi, -mattes-mutual-info: Compute Mattes mutual information metric
+
+Syntax: `-mmi [movtransform.mat] [reftransform.mat]`
+
+Compute the Mattes mutual information metric between the last two images on the stack. See documentation for **-msq**. For example, to compute the metric between images *ref.nii* and *mov.nii*:
+
+    c3d ref.nii mov.nii -mmi
 
 #### -msq, -mean-square: Compute mean square difference metric
 
@@ -1119,33 +1131,25 @@ Compute the mean square difference metric between the last two images on the sta
     # Compute metric between ref.nii and mov.nii in a neutral space after applying transforms to both
     c3d ref.nii mov.nii -msq tmov.mat tref.mat
 
-#### -mi, -mutual-info: Compute mutual informaiton metric
+#### -mv, -majority-vote: Majority vote among multilabel images on the stack
 
-Syntax: `-mi [movtransform.mat] [reftransform.mat]`
+Syntax: `-majority-vote <label of undecided voxels> [number of stack images to use]`
 
-Compute the mutual information metric between the last two images on the stack. See documentation for **-msq**.
+This command takes a number of multilabel images on the stack and performs majority voting using the ITK LabelVotingImageFilter. When the vote is a tie, the label is set to the <label of undecided voxels> value. By default, all images on the stack are used.
 
-#### -mmi, -mattes-mutual-info: Compute mutual informaiton metric
-
-Syntax: `-mmi [movtransform.mat] [reftransform.mat]`
-
-Compute the Mattes mutual information metric between the last two images on the stack. See documentation for **-msq**.
-    
-    # An example of using this command to compute the mutual information metric between two images, *ref.nii* and *mov.nii*, is as follows:
-    c3d ref.nii mov.nii -mmi
-
-
-#### -mci, -morphological-contour-interpolation: Interpolate labels
-
-Syntax: `-mci [-optimal-alignment] [-use-distance-transform] [axis]`
-
-Interpolate sparsely drawn segmentations. The axis parameter can be -1 to interpolate along all axes (the default) or an integer between 0 and 2 to specify a single axis.
+    c3d ml1.img ml2.img ml3.img -majority-vote 255 -type uchar -o label.img
 
 #### -ncc, -normalized-cross-correlation: Compute normalized cross-correlation image
 
 Syntax: `-ncc <radius_vector>`
 
 Computes normalized cross-correlation between two images that occupy the same physical space. Each voxel in the resulting image is the cross-correlation of patches of given radius surrounding the voxel in the two input images. This is different from **-ncor**, which computes a global cross-correlation metric value. 
+
+#### -ncor, -normalized-correlation: Compute normalized correlation metric
+
+Syntax: `-ncor [movtransform.mat] [reftransform.mat]`
+
+Compute the normalized correlation metric between the last two images on the stack. See documentation for **-msq**.
 
 #### -neck-trim: Trim away neck on brain MRI image
 
@@ -1165,41 +1169,35 @@ The second line in the example above uses the mask calculated by the `-neck-trim
 
 Syntax: `-nlm-denoise`
 
-Applies the [non-local means image denoising algorithm by Manjon et al. (2009)](Manjon2009) to the last image on the stack. **Note: Only available in 3D**.
+Applies the [non-local means image denoising algorithm by Manjon et al. (2009)][Manjon2009] to the last image on the stack. **Note: Only available in 3D**.
 
     c3d gray.nii.gz -nlm-denoise -o denoised.nii.gz
 
-[Manjon2009] Manjón JV, Coupé P, Collins DL, Robles M (2009). [Adaptive non-local means denoising of MR images with spatially varying noise levels.](https://doi.org/10.1002/jmri.22003) JMRI. 
+[Manjon2009]: https://doi.org/10.1002/jmri.22003 "Manjón JV, Coupé P, Collins DL, Robles M (2009). Adaptive non-local means denoising of MR images with spatially varying noise levels. JMRI." 
 
 #### -nlm-upsample: Non-local Means Upsampling
 
 Syntax: `-nlm-upsample <upsample_vector>`
 
-Applies the [non-local means super-resolution algorithm by Manjon et al. (2010)](Manjon2010) to the last image on the stack. The image will be upsampled by the factors specified in each dimension. Unlike linear or cubic interpolation, which smooths the image, the non-local means algorithm recovers high-frequency information from the features of the input image. **Note: Only available in 3D**.
+Applies the [non-local means super-resolution algorithm by Manjon et al. (2010)][Manjon2010] to the last image on the stack. The image will be upsampled by the factors specified in each dimension. Unlike linear or cubic interpolation, which smooths the image, the non-local means algorithm recovers high-frequency information from the features of the input image. **Note: Only available in 3D**.
 
     c3d gray.nii.gz -nlm-upsample 2x2x2 -o sr.nii.gz
 
-[Manjon2010] Manjón JV, Coupé P, Buades A, Fonov V, Collins DL, Robles M (2010). [Non-local MRI upsampling](https://doi.org/10.1016/j.media.2010.05.010). Medical Image Analysis.
+[Manjon2010]: https://doi.org/10.1016/j.media.2010.05.010 "Manjón JV, Coupé P, Buades A, Fonov V, Collins DL, Robles M (2010). Non-local MRI upsampling. Medical Image Analysis."
 
-#### -nmi, -normalized-mutual-info: Compute mutual informaiton metric
-
-Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
-
-Compute the normalized mutual information metric between the last two images on the stack. See documentation for **-msq**.
-
-#### -ncor, -normalized-correlation: Compute normalized correlation metric
-
-Syntax: `-ncor [movtransform.mat] [reftransform.mat]`
-
-    :   Compute the normalized correlation metric between the last two images on the stack. See documentation for **-msq***.
-
-#### -nlw, -normalize-local-window: Standardize image intensity using local neighborhood
+#### -nlw, -normwin, -normalize-local-window: Standardize image intensity using local neighborhood
 
 Syntax: `-nlw <radius>`
 
 This command takes as inputs an image and a mask image. At each voxel, the mean of the local neighborhood is subtracted, and the result is divided by the standard deviation of the neighborhood. The mean and standard deviation are computed only over the masked region. You might also want to multiply by the mask.
 
     c3d gray.nii.gz mask.nii.gz -nlw 10x10x10 -o residual.nii.gz
+
+#### -nmi, -normalized-mutual-info: Compute normalized mutual information metric
+
+Syntax: `-nmi [movtransform.mat] [reftransform.mat]`
+
+Compute the normalized mutual information metric between the last two images on the stack. See documentation for **-msq**.
 
 #### -oli, -overlay-label-image: Overlay segmentation image on grayscale image
 
@@ -1217,8 +1215,8 @@ Note: this command does not interpolate between entries in the lookup table. It 
 
 Here is a more complex example, used to visualize a segmentation result. We do a few things in this command: trim grayscale and segmentation images to an ROI around the object of interest; map intensity range of the grayscale image to 0-255; extract slices through the middle of the cropped images; overlay segmentation on the grayscale image; and save as a color PNG file. 
 
-    c3d seg.nii.gz -trim 20x20x0vox -as S gray.nii.gz -stretch 2% 98% 0 255 -clip 0 255 \\
-        -reslice-identity -push S -foreach -slice z 50% -flip xy -endfor \\
+    c3d seg.nii.gz -trim 20x20x0vox -as S gray.nii.gz -stretch 2% 98% 0 255 -clip 0 255 \
+        -reslice-identity -push S -foreach -slice z 50% -flip xy -endfor \
         -oli labels.txt 0.5 -type uchar -omc ovl.png
 
 #### -overlap: Compute relative overlap between binary images    
@@ -1265,30 +1263,28 @@ Normally you will want to pad with zeros, but you can pad with any constant valu
 
 Adds 10% to all sides of the image, and fills the new voxels with the value 1. 
 
-#### -pad-to: Pad image to desired size with constant value
+#### -pad-to, -padto: Pad image to desired size with constant value
 
-Syntax: `-pad <target_size> <value> `
+Syntax: `-pad-to <target_size> <value> `
 
 Pads the image symmetrically with constant value to achieve a desired size.
 
     c3d image1.nii -pad-to 60x60x100 0 -o padded.nii
 
+#### -pad-to-multiple: Pad image so that the size is a multiple of some number
 
-#### -pad-to-multiple: Pad image to that the size is a multiple of some number
-
-Syntax: `-pad <size_multiple> <value> `
+Syntax: `-pad-to-multiple <size_multiple> <value> `
 
 Pads the image symmetrically with constant value so that the size in each dimension
 is a multiple of `<size_multiple>`.
 
     c3d image1.nii -pad-to-multiple 4x4x1 0 -o padded.nii
 
-
 #### -pca: Principal components analysis of foreground voxels
 
 Syntax: `-pca`
 
-Similar to the *-centroid* command, computes the centroid and prinicipal components of the foregrond voxels in the image. For example if the image is a binary image of an ellipsoid, this will report the center and the principal axes of the ellipsoid, in physical NIFTI coordinates.
+Similar to the *-centroid* command, computes the centroid and principal components of the foreground voxels in the image. For example if the image is a binary image of an ellipsoid, this will report the center and the principal axes of the ellipsoid, in physical NIFTI coordinates.
 
     c3d binaryimage.img -pca                              // centroid of all non-0 voxels
     c3d labelimage.img -thresh 5 5 1 0 -pca               // centroid of all voxels with label 5
@@ -1311,41 +1307,6 @@ Syntax: `-rank `
 This command takes N images as the input (all the images on the stack are used). It also generates N images as the output. For voxel k in image j, it assigns it a label based on its rank among the values of voxel k in all N images. If the voxel has highest intensity in image j, then the j'th output will have value 1. 
 
     c3d img1.img img2.img ... imgN.img -rank -oo rank%d.img
-
-#### -rf-train: Train Random Forest classifier
-
-Syntax: `-rf-train <classifier_file>`
-
-This command trains a classifier using an implementation of the [Breyman et al. Random Forest Algorithm][Br2001], with modifications proposed by [Criminisi and Shotton][Cr2004]. The stack must contain one or more images of features (e.g., grayscale images), followed by a multi-label image. The latter must have at least two non-zero labels corresponding to different classes. The classifier is trained on a voxel by voxel basis. All voxels with label *L* are treated as the examples of class *L*. The classifier is output to a binary file that can later be used by the **-rf-apply** command. Multiple parameters can be specified with the **-rf-param-xxx** options before calling **-rf-train**. The stack is not modified by this command.
-
-    # Training with two MRI modalities as features and default parameters
-    c3d t1_mri.nii t2_mri.nii segmentation.nii -rf-train myforest1.rf
-
-    # Training with patches as features (see docs for -rf-param-patch)
-    c3d ultrasound.nii seg.nii -rf-param-patch 2x2x2 -rf-train myforest2.rf
-
-    # Applying the classifier
-    c3d ultrasound.nii -rf-apply myforest2.rf -omc class_prob.nii.gz
-
-The commands are meant to replicate the "classification" pre-segmentation mode in ITK-SNAP, i.e., extending a rough example segmentation to the entire image domain. It is possible to also use the commands to train classifiers jointly on data from multiple subjects, each with its own segmentation, as long as the images from the different subjects occupy the same image space and can be stacked into a 4-dimensional image. For example:
-
-    # Train using MRI and segmentations from N subjects
-    c4d mri_subj*.nii -tile w -popas ALLMRI \
-        seg_subj*.nii -tile w -popas ALLSEG \
-        -rf-param-patch 2x2x2x0 \
-        -push ALLMRI -push ALLSEG -rf-train myforest.rf
-
-    # Apply using single MRI
-    c4d mri_new.nii -rf-apply myforest.rf -omc classprob.nii
-
- [Br2001] Breiman, L. (2001). Random forests. Machine learning, 45(1), 5-32.
- [Cr2004] Criminisi, A., & Shotton, J. (2013). Decision forests for computer vision and medical image analysis. Springer Science & Business Media
-
-#### -rf-apply: Apply Random Forest classifier 
-
-Syntax: `-rf-apply <classifier_file>`
-
-This command applies a classifier trained previously by **-rf-train**. The stack must contain the same number of feature images as when training. The images will be removed from the stack and replaced with a set of K probability images, where K is the number of classes during training. See examples under **-rf-train** for usage.
 
 #### -region: Extract region from image
 
@@ -1375,7 +1336,6 @@ Resamples the image to have approximately isotropic resolution, either based on 
 
     c3d img1.img -resample-iso min -o img2.img
 
-
 #### -resample-mm: Resample image to new resolution
 
 Syntax: `-resample-mm <voxel_size> `
@@ -1383,34 +1343,6 @@ Syntax: `-resample-mm <voxel_size> `
 Resamples the image as in **-resample**, but the user specifies the new voxel size rather than dimensions. This may not be precise, so the bounding box of the image may change. A warning will be generated in that case. 
 
     c3d img1.img -resample-mm 1.0x1.5x1.5mm -o img2.img
-
-#### -reslice-matrix: Resample image using affine transform
-
-Syntax: `reslice-matrix <transform_file>`
-
-Applies affine transform to an image. The first image on the command line is the reference image. The output image will have same dimensions and voxel-to-space transform as the reference image. The second parameter is the moving image, i.e., the image to be resliced. The transform file is a 4x4 matrix that gives a transform *from the physical space of the reference image to the physical space of the moving image*. To generate a transform file, you must use some sort of registration algorithm, which is not part of **convert3d** (at least not yet).
-
-    c3d reference_image.nii moving_image.nii -reslice-itk transform_file.txt -o output_image.nii
-
-There is a separate tool **c3d_affine_tool** for manipulating these matrix files.
-
-Here is an example of using **-reslice-matrix** with SPM. In MATLAB, you would execute the following commands 
-
-    p = spm_coreg('reference.nii', 'moving.nii');
-    m = inv(spm_matrix(p(:)'));
-    save -ascii ref2mov_mat.txt
-
-Then to reslice using **convert3d**, run 
-
-    c3d reference.nii moving.nii -reslice-matrix ref2mov.txt -o resliced.nii
-
-The related command **-reslice-itk** can be used to use affine transforms computed by ANTs software.
-
-#### -reslice-itk: Resample image using affine transform
-
-Syntax: `-reslice-itk <transform_file> `
-
-Applies affine (or other) transform in ITK (ANTs) format to an image. See notes to **-reslice-matrix** for usage.
 
 #### -reslice-identity: Resample image using identity transform 
 
@@ -1420,11 +1352,74 @@ Applies the **-reslice-matrix** command with the identity transform. This is use
 
     c3d t1.nii t2.nii -reslice-identity -o t2_in_t1_space.nii
 
+#### -reslice-itk: Resample image using affine transform
+
+Syntax: `-reslice-itk <transform_file> `
+
+Applies affine (or other) transform in ITK (ANTs) format to an image. See notes to **-reslice-matrix** for usage.
+
+#### -reslice-matrix: Resample image using affine transform
+
+Syntax: `-reslice-matrix <transform_file>`
+
+Applies affine transform to an image. The first image on the command line is the reference image. The output image will have same dimensions and voxel-to-space transform as the reference image. The second parameter is the moving image, i.e., the image to be resliced. The transform file is a 4x4 matrix that gives a transform *from the physical space of the reference image to the physical space of the moving image*. To generate a transform file, use a registration tool such as [greedy](https://greedy.readthedocs.io), or the **-alm** command for landmarks.
+
+    c3d reference_image.nii moving_image.nii -reslice-matrix transform_file.mat -o output_image.nii
+
+There is a separate tool **c3d_affine_tool** for manipulating these matrix files.
+
+Here is an example of using **-reslice-matrix** with SPM. In MATLAB, you would execute the following commands 
+
+    p = spm_coreg('reference.nii', 'moving.nii');
+    m = inv(spm_matrix(p(:)'));
+    save -ascii ref2mov.txt m
+
+Then to reslice using **convert3d**, run 
+
+    c3d reference.nii moving.nii -reslice-matrix ref2mov.txt -o resliced.nii
+
+The related command **-reslice-itk** can be used to use affine transforms computed by ANTs software.
+
+#### -rf-apply: Apply Random Forest classifier 
+
+Syntax: `-rf-apply <classifier_file>`
+
+This command applies a classifier trained previously by **-rf-train**. The stack must contain the same number of feature images as when training. The images will be removed from the stack and replaced with a set of K probability images, where K is the number of classes during training. See examples under **-rf-train** for usage.
+
+#### -rf-train: Train Random Forest classifier
+
+Syntax: `-rf-train <classifier_file>`
+
+This command trains a classifier using an implementation of the [Breiman Random Forest Algorithm][Br2001], with modifications proposed by [Criminisi and Shotton][Cr2013]. The stack must contain one or more images of features (e.g., grayscale images), followed by a multi-label image. The latter must have at least two non-zero labels corresponding to different classes. The classifier is trained on a voxel by voxel basis. All voxels with label *L* are treated as the examples of class *L*. The classifier is output to a binary file that can later be used by the **-rf-apply** command. Multiple parameters can be specified with the **-rf-param-xxx** options before calling **-rf-train**. The stack is not modified by this command.
+
+    # Training with two MRI modalities as features and default parameters
+    c3d t1_mri.nii t2_mri.nii segmentation.nii -rf-train myforest1.rf
+
+    # Training with patches as features (see docs for -rf-param-patch)
+    c3d ultrasound.nii seg.nii -rf-param-patch 2x2x2 -rf-train myforest2.rf
+
+    # Applying the classifier
+    c3d ultrasound.nii -rf-apply myforest2.rf -omc class_prob.nii.gz
+
+The commands are meant to replicate the "classification" pre-segmentation mode in ITK-SNAP, i.e., extending a rough example segmentation to the entire image domain. It is possible to also use the commands to train classifiers jointly on data from multiple subjects, each with its own segmentation, as long as the images from the different subjects occupy the same image space and can be stacked into a 4-dimensional image. For example:
+
+    # Train using MRI and segmentations from N subjects
+    c4d mri_subj*.nii -tile w -popas ALLMRI \
+        seg_subj*.nii -tile w -popas ALLSEG \
+        -rf-param-patch 2x2x2x0 \
+        -push ALLMRI -push ALLSEG -rf-train myforest.rf
+
+    # Apply using single MRI
+    c4d mri_new.nii -rf-apply myforest.rf -omc classprob.nii
+
+ [Br2001]: https://doi.org/10.1023/A:1010933404324 "Breiman, L. (2001). Random forests. Machine learning, 45(1), 5-32."
+ [Cr2013]: https://doi.org/10.1007/978-1-4471-4929-3 "Criminisi, A., & Shotton, J. (2013). Decision forests for computer vision and medical image analysis. Springer."
+
 #### -sdt, -signed-distance-transform: Signed distance transform of a binary image
 
 Syntax: `-sdt`
 
-Computes the signed distance transform of a binary image. Voxels where the binary image is non-zero will have negative values and voxels where the binary image is zero will have negative values. The magnitude of the value will be the approximate Euclidean distance to the boundary of the object represented by the binary image. 
+Computes the signed distance transform of a binary image. Voxels where the binary image is non-zero will have negative values and voxels where the binary image is zero will have positive values. The magnitude of the value will be the approximate Euclidean distance to the boundary of the object represented by the binary image. 
 
     c3d binary.img -sdt -o dist.img 
 
@@ -1448,7 +1443,7 @@ Extracts a slice along the specified axis (x,y or z). The position specifier **p
     c3d input.img -slice z 0:-1 -oo slice%0d.nii.gz
     c3d input.img -slice z 20%:10%:80% -oo slice%0d.nii.gz
 
-Additional more than one entry or range can be given at the same time using the comma separated list notation.
+In addition, more than one entry or range can be given at the same time using the comma separated list notation.
 
     c3d input.img -slice z 20%,30%:10%:70%,80% -oo slice%0d.nii.gz
 
@@ -1458,11 +1453,11 @@ With the new command **c4d**, the **-slice** command can be used to extract volu
 
 #### -slice-all: Extract slices from all images on the stack
 
-Syntax `-slice-all axis position_spec`
+Syntax: `-slice-all axis position_spec`
 
 This command behaves identical to the **-slice** command, but all images on the stack are sliced, and the slices are interleaved. This is useful for slicing multi-component images. For example, if you read a four-component image 'test4.nii.gz', you can extract and save the slices as follows:
 
-    c3d test4.nii.gz -slice-all 20%:10%:80% -oomc 4 slice4_%03d.nii.gz
+    c3d -mcs test4.nii.gz -slice-all z 20%:10%:80% -oomc 4 slice4_%03d.nii.gz
 
 #### -smooth: Gaussian smoothing
 
@@ -1484,7 +1479,7 @@ Applies Gaussian smoothing to the image using the fast [Deriche recursive smooth
 
 Syntax: `-smooth-multilabel <sigma_vector> <label_list>`
 
-Applies Recurisve Gaussian Smoothing using [Deriche recursive smoothing algorithm][15] to an multi-label image for selected labels. The label_list should be a space-delimited string, wrapped by double quotes. To smooth all labels, leave an empty label_list: "". To select labels to smooth, for example, to smooth labels 2, 5, 6, the label list should be "2 5 6". Smoothing is applied on label-by-label basis and the labels are merged using voting (see **-merge**). Also see [Vector Format Specification][10] below. 
+Applies Recursive Gaussian Smoothing using [Deriche recursive smoothing algorithm][15] to a multi-label image for selected labels. The label_list should be a space-delimited string, wrapped by double quotes. To smooth all labels, use "*" as the label_list. To select labels to smooth, for example, to smooth labels 2, 5, 6, the label list should be "2 5 6". Smoothing is applied on label-by-label basis and the labels are merged using voting (see **-merge**). Also see [Vector Format Specification][10] below. 
 
 #### -softmax: Compute softmax across all images on the stack
 
@@ -1521,11 +1516,11 @@ Runs the ITK implementation of the STAPLE algorithm ([See Paper][11]). STAPLE ge
 
 #### -steig, -structure-tensor-eigenvalues: Compute eigenvalues of the structure tensor
 
-Syntax `-steig <scale> <radius>`
+Syntax: `-steig <scale> <radius>`
 
-Computes the Hessian matrix at every pixel of an image and the eigenvalues of the Hessian. Images of the eigenvalues (sorted by value) are placed on the stack. These images are useful as texture features. See also the '''-steig''' command. The scale determines the amount of Gaussian smoothing applied for computing the partial derivatives in the Hessian, and is in physical (mm) units.
+Computes the structure tensor at every pixel of an image and the eigenvalues of the structure tensor. The structure tensor is the outer product of the image gradient with itself, smoothed over a neighborhood. Images of the eigenvalues (sorted by value) are placed on the stack. These images are useful as texture features. See also the **-hesseig** command. The *scale* is the standard deviation of the Gaussian used to compute the image gradient, and the *radius* is the standard deviation of the Gaussian used to smooth the outer product of the gradient. Both are in physical (mm) units.
 
-    c3d myimage.nii -hesseig 2.0 -oo eig%02d.nii.gz
+    c3d myimage.nii -steig 1.0 2.0 -oo eig%02d.nii.gz
 
 #### -test-image, -test-probe: Test condition
 
@@ -1557,7 +1552,7 @@ And to arrange the same 2D slices into a 2D montage of 4 images per row, we woul
 
 Syntax: `-trim <margin_vector>`
 
-Use this command to trim background in an image. When most of the image is filled by background, this command will find the smallest rectangular region that contains all of the non-background voxels in the image. I will then expand this region by the margin of the size specified, and return the resulting region as the new image. For example, this command will trim an image, leaving a 5-voxel margin of background values on all sides
+Use this command to trim background in an image. When most of the image is filled by background, this command will find the smallest rectangular region that contains all of the non-background voxels in the image. It will then expand this region by the margin of the size specified, and return the resulting region as the new image. For example, this command will trim an image, leaving a 5-voxel margin of background values on all sides
 
     c3d in.img -trim 5vox -o out.img
 
@@ -1569,15 +1564,6 @@ Like **-trim**, this command trims the background in an image. However, instead 
 
     c3d in.img -trim-to-size 64x64x128vox -o out.img
 
-#### -mv, -majority-vote: Majority vote among multilabel images on the stack
-
-Syntax: `-majority-vote <label of undecided voxels> [number of stack images to use]`
-
-This command takes a number of multilabel images on the stack and do majority voting use the LabelVoting filter, when the voting is a tie the label is set to the <label of undecided voxels> value.
-
-    c3d ml1.img ml2.img ml3.img -label-voting 299 -type uchar -o label.img
-
-
 #### -vote: Vote among images on the stack
 
 Syntax: `-vote `
@@ -1588,23 +1574,23 @@ This command takes all images on the stack as arguments and at each voxel *(i,j,
 
 The value assigned to each image is based on its position from the bottom of the stack, with zero indicating bottom-most image. In the example above, the output image has values 0 for voxels where prob1.img is highest, 1 for prob2.img and 2 for prob3.img. Also see the related commands **-split** and **-merge**. 
 
-#### -vote-mrf: Vote with Markov Random Field regularlization
+#### -vote-mrf: Vote with Markov Random Field regularization
 
 Syntax: `-vote-mrf <mode> <lambda>`
 
-This command is similar to **-vote** but it performs regularlization using the Markov Random Field (MRF). This form of regularization penalizes the total surface area of the segments in the output. It results in more contiguous segments. 
+This command is similar to **-vote** but it performs regularization using the Markov Random Field (MRF). This form of regularization penalizes the total surface area of the segments in the output. It results in more contiguous segments. 
 
 The command takes all the images on the stack and assumes that they are likelihood images corresponding to labels 1, 2, ... N. This means that voxel **x** in image **k** holds the probability that voxel **x** has label **k**. Likelihood images must be between 0 and 1. Any values outside of the range are interpreted as the voxel being excluded from the voting. These voxels will be assigned label 0 in the output.
 
 The problem is encoded in the form of energy minimization, consisting of a data term and a regularization term. The data term encodes the cost (penalty) associated with assigning the voxel **x** the label **k**. The parameter **mode** describes how likelihood images are mapped to the cost. 
 
-* `VOTES_AGAINST` or `VA`. This mode is useful when the command is being used to combine several multi-label segmentations into a single one. Each likelihood image is assumed to be the proportion of segmentations that assign label *k* to voxel *x*. The data term equals to the error associated to assining the voxel *k* label *x*. This error is calculated as the sum of the likelihoods for all labels at *x* minus the likelihood for *k* at *x*. Note that the likelihoods do not have to add up to one, which may be interpreted as missing data for some voxels. 
+* `VOTES_AGAINST` or `VA`. This mode is useful when the command is being used to combine several multi-label segmentations into a single one. Each likelihood image is assumed to be the proportion of segmentations that assign label *k* to voxel *x*. The data term equals the error associated with assigning the label *k* to voxel *x*. This error is calculated as the sum of the likelihoods for all labels at *x* minus the likelihood for *k* at *x*. Note that the likelihoods do not have to add up to one, which may be interpreted as missing data for some voxels. 
 
 * `LOG_LIKELIHOOD` or `LL`. The cost for label *k* at voxel *x* is the logarithm of the k-th likelihood image at *x*. This will assign infinite cost when the likelihood is zero. 
 
-The regularlization term is encoded as **lambda** times the total number of neighboring voxels inside the mask (non-excluded region of the image) that have different labels. 
+The regularization term is encoded as **lambda** times the total number of neighboring voxels inside the mask (non-excluded region of the image) that have different labels. 
 
-The optmization problem is solved using the Alpha-Expansion graph cut algorithm. Users of this functionality should cite the following papers. 
+The optimization problem is solved using the Alpha-Expansion graph cut algorithm. Users of this functionality should cite the following papers. 
 
 1. Yuri Boykov, Olga Veksler, Ramin Zabih, *Efficient Approximate Energy Minimization via Graph Cuts*, IEEE transactions on PAMI, vol. 20, no. 12, p. 1222-1239, 2001. 
 
@@ -1612,7 +1598,7 @@ The optmization problem is solved using the Alpha-Expansion graph cut algorithm.
 
 3. Yuri Boykov and Vladimir Kolmogorov, *An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision*, IEEE transactions on PAMI, vol. 26, no. 9, p. 1124-1137, 2004. 
 
-As noted in the open source implementation of the graph cuts algorithms distributed under the General Public License, "This software can be used only for research purposes, you should cite the aforementioned paper in any resulting publication.  If you wish to use this software (or the algorithms described in the aforementioned paper) for commercial purposes, you should be aware that there is a US patent: R. Zabih, Y. Boykov, O. Veksler, *System and method for fast approximate energy minimization via graph cuts*, United Stated Patent 6,744,923, June 1, 2004.
+As noted in the open source implementation of the graph cuts algorithms distributed under the General Public License, "This software can be used only for research purposes, you should cite the aforementioned paper in any resulting publication.  If you wish to use this software (or the algorithms described in the aforementioned paper) for commercial purposes, you should be aware that there is a US patent: R. Zabih, Y. Boykov, O. Veksler, *System and method for fast approximate energy minimization via graph cuts*, United States Patent 6,744,923, June 1, 2004.
 
 The example below illustrates applying **-vote-mrf** with a user-specified mask. Voxels outside of the mask are first remapped to NaN (not a number) and thus excluded from the MRF optimization and given 0 label.
 
@@ -1624,7 +1610,7 @@ The example below illustrates applying **-vote-mrf** with a user-specified mask.
 
 Syntax: `-voxreg regression_order `
 
-Perform regression between corresponding voxels in two images. This command takes two images as input, X and Y. This command finds parameters b\_0, b\_1, ..., b\_k, such that Y is best approximated by b\_0 + b\_1 * X + b\_2 * X^2 + ... + b_k * X^k. Here is an example of linear regression. 
+Perform regression between corresponding voxels in two images. This command takes two images as input, X and Y. This command finds parameters b\_0, b\_1, ..., b\_k, such that Y is best approximated by b\_0 + b\_1 * X + b\_2 * X^2 + ... + b_k * X^k. The *regression_order* is the number of parameters, k + 1, so 2 gives linear regression. Here is an example of linear regression. 
 
     $ c3d Y.nii X.nii -voxreg 2 
     REGCOEFF[0] = 5.56935
@@ -1642,8 +1628,7 @@ Wrap image around one or more voxel dimensions. Wrapping is typically used to co
 
     c3d badmri.nii.gz -wrap 0x-20x0 -o fixedmri.nii.gz
 
-will wrap the image in the second voxel dimension by 20 voxels (i.e., voxel at 10x40x20 will me moved to the position 10x20x20). 
-
+will wrap the image in the second voxel dimension by 20 voxels (i.e., voxel at 10x40x20 will be moved to the position 10x20x20). 
 
 ### Commands: Options and Parameters
 
@@ -1666,14 +1651,19 @@ Turns on compressing for image file formats that support it. For some file forma
 
 #### -interpolation: Set interpolation mode
 
-Syntax: `-interpolation <NearestNeighbor|Linear|Cubic|Sinc|Gaussian> [param]`
+Syntax: `-interpolation <NearestNeighbor|Linear|Cubic|Sinc|Gaussian|MultiLabel> [param]`
 
-Specifies the interpolation used with **-resample** and other commands. Default is **Linear**. Gaussian interpolation takes as the parameter the standard deviation of the Gaussian filter (e.g, 1mm). Gaussian interpolation is very similar in result to first smoothing an image with a Gaussian filter and then reslicing it with linear interpolation, but is more accurate and has less aliasing artifacts. It is also slower, and should only be used with small sigmas (a few voxels across). 
+Specifies the interpolation used with **-resample** and other commands. Default is **Linear**. The command can also be written **-interp** or **-int**. Gaussian interpolation takes as the parameter the standard deviation of the Gaussian filter (e.g, 1mm). Gaussian interpolation is very similar in result to first smoothing an image with a Gaussian filter and then reslicing it with linear interpolation, but is more accurate and has less aliasing artifacts. It is also slower, and should only be used with small sigmas (a few voxels across). 
 
-Shorthand 0 can be used for *NearestNeighbor*, 1 for *Linear* and 3 for *Cubic*. For example:
+**MultiLabel** (or **ml**) interpolation is meant for label images: it smooths each label with a Gaussian of the given standard deviation (e.g., 0.5vox) and assigns each voxel the label with the highest value. Shorthand 0 (or **nn**) can be used for *NearestNeighbor*, 1 for *Linear* and 3 for *Cubic*. For example:
 
     c3d -int 3 test.nii -resample 200x200x200% -o cubic_supersample.nii
 
+#### -iterations: Maximum number of iterations for anti-aliasing
+
+Syntax: `-iterations <integer>`
+
+Sets the maximum number of iterations used by the **-antialias** command. The default, 0, uses the ITK default.
 
 #### -noround, -round: Floating point rounding behavior
 
@@ -1682,7 +1672,6 @@ Syntax: `-noround` or `-round `
 By default, **convert3d** will round floating point values when converting to an integer, short or byte image. This command specifies that rounding should not be used. Rounding is used to avoid numerical errors stemming from the internal floating point representation. 
 
     c3d image1.img -type short -noround image2.img
-
 
 #### -pim, -percent-intensity-mode: Set behavior of % specifier
 
@@ -1699,6 +1688,12 @@ This options changes how the percent sign (%) is interpreted when specifying int
     $ c3d comp01.png -verbose -pim Range -verbose -threshold 75% inf 1 0 
     Intensity range spec 0.75 maps to 191.25
 
+#### -rf-param-ntrees: Random Forest forest size
+
+Syntax: `-rf-param-ntrees <integer>`
+
+Sets the number of trees in the forest. Default value is 50. Larger forests are more robust but more time to train and apply. 
+
 #### -rf-param-patch: Random Forest training patch size
 
 Syntax: `-rf-param-patch <size_spec>`
@@ -1708,23 +1703,25 @@ Set the radius of the patch used to generate features for the RF classifier. By 
     # Set patch size to 5x5x5 
     c3d ... -rf-param-patch 2x2x2 ... -rf-train myforest.rf
 
-#### -rf-param-usexyz: Random Forest coordinate features
-
-Syntax: `-rf-param-usexyz`
-
-Use the coordinates of voxels as additional features. This allows some geometric relations between different labels to be learned. Equivalent to the corresponding ITK-SNAP option.
-
 #### -rf-param-treedepth: Random Forest tree depth
 
 Syntax: `-rf-param-treedepth <integer>`
 
 Sets the depth of the trees in the classifier. Default value is 30. Deeper trees can learn on more complex data but require more time. 
 
-#### -rf-param-ntrees: Random Forest forest size
+#### -rf-param-usexyz: Random Forest coordinate features
 
-Syntax: `-rf-param-ntrees <integer>`
+Syntax: `-rf-param-usexyz`
 
-Sets the number of trees in the forest. Default value is 50. Larger forests are more robust but more time to train and apply. 
+Use the coordinates of voxels as additional features. This allows some geometric relations between different labels to be learned. Equivalent to the corresponding ITK-SNAP option.
+
+#### -rms: Maximum RMS error for anti-aliasing
+
+Syntax: `-rms <value>`
+
+Sets the maximum root mean square error used by the **-antialias** command. The default is 0.07. Like other options, it must precede the **-antialias** command.
+
+    c3d binary.nii -rms 0.01 -antialias 0.5 -o smooth.nii
 
 #### -spm, -nospm: SPM compatibility in Analyze output
 
@@ -1734,11 +1731,19 @@ These options specify whether use the SPM extension to the Analyze (.hdr,.img) f
 
     c3d -spm in.hdr out.img.gz
 
-#### -threads, -threads-all
+#### -threads, -threads-all: Set the number of threads
 
 Syntax: `-threads <integer>` or `-threads-all`
 
-Set the maximum number of threads available to the ITK algorithms. By default only one thread is made available to facilitate running many parallel c3d jobs in a high-performance computing environment. Setting the number of threads to a greater number may speed up execution on multi-core computers. The command `-threads-all` makes all threads available to ITK. Like all c3d commands, this command only affects the commands that come later on the command line.
+Set the maximum number of threads available to the ITK algorithms. By default only one thread is made available to facilitate running many parallel c3d jobs in a high-performance computing environment. Setting the number of threads to a greater number may speed up execution on multi-core computers. The command `-threads-all` (or `-threads 0`) makes all threads available to ITK. Like all c3d commands, this command only affects the commands that come later on the command line.
+
+#### -tolerance: Override the default ITK coordinate and direction tolerances
+
+Syntax: `-tolerance <double> `
+
+Overwrites the default CoordinateTolerance and DirectionTolerance ITK values in [ImageToImageFilterCommon](https://github.com/InsightSoftwareConsortium/ITK/blob/master/Modules/Core/Common/src/itkImageToImageFilterCommon.cxx). This can be set to get around the "Inputs do not occupy the same physical space!" exception.
+
+    c3d in.img -tolerance 1.0e-02 -o out.img
 
 #### -type: Specify pixel type for image output
 
@@ -1750,15 +1755,7 @@ Specifies the pixel type for the output image. By default, images are written in
 
 Some images require data in certain types. For example, to save PNG images, uchar or ushort type must be specified.
 
-#### -tolerance: overwrites the defaults ITK ImageToImageFilterCommon tolerances
-
-Syntax: `-tolerance <double> `
-
-Overwrites the default CoordinateTolerance and DirectionTolerance ITK values in [ImageToImageFilterCommon](https://github.com/InsightSoftwareConsortium/ITK/blob/master/Modules/Core/Common/src/itkImageToImageFilterCommon.cxx). This can be set to get around the "Inputs do not occupy the same physical space!" exception.
-
-    c3d in.img -tolerance 1.0e-02 -o out.img
-
-#### -verbose: Enable verbose output of commands
+#### -verbose, -noverbose: Enable or disable verbose output of commands
 
 Syntax: `-verbose`
 
@@ -1808,7 +1805,7 @@ PovRay 3D density files can be written. They must be used with integral types (e
 
 This section discusses images with multiple components, where each voxel contains more than one value. For example color (RGB) images and diffusion tensor images are multi-component images. C3D can read and write multi-component images, but at the present, it can only represent these images internally as separate single-component images. 
 
-Use the **-mcs** flag to tell **convert3d** that when it encounters a multi-component image file, it should load each of the components as separate images. If you don't use this flag, only the first component of a multi-component image will be read in. 
+Use the **-mcs** flag to tell **convert3d** that when it encounters a multi-component image file, it should load each of the components as separate images. If you don't use this flag, the components of a multi-component image are combined into a single image (for example, a color image is converted to grayscale). 
 
     c3d -mcs ...
 
@@ -1818,13 +1815,13 @@ For example, suppose *rgb.mha* is a three-component color image. If you read it 
 
 Here is another example, where we take an RGB image and extract red, green and blue channels. 
 
-    c3d -verbose rgb.mha -o blue.nii.gz -pop -o green.nii.gz -pop -o red.nii.gz
+    c3d -verbose -mcs rgb.mha -o blue.nii.gz -pop -o green.nii.gz -pop -o red.nii.gz
 
-The components are being saved in reverse order. That's because when the image is read, the red component is placed at the top of the stack, then the green component is placed on the top of the red component, and finally, the blue component is placed at the top of the green component. So the blue component is at the top of the stack. Since **convert3d** commands like **-o** apply to the image at the top of the stack, the blue image is saved first, then removed (popped off) the stack, followed by the green and blue components. 
+The components are being saved in reverse order. That's because when the image is read, the red component is placed at the top of the stack, then the green component is placed on the top of the red component, and finally, the blue component is placed at the top of the green component. So the blue component is at the top of the stack. Since **convert3d** commands like **-o** apply to the image at the top of the stack, the blue image is saved first, then removed (popped off) the stack, followed by the green and red components. 
 
 With the advent of the **-oo** command (output multiple images), the command line becomes a little cleaner: 
 
-  c3d -mcs rgb.mha -oo red.nii.gz green.nii.gz blue.nii.gz
+    c3d -mcs rgb.mha -oo red.nii.gz green.nii.gz blue.nii.gz
 
 or, if you want to name the component images as **comp00.nii.gz**, **comp01.nii.gz**, **comp02.nii.gz**: 
 
@@ -1838,7 +1835,7 @@ To create an RGB image from component images, we would use the following command
 
 Some more recently added commands in **c3d** take multiple parameters and apply them to multiple images on the stack. As a rule, the last parameter is applied to the topmost image on the stack, the second to last parameter is applied to second from the top image on the stack, and so on. 
 
-For example, the \``\`-weighted-sum''' command computes a weighted sum of several images: 
+For example, the **-weighted-sum** command computes a weighted sum of several images: 
 
     c3d A.nii B.nii C.nii D.nii -weighted-sum 0.1 0.2 0.3 0.4 -o W.nii
 
@@ -1880,16 +1877,16 @@ To summarize, here is a checklist for adding a new command
 4.  Add `#include` line in `ConvertImageND.cxx` 
 5.  Add code to parse command and call adapter in `ConvertImageND.cxx` 
 6.  Add line to `bashcomp.sh` 
-7.  Document the command on the wiki
+7.  Document the command in `doc/c3d.md`
 
  [1]: http://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Convert3D
  [2]: http://en.wikipedia.org/wiki/Reverse_Polish_notation
- [3]: http://c3d.cvs.sourceforge.net/viewvc/*checkout*/c3d/convert3d/utilities/bashcomp.sh
+ [3]: https://github.com/pyushkevich/c3d/blob/master/utilities/bashcomp.sh
  [4]: http://www.insight-journal.org/browse/publication/640
  [5]: http://en.wikipedia.org/wiki/Morphological_image_processing
  [6]: http://www.fil.ion.ucl.ac.uk/spm/doc/books/hbf2/pdfs/Ch7.pdf
  [7]: http://www.itk.org/Doxygen/html/classitk_1_1BinaryFillholeImageFilter.html
- [8]: http://www.cppreference.com/wiki/c/io/printf
+ [8]: https://en.cppreference.com/w/c/io/fprintf
  [9]: http://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Point
  [10]: #ParameterSpecifications
  [11]: http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=1309714
