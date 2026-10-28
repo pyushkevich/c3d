@@ -150,9 +150,9 @@ IF(INSTALL_CLI)
     SET(LIB_INSTALL_PATH lib)
     SET(INC_INSTALL_PATH include)
   ELSEIF(APPLE AND BUILD_GUI)
-    SET(CLI_INSTALL_PATH "${C3DGUI_BUNDLE_NAME}.app/Contents/bin")
-    SET(LIB_INSTALL_PATH "${C3DGUI_BUNDLE_NAME}.app/Contents/lib")
-    SET(INC_INSTALL_PATH "${C3DGUI_BUNDLE_NAME}.app/Contents/include")
+    SET(CLI_INSTALL_PATH "../bin")
+    SET(LIB_INSTALL_PATH "../lib")
+    SET(INC_INSTALL_PATH "../include")
   ELSE()
     SET(CLI_INSTALL_PATH bin)
     SET(LIB_INSTALL_PATH lib)
@@ -258,8 +258,9 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       ${UI_NONMOC_HEADERS} ${UI_FORM_HEADERS} ${UI_OS_EXTRAS})
 
     # Configure the executable's sources and libraries
-    ADD_EXECUTABLE(${C3DGUI_BUNDLE_NAME} WIN32 MACOSX_BUNDLE ${C3DGUI_MAIN_SRC})
-    TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} ${CONVERT3D_QT_LIBRARIES} ${C3D_LINK_LIBRARIES})
+    qt_add_executable(${C3DGUI_BUNDLE_NAME} WIN32 ${C3DGUI_MAIN_SRC})
+    TARGET_LINK_LIBRARIES(${C3DGUI_BUNDLE_NAME} PRIVATE ${CONVERT3D_QT_LIBRARIES} ${C3D_LINK_LIBRARIES})
+    set_target_properties(${C3DGUI_BUNDLE_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 
     # Configure the include path for the GUI
     TARGET_INCLUDE_DIRECTORIES(
@@ -280,29 +281,74 @@ IF(NOT CONVERT3D_BUILD_AS_SUBPROJECT)
       # set how it shows up in the Info.plist file
       SET(CPACK_BUNDLE_ICON ${C3DGUI_OSX_ICON})
       SET(CPACK_PACKAGE_ICON ${C3DGUI_OSX_ICON})
+      SET(CPACK_BUNDLE_NAME Convert3DGui)
 
       # Code signing certificate - optional
       SET(CONVERT3D_MACOSX_CODESIGN_CERT "" CACHE STRING "Name of the Apple Developer Certificate to sign application")
       MARK_AS_ADVANCED(CONVERT3D_MACOSX_CODESIGN_CERT)
+
+      # Notarization keychain profile
+      SET(CONVERT3D_MACOS_NOTARYTOOL_PROFILE "" CACHE STRING "Notary tool password name, see https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow")
+      MARK_AS_ADVANCED(CONVERT3D_MACOS_NOTARYTOOL_PROFILE)
+
       IF(CONVERT3D_MACOSX_CODESIGN_CERT)
         SET(CPACK_BUNDLE_APPLE_CERT_APP ${CONVERT3D_MACOSX_CODESIGN_CERT})
+        SET(CPACK_BUNDLE_APPLE_ENTITLEMENTS ${CMAKE_SOURCE_DIR}/gui/resources/macos/entitlements.plist)
+        SET(CONVERT3D_MACOSX_CLI_EXES "c3d;c2d;c4d;c3d_affine_tool")
+        FOREACH(exe ${CONVERT3D_MACOSX_CLI_EXES})
+          LIST(APPEND CPACK_BUNDLE_APPLE_CODESIGN_FILES "/Contents/bin/${exe}")
+        ENDFOREACH()
+
+        # ADD COMMANDS FOR NOTARIZATION
+        IF(CONVERT3D_MACOS_NOTARYTOOL_PROFILE)
+          CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/gui/resources/macos/notarize_and_staple.cmake ${CMAKE_BINARY_DIR}/gui/resources/macos/notarize_and_staple.cmake @ONLY)
+          SET(CPACK_POST_BUILD_SCRIPTS ${CMAKE_BINARY_DIR}/gui/resources/macos/notarize_and_staple.cmake)
+        ENDIF()
+
+        SET(CPACK_APPLE_BUNDLE_ID "c3d")
+        SET(CPACK_BUNDLE_APPLE_CODESIGN_PARAMETER "-vv --deep -f --options=runtime")
       ENDIF()
 
       # set where in the bundle to put the icns file
       SET_SOURCE_FILES_PROPERTIES(${C3DGUI_OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
       # Set up the Info.plist file
-      SET_TARGET_PROPERTIES(${C3DGUI_BUNDLE_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
-        ${CONVERT3D_SOURCE_DIR}/gui/resources/macos/Info.plist)
+      SET(CPACK_BUNDLE_PLIST_SOURCE ${CONVERT3D_SOURCE_DIR}/gui/resources/macos/Info.plist)
+      SET(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
+      CONFIGURE_FILE("${CPACK_BUNDLE_PLIST_SOURCE}" "${CPACK_BUNDLE_PLIST}" @ONLY)
+      INSTALL(FILES ${CPACK_BUNDLE_PLIST} DESTINATION ..)
+
 
       # on Apple, the bundle is at the root of the
       # install tree, and on other platforms it'll go into the bin directory.
-      INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} BUNDLE DESTINATION . COMPONENT Runtime)
+      INSTALL(TARGETS ${C3DGUI_BUNDLE_NAME} DESTINATION ../MacOS COMPONENT Runtime)
+
+
+      # Use Qt deployment script to take care of plugins
+      set(executable_path "../../../${C3DGUI_BUNDLE_NAME}.app")
+
+      qt_generate_deploy_script(
+          TARGET ${C3DGUI_BUNDLE_NAME}
+          OUTPUT_SCRIPT deploy_script
+          CONTENT "
+      qt_deploy_runtime_dependencies(
+          EXECUTABLE \"${executable_path}\"
+          GENERATE_QT_CONF
+      )")
+      install(SCRIPT ${deploy_script})
+
+
+      #qt_generate_deploy_app_script(
+      #    TARGET ${C3DGUI_BUNDLE_NAME}
+      #    OUTPUT_SCRIPT deploy_script
+      #    NO_UNSUPPORTED_PLATFORM_ERROR
+      #)
+      #install(SCRIPT ${deploy_script})
 
       # Include the qt4 dependent libraries
-      include(DeployQt5)
-      get_filename_component(QT_COCOA_PLUGIN "${QT_BINARY_DIR}/../plugins/platforms/libqcocoa.dylib" ABSOLUTE)
-      install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app "${QT_COCOA_PLUGIN}")
+      #include(DeployQt5)
+      #get_filename_component(QT_COCOA_PLUGIN "${QT_BINARY_DIR}/../plugins/platforms/libqcocoa.dylib" ABSOLUTE)
+      #install_qt5_executable(${C3DGUI_BUNDLE_NAME}.app "${QT_COCOA_PLUGIN}")
 
     ELSEIF(WIN32)
 
