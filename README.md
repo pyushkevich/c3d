@@ -1,3 +1,5 @@
+<img src="utilities/logo/convert3d.jpg" alt="Convert3D" width="600">
+
 c3d
 ===
 
