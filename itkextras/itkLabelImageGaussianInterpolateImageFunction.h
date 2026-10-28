@@ -54,7 +54,7 @@ public:
   typedef SmartPointer<const Self>  ConstPointer;
   
   /** Run-time type information (and related methods). */
-  itkTypeMacro(LabelImageGaussianInterpolateImageFunction, InterpolateImageFunction);
+  itkOverrideGetNameOfClassMacro(LabelImageGaussianInterpolateImageFunction);
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);  

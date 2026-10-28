@@ -26,7 +26,6 @@
 #include "WrapDimension.h"
 #include "itkCyclicShiftImageFilter.h"
 #include "itkRegionOfInterestImageFilter.h"
-#include "vnl/vnl_finite.h"
 
 template <class TPixel, unsigned int VDim>
 void

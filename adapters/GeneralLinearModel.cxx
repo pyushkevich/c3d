@@ -24,9 +24,45 @@
 =========================================================================*/
 
 #include "GeneralLinearModel.h"
-#include "vnl/vnl_file_matrix.h"
+#include "vnl/vnl_matrix.h"
 #include "vnl/vnl_rank.h"
 #include "vnl/algo/vnl_matrix_inverse.h"
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+namespace {
+// Read a whitespace-delimited ASCII matrix, one row per line.
+bool ReadAsciiMatrix(const char *fn, vnl_matrix<double> &out)
+{
+  std::ifstream in(fn);
+  if(!in)
+    return false;
+  std::vector<std::vector<double>> rows;
+  std::string line;
+  while(std::getline(in, line))
+  {
+    std::istringstream iss(line);
+    std::vector<double> row;
+    double v;
+    while(iss >> v)
+      row.push_back(v);
+    if(!row.empty())
+      rows.push_back(row);
+  }
+  if(rows.empty())
+    return false;
+  const size_t nc = rows.front().size();
+  for(const auto &r : rows)
+    if(r.size() != nc)
+      return false;
+  out.set_size(rows.size(), nc);
+  for(size_t i = 0; i < rows.size(); ++i)
+    for(size_t j = 0; j < nc; ++j)
+      out(i, j) = rows[i][j];
+  return true;
+}
+} // namespace
 
 template <class TPixel, unsigned int VDim>
 void
@@ -34,13 +70,13 @@ GeneralLinearModel<TPixel, VDim>
 ::operator() (string fn_matrix, string fn_contrast)
 {
   // Read the matrix from file
-  vnl_file_matrix<double> mat(fn_matrix.c_str());
-  if(!mat)
+  vnl_matrix<double> mat;
+  if(!ReadAsciiMatrix(fn_matrix.c_str(), mat))
     throw string("Unable to read matrix from file given");
 
   // Read the contrast from file
-  vnl_file_matrix<double> con(fn_contrast.c_str());
-  if(!con)
+  vnl_matrix<double> con;
+  if(!ReadAsciiMatrix(fn_contrast.c_str(), con))
     throw string("Unable to read contrast from file given");
 
   // Check that the number of images matches

@@ -110,7 +110,7 @@ public:
   /**
    * Run-time type information (and related methods)
    */
-  itkTypeMacro(LabelContourImageFilter, ImageToImageFilter);
+  itkOverrideGetNameOfClassMacro(LabelContourImageFilter);
   
   /**
    * Method for creation through the object factory.

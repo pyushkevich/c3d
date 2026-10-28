@@ -33,7 +33,7 @@ public:
   itkNewMacro(Self);
 
   /** Runtime information support. */
-  itkTypeMacro(SLICSuperVoxelImageFilter, ImageToImageFilter);
+  itkOverrideGetNameOfClassMacro(SLICSuperVoxelImageFilter);
 
   /** Set a scalar-valued gradient magnitude image, used to push initial cluster
    *  centers away from the edges */

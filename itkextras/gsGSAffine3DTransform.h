@@ -32,7 +32,7 @@ public:
 
   /** Run-time type information (and related methods).   */
   // itkTypeMacro( GSAffine3DTransform, Rigid3DTransform );
-  itkTypeMacro( GSAffine3DTransform, MatrixOffsetTransformBase );
+  itkOverrideGetNameOfClassMacro(GSAffine3DTransform);
 
   /** Dimension of parameters   */
   itkStaticConstMacro(InputSpaceDimension, unsigned int, 3);

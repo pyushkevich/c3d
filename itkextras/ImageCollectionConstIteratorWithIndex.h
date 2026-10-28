@@ -136,7 +136,7 @@ public:
   itkStaticConstMacro(ImageDimension, unsigned int, TScalarImage::ImageDimension);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacroNoParent(ImageCollectionConstIteratorWithIndex);
+  itkVirtualGetNameOfClassMacro(ImageCollectionConstIteratorWithIndex);
 
   /** Index typedef support. */
   typedef typename TScalarImage::IndexType         IndexType;
@@ -207,10 +207,10 @@ public:
     }
 
   /** Get the number of components across the collection */
-  itkGetMacro(TotalComponents, unsigned int)
+  itkGetMacro(TotalComponents, unsigned int);
 
   /** Get the optional neighborhood size */
-  itkGetMacro(NeighborhoodSize, int)
+  itkGetMacro(NeighborhoodSize, int);
 
   /** Standard iterator operations */
   bool IsAtEnd() const
